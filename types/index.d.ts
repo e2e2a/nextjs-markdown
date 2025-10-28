@@ -22,6 +22,7 @@ export interface DocumentTree {
   projectId: string;
   userId: string;
   title: string;
+  type: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,5 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
-
+import '@/models/node';
+import '@/models/project';
 const MONGODB_URI = process.env.MONGO_URI;
 
 if (!MONGODB_URI) {

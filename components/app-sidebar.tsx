@@ -39,33 +39,49 @@ const data = {
     email: 'm@example.com',
     avatar: '/avatars/shadcn.jpg',
   },
-  navMain: [
-    {
-      title: 'Dashboard',
-      url: '#',
-      icon: IconDashboard,
-    },
-    {
-      title: 'Lifecycle',
-      url: '#',
-      icon: IconListDetails,
-    },
-    {
-      title: 'Analytics',
-      url: '#',
-      icon: IconChartBar,
-    },
-    {
-      title: 'Projects',
-      url: '#',
-      icon: IconFolder,
-    },
-    {
-      title: 'Team',
-      url: '#',
-      icon: IconUsers,
-    },
-  ],
+  navMain: {
+    section1: [
+      {
+        title: 'Dashboard',
+        url: '/dashboard',
+        icon: IconDashboard,
+      },
+      {
+        title: 'My Projects',
+        url: '/project',
+        icon: IconFolder,
+      },
+    ],
+    section2: [
+      {
+        title: 'Team',
+        url: '/team',
+        icon: IconUsers,
+      },
+      {
+        title: 'My Trash',
+        url: '#',
+        icon: IconListDetails,
+      },
+    ],
+    section3: [
+      {
+        title: 'Recent',
+        url: '#',
+        icon: IconChartBar,
+      },
+      {
+        title: 'Bookmark',
+        url: '#',
+        icon: IconChartBar,
+      },
+      {
+        title: 'Collaborative Notes',
+        url: '#',
+        icon: IconChartBar,
+      },
+    ],
+  },
   navClouds: [
     {
       title: 'Capture',

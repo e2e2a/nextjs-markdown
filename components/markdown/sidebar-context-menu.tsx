@@ -1,3 +1,4 @@
+'use client';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -5,36 +6,127 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import { DocumentTree } from '@/types';
+import { INode } from '@/types';
 import { ReactNode } from 'react';
+import { DangerConfirmDialog } from '../danger-confirm-dialog';
 
 interface ContainerProps {
   children: ReactNode;
-  item: DocumentTree;
+  itemType: string;
+  setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
+  setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
+  //** For updating */
+  node: INode | null;
+  active: Partial<INode> | null;
+  setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
+  updateNode: boolean;
+  setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function SidebarContextMenuDemo({ children, item }: ContainerProps) {
-  console.log('item', item.type);
+export function SidebarContextMenu({
+  children,
+  itemType,
+  setIsCreating,
+  setFile,
+  node,
+  active,
+  setActive,
+  updateNode,
+  setUpdateNode,
+  setIsOpen,
+}: ContainerProps) {
   return (
-    <ContextMenu>
-      <ContextMenuTrigger className="text-black" asChild>
-        <div className="">{children}</div>
+    <ContextMenu modal={true}>
+      <ContextMenuTrigger className="min-h-full max-h-full h-full" asChild>
+        {children}
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-52">
-        <ContextMenuItem inset>
-          New File
-          {/* <ContextMenuShortcut>⌘[</ContextMenuShortcut> */}
+      <ContextMenuContent
+        onClick={e => e.preventDefault()}
+        onContextMenu={e => e.preventDefault()}
+        className="w-52"
+      >
+        {(!itemType || itemType === 'folder') && (
+          <>
+            <ContextMenuItem
+              className="cursor-pointer"
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => {
+                e.stopPropagation();
+                setIsCreating(val => !val);
+                if (setIsOpen) setIsOpen(true);
+                setActive(node ? node : null);
+                setFile(val => ({
+                  name: val.name,
+                  oldName: '',
+                  type: 'file',
+                }));
+              }}
+              inset
+            >
+              New File
+            </ContextMenuItem>
+            <ContextMenuItem
+              className="cursor-pointer"
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => {
+                e.stopPropagation();
+                setIsCreating(val => !val);
+                if (setIsOpen) setIsOpen(true);
+                setActive(node ? node : null);
+                setFile(val => ({
+                  name: val.name,
+                  oldName: '',
+                  type: 'folder',
+                }));
+              }}
+              inset
+            >
+              New Folder
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+          </>
+        )}
+
+        <ContextMenuItem className="cursor-pointer" inset>
+          Cut
         </ContextMenuItem>
-        {/* <ContextMenuItem inset disabled> */}
-        <ContextMenuItem inset>New Folder</ContextMenuItem>
-        <ContextMenuSeparator />
-        {/* <ContextMenuCheckboxItem checked>Show Bookmarks</ContextMenuCheckboxItem> */}
-        <ContextMenuItem inset>Cut</ContextMenuItem>
-        <ContextMenuItem inset>Copy</ContextMenuItem>
-        <ContextMenuItem inset>Paste</ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem inset>Rename</ContextMenuItem>
-        <ContextMenuItem inset>Delete</ContextMenuItem>
+        <ContextMenuItem className="cursor-pointer" inset>
+          Copy
+        </ContextMenuItem>
+        <ContextMenuItem className="cursor-pointer" inset>
+          Paste
+        </ContextMenuItem>
+        {node && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              className="cursor-pointer"
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => {
+                e.stopPropagation();
+                setUpdateNode(val => !val);
+                setActive(node ? node : null);
+                setFile({ name: node.title!, oldName: node.title!, type: node.type });
+              }}
+              inset
+            >
+              Rename
+            </ContextMenuItem>
+            <ContextMenuItem
+              className="hover:bg-red-200 focus:bg-red-300 cursor-pointer p-0 px-0 w-full"
+              onClick={e => e.preventDefault()}
+              // onContextMenu={e => e.preventDefault()}
+            >
+              <DangerConfirmDialog
+                triggerTitle="Trash"
+                title="Are you absolutely sure?"
+                description="This item will be moved to the Trash and kept for 30 days. You can restore it anytime before permanent deletion."
+                node={node}
+              />
+            </ContextMenuItem>
+          </>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   );

@@ -5,31 +5,31 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import Link from 'next/link';
 import { Fragment } from 'react';
 
 export function Breadcrumbs({ breadcrumbs }: { breadcrumbs: BreadcrumbItemType[] }) {
   return (
     <div className="w-full">
       <Breadcrumb className="flex w-max px-2">
-        <BreadcrumbList className="flex items-center space-x-1">
+        <BreadcrumbList className="flex items-center sm:gap-0">
           {breadcrumbs &&
             breadcrumbs.length > 0 &&
             breadcrumbs.map((item, index) => {
               const isLast = index === breadcrumbs.length - 1;
               return (
                 <Fragment key={index}>
-                  <BreadcrumbItem className="max-w-[8rem] flex-shrink-0">
+                  <BreadcrumbItem className="max-w-32 shrink-0">
                     <BreadcrumbLink asChild>
-                      <Link
-                        href={item.href}
-                        className={`block truncate ${
+                      <p
+                        className={cn(
+                          `block truncate cursor-pointer hover:underline`,
                           isLast ? 'text-muted-foreground pointer-events-none font-medium' : ''
-                        }`}
+                        )}
                       >
                         {item.title}
-                      </Link>
+                      </p>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   {!isLast && <BreadcrumbSeparator />}

@@ -1,4 +1,3 @@
-import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
   SidebarContent,
@@ -52,8 +51,8 @@ const MiniSidebarIconItems = [
 
 const MiniSidebarTemplate = () => {
   return (
-    <Sidebar className="w-12 border-r p-0 py-0" collapsible="none" variant="floating">
-      <div className="flex min-h-screen flex-col text-neutral-400">
+    <Sidebar className="w-12 border-r p-0 " collapsible="none" variant="floating">
+      <div className="flex min-h-screen flex-col text-neutral-400 rounded-l-none ">
         <SidebarHeader className="hidden p-0">
           <SidebarMenu>
             <SidebarMenuItem>

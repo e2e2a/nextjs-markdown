@@ -7,8 +7,19 @@ interface AppShellProps {
 
 export function AppShell({ children, variant = 'header' }: AppShellProps) {
   if (variant === 'header') {
-    return <div className="flex min-h-screen w-full flex-col">{children}</div>;
+    return (
+      <div className="flex h-[calc(100vh-500px)] w-full flex-col p-0 overflow-y-hidden!">
+        {children}
+      </div>
+    );
   }
 
-  return <SidebarProvider defaultOpen={true}>{children}</SidebarProvider>;
+  return (
+    <SidebarProvider
+      className="bg-gray-300 min-h-screen max-h-screen overflow-y-hidden!"
+      defaultOpen={true}
+    >
+      {children}
+    </SidebarProvider>
+  );
 }

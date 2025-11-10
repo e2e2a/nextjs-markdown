@@ -1,19 +1,15 @@
-import { BreadcrumbItem, DocumentTree } from '@/types';
+import { BreadcrumbItem, INode } from '@/types';
 
-function findDocumentPath(
-  tree: DocumentTree[],
-  targetId: string,
-  path: DocumentTree[] = []
-): DocumentTree[] | null {
+function findDocumentPath(tree: INode[], targetId: string, path: INode[] = []): INode[] | null {
   for (const node of tree) {
     const newPath = [...path, node];
 
-    if (node.id === targetId) {
+    if (node._id === targetId) {
       return newPath;
     }
 
     if (node.children && node.children.length > 0) {
-      const found = findDocumentPath(node.children, targetId, newPath);
+      const found = findDocumentPath(node.children as INode[], targetId, newPath);
       if (found) return found;
     }
   }
@@ -22,23 +18,26 @@ function findDocumentPath(
 }
 
 export function generateBreadcrumbs(
-  documentTree: DocumentTree[],
-  currentDocument: DocumentTree
+  documentTree: INode[],
+  currentDocument: INode
 ): BreadcrumbItem[] {
-  let path: DocumentTree[] | null = [];
+  let path: INode[] | null = [];
   if (currentDocument) {
-    path = findDocumentPath(documentTree, currentDocument.id);
+    path = findDocumentPath(documentTree, currentDocument._id as string);
 
-    if (!path) return [{ title: 'Dashboard', href: '/dashboard' }];
+    if (!path) return [{ title: 'Project', _id: '', parentId: '' }];
   } else {
-    return [{ title: 'Dashboard', href: '/dashboard' }];
+    return [{ title: 'Project', _id: '', parentId: '' }];
   }
 
   return [
-    { title: 'Dashboard', href: '/dashboard' },
+    // { title: 'Project', href: '/project' },
+    { title: 'Project', _id: '', parentId: '' },
     ...path.map(doc => ({
-      title: doc.title,
-      href: `/dashboard/${doc.slug}`,
+      title: doc.title!,
+      _id: doc._id,
+      parentId: doc.parentId,
     })),
+    // href: `/project/${doc.title!.toLowerCase().replace(/\s+/g, '-')}`,
   ];
 }

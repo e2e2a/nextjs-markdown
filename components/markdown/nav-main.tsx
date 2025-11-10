@@ -1,26 +1,119 @@
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { DocumentTree } from '@/types';
+import { SidebarGroup, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import SidebarItem from './sidebar-item';
+import { ChevronRight, Folder, File } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { INode } from '@/types';
 
-export function NavMain({ items = [] }: { items: DocumentTree[] }) {
+export function NavMain({
+  collapseAll,
+  setCollapseAll,
+  submit,
+  updateTitle,
+  file = { name: '', type: '' },
+  isCreating,
+  setIsCreating,
+  inputRef,
+  setFile,
+  items = [],
+  active,
+  setActive,
+  updateNode,
+  setUpdateNode,
+}: {
+  collapseAll: boolean;
+  setCollapseAll: React.Dispatch<React.SetStateAction<boolean>>;
+  submit: (data: { name: string; type: string }) => void;
+  updateTitle: (data: { name: string; oldName?: string; type: string }) => void;
+  file: { name: string; type: string };
+  isCreating: boolean;
+  setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
+  items: INode[];
+  active: Partial<INode> | null;
+  setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
+  //** For updating */
+  updateNode: boolean;
+  setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      if (isCreating) submit(file);
+      if (updateNode) updateTitle(file);
+    }
+    if (e.key === 'Escape') {
+      setIsCreating(false);
+      setFile({ name: '', oldName: '', type: '' });
+    }
+  };
+
   return (
     <SidebarGroup className="gap-0 p-0">
-      <SidebarMenu className="gap-0">
-        {items.map((item, index) => {
-          return (
-            <SidebarMenuItem key={index}>
-              <SidebarMenuButton asChild tooltip={{ children: item.title }}>
-                <SidebarItem item={item as DocumentTree} />
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          );
-        })}
-      </SidebarMenu>
+      {items.map((item, index) => {
+        return (
+          <div className="" key={index}>
+            <SidebarItem
+              updateTitle={updateTitle}
+              collapseAll={collapseAll}
+              setCollapseAll={setCollapseAll}
+              handleKeyDown={handleKeyDown}
+              file={file}
+              isCreating={isCreating}
+              setIsCreating={setIsCreating}
+              inputRef={inputRef}
+              setFile={setFile}
+              active={active}
+              setActive={setActive}
+              item={item as INode}
+              /** For updating */
+              updateNode={updateNode}
+              setUpdateNode={setUpdateNode}
+              depth={0}
+            />
+          </div>
+        );
+      })}
+      {isCreating && active == null && (
+        <SidebarMenuItem className="gap-0 p-0 h-4.5 ">
+          {file && file.type === 'folder' ? (
+            <SidebarMenuButton
+              className={cn('p-0 gap-0 h-4.5 font-medium rounded-none text-black')}
+              style={{
+                paddingLeft: `${0 * 8}px`,
+              }}
+            >
+              <ChevronRight className={''} />
+              <div className="flex items-center gap-0.5">
+                <Folder className={`w-4 h-4 min-w-4 min-h-4`} />
+                <div className="truncate pr-5">
+                  <input
+                    ref={inputRef}
+                    value={file.name}
+                    onKeyDown={handleKeyDown}
+                    autoFocus
+                    onChange={e => setFile({ name: e.target.value, type: file.type })}
+                    className="w-full flex pb-1.5 font-normal h-4 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black px-2 py-1 rounded-none"
+                  />
+                </div>
+              </div>
+            </SidebarMenuButton>
+          ) : (
+            <SidebarMenuButton className="m-0 h-4.5 gap-0 rounded-none cursor-point bg-transparent text-black">
+              <div className="flex items-center m-0 pl-2">
+                <File className={`min-w-4 min-h-4 h-4 w-4`} />
+                <input
+                  ref={inputRef}
+                  value={file.name}
+                  autoFocus
+                  onKeyDown={handleKeyDown}
+                  onChange={e => setFile({ name: e.target.value, type: file.type })}
+                  className="w-full flex pb-1.5 font-normal h-4 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black px-2 py-1 rounded-none"
+                />
+              </div>
+            </SidebarMenuButton>
+          )}
+        </SidebarMenuItem>
+      )}
     </SidebarGroup>
   );
 }

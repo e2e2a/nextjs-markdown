@@ -1,49 +1,58 @@
-/**
- * @file app/api/user.ts
- * @description
- * Controller / Action layer for handling HTTP requests.
- *
- * Responsibilities:
- *  - Receives HTTP requests (req) and returns HTTP responses (res).
- *  - Calls service methods to perform business logic.
- *  - Handles HTTP status codes and error responses.
- *
- * Folder: `actions/`
- * Should NOT contain business logic or direct database queries.
- */
+import connectDb from '@/lib/db/connection';
+import { handleError } from '@/lib/handleError';
+import { nodeService } from '@/services/node';
+import { projectService } from '@/services/project';
+import { ProjectPushNodeDTO } from '@/types';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { userService } from '@/services/node';
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const projectId = searchParams.get('projectId');
+    await connectDb();
 
-const mockProducts = [
-  { id: 1, name: 'Next.js Mug', price: 12.99 },
-  { id: 2, name: 'React Hoodie', price: 49.99 },
-  { id: 3, name: 'TypeScript Stickers', price: 5.5 },
-];
+    if (projectId) {
+      const project = await nodeService.findNodeByProjectId(projectId);
+      return NextResponse.json(project);
+    }
 
-export async function GET() {
-  return new Response(JSON.stringify(mockProducts), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+    return NextResponse.json([]);
+  } catch (err) {
+    return handleError(err);
+  }
 }
 
-export async function POST(request: Request) {
-  // Get the JSON body from the request
-  const body = await request.json();
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    await connectDb();
 
-  // Example: read a "name" field
-  const { name } = body;
-  await userService.createNode();
-  console.log(body);
+    const node = await nodeService.createNode(body);
+    if (node.error)
+      return NextResponse.json(
+        {
+          success: false,
+          message: node.message,
+        },
+        { status: node.status }
+      );
 
-  // Create a simple message
-  const message = `Hello, ${name || 'stranger'} 👋`;
+    await projectService.pushNode(node.projectId, {
+      ...body,
+      nodes: [node._id],
+    } as ProjectPushNodeDTO);
 
-  // Return a JSON response
-  return new Response(JSON.stringify({ message }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+    const projects = await projectService.findProjectsByUserId(body.userId!);
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Created successfully',
+        data: { projectId: body.projectId, userId: body.userId, projects: projects },
+      },
+      { status: 201 }
+    );
+  } catch (err) {
+    return handleError(err);
+  }
 }

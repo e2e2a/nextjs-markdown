@@ -1,0 +1,95 @@
+import { Account, Profile, Session, User } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
+import connectDb from '../db/connection';
+import { profileRepository } from '@/repositories/profile';
+import { IAccessRecord, IProfile } from '@/types';
+import { userRepository } from '@/repositories/user';
+import { AdapterUser } from 'next-auth/adapters';
+import { accessRecordService } from '@/services/accessRecord';
+import { getHeaders } from '../getHeaders';
+import mongoose from 'mongoose';
+
+export const authCallbacks = {
+  async signIn(params: {
+    user: User | AdapterUser;
+    account: Account | null;
+    profile?: Profile;
+    email?: { verificationRequest?: boolean };
+    credentials?: Record<string, unknown>;
+  }): Promise<boolean> {
+    const { user, account, profile } = params;
+    console.log('user in callback', user);
+    try {
+      await connectDb();
+
+      if (account?.provider === 'google') {
+        if (!profile) return false;
+        const existingProfile = await profileRepository.findByProviderAccountId(
+          profile.sub as string
+        );
+        if (!existingProfile) await profileRepository.create(profile as IProfile);
+        if (mongoose.Types.ObjectId.isValid(user.id)) {
+          const { ip, deviceType } = await getHeaders();
+          const payload = {
+            userId: user.id as string,
+            ip,
+            deviceType,
+          };
+          await accessRecordService.findAccessRecordAndUpdate(payload as Partial<IAccessRecord>, {
+            lastLogin: new Date(),
+          });
+        }
+        return true;
+      }
+    } catch (err) {
+      console.log('error', err);
+      return false;
+    }
+
+    return true;
+  },
+  async session(params: { session: Session; user: AdapterUser; token: JWT }) {
+    const { session, user } = params;
+    await connectDb();
+
+    if (user && user.id) {
+      session.user._id = user.id as string;
+      session.user.sub = user.sub as string;
+
+      const authUser = await userRepository.findUser(user.id);
+      if (authUser) {
+        session.user.username = authUser.username as string;
+        session.user.email = authUser.email as string;
+        session.user.role = authUser.role as 'user' | 'admin';
+        session.user.email_verified = authUser.email_verified;
+
+        const { ip, deviceType } = await getHeaders();
+        const payload = {
+          userId: authUser._id as string,
+          ip,
+          deviceType,
+        };
+        const accessRecord = await accessRecordService.findAccessRecord(
+          payload as Partial<IAccessRecord>
+        );
+        session.user.kbaVerified = !!accessRecord;
+      }
+    }
+    return session;
+  },
+
+  async jwt(params: {
+    token: JWT;
+    user?: User | AdapterUser;
+    account?: Account | null;
+    profile?: Profile;
+  }) {
+    const { token, user } = params;
+
+    if (user) {
+      token._id = user.id;
+      token.role = user.role;
+    }
+    return token;
+  },
+};

@@ -1,3 +1,19 @@
+export type IProfile = {
+  _id?: string;
+  userId: string;
+  sub: string;
+  email: string;
+  email_verified: boolean;
+  name: string;
+  picture: string;
+  given_name: string;
+  family_name: string;
+  kbaQuestion?: string;
+  kbaAnswer?: string;
+};
+
+export type CreateProfileDTO = IProfile;
+
 export type CreateNodeDTO = {
   userId: string;
   projectId: string;
@@ -34,7 +50,7 @@ export type IProject = {
   archived: {
     isArchived: boolean;
     archivedAt?: Date;
-    archivedBy?: mongoose.Schema.Types.ObjectId;
+    archivedBy?: string;
   };
 };
 
@@ -42,6 +58,22 @@ export type CreateProjectDTO = Partial<IProject>;
 export type UpdateProjectDTO = Pick<INode, 'title'>;
 export type ProjectPushNodeDTO = Partial<IProject>;
 
+export type IAccessRecord = {
+  userId: string;
+  ip: string;
+  deviceType: string;
+  browser?: string;
+  os?: string;
+  userAgent?: string;
+  lastLogin: Date;
+};
+
+export type CreateAccessRecordDTO = IAccessRecord;
+
+export type KBAData = {
+  kbaQuestion: string;
+  kbaAnswer: string;
+};
 export interface BreadcrumbItem {
   title: string | undefined;
   _id: string;

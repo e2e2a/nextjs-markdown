@@ -19,7 +19,6 @@ export default function EasyMDEWithCommentToolbar() {
   const [prevActive, setPrevActive] = useState<Partial<INode> | null>(null);
   // const [highlightedText, setHighlightedText] = useState('');
   const { data: project, isLoading: loading, error } = useProjectQuery(projectId);
-  console.log('projects', project);
   // const project = projects?.find((p: IProject) => p._id === projectId);
 
   const nodes = project?.nodes as INode[] | [];

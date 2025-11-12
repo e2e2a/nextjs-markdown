@@ -1,6 +1,12 @@
 import mongoose, { Mongoose } from 'mongoose';
 import '@/models/node';
 import '@/models/project';
+import '@/models/account';
+import '@/models/user';
+import '@/models/profile';
+import '@/models/session';
+import '@/models/accessRecord';
+
 const MONGODB_URI = process.env.MONGO_URI;
 
 if (!MONGODB_URI) {

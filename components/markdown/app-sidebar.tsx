@@ -46,7 +46,6 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
       }
 
       const payload = {
-        userId: '665b09bf080766539a81e938',
         projectId: project._id as string,
         parentId: active?.type === 'folder' ? active._id : active?.parentId,
         title: data.name,
@@ -84,7 +83,6 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
         return;
       }
       const payload = {
-        userId: '665b09bf080766539a81e938',
         projectId: active?.projectId as string,
         _id: active?._id as string,
         type: active?.type,

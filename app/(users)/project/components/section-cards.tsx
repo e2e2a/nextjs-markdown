@@ -45,16 +45,14 @@ export function SectionCards({
       _id: string;
       oldTitle?: string;
       title?: string;
-      archived?: { isArchived: boolean; archivedAt: Date; archivedBy: string };
+      archived?: { isArchived: boolean; archivedAt: Date };
     }) => {
       if (data.oldTitle && data.title && data.oldTitle.toLowerCase() === data.title.toLowerCase())
         return cancel();
       const payload = {
-        userId: '665b09bf080766539a81e938',
         _id: data._id,
         ...(data.title ? { title: data.title } : {}),
         ...(data.archived ? { archived: data.archived } : {}),
-        // title: data.title,
       };
 
       mutation.update.mutate(payload, {
@@ -93,12 +91,19 @@ export function SectionCards({
       </div>
     );
   }
-  console.log('update', update);
+
+  if (!isCreating && (!projects || projects.length === 0)) {
+    return (
+      <div className="w-full">
+        {!isCreating && <div className="text-center">No Projects Found</div>}
+      </div>
+    );
+  }
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       {isCreating && <CreateSectionCard setIsCreating={setIsCreating} />}
 
-      {projects && projects.length > 0 ? (
+      {projects && projects.length > 0 && (
         <>
           {projects.map((project, idx) => (
             <div key={idx}>
@@ -176,8 +181,6 @@ export function SectionCards({
             </div>
           ))}
         </>
-      ) : (
-        <div className="text-center w-full">No Projects Found</div>
       )}
     </div>
   );

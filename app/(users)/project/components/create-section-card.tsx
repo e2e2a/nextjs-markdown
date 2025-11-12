@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProjectMutations } from '@/hooks/project/useProjectMutations';
 import { makeToastError } from '@/lib/toast';
-import { FolderPlus } from 'lucide-react';
+import { FolderPlus, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 interface IProps {
   setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,7 +16,6 @@ export function CreateSectionCard({ setIsCreating }: IProps) {
   const submit = useCallback(
     (data: { name: string }) => {
       const payload = {
-        userId: '665b09bf080766539a81e938',
         title: data.name,
       };
 
@@ -39,8 +38,14 @@ export function CreateSectionCard({ setIsCreating }: IProps) {
     <div className="">
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>
+          <CardDescription className="flex items-center justify-between">
             <FolderPlus className="" />
+            <div
+              onClick={() => setIsCreating(false)}
+              className="text-red-600 hover:text-red-600/80 cursor-pointer"
+            >
+              <X />
+            </div>
           </CardDescription>
 
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">

@@ -1,16 +1,9 @@
 'use client';
 import { AppSidebar } from '@/components/app-sidebar';
-import { SectionCards } from '@/app/(users)/project/components/section-cards';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { useProjectsByUserIdQuery } from '@/hooks/project/useProjectQuery';
 
 export default function Page() {
-  const {
-    data: projects,
-    isLoading: loading,
-    error,
-  } = useProjectsByUserIdQuery('665b09bf080766539a81e938');
   return (
     <SidebarProvider
       style={

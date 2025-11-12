@@ -18,7 +18,6 @@ export const authCallbacks = {
     credentials?: Record<string, unknown>;
   }): Promise<boolean> {
     const { user, account, profile } = params;
-    console.log('user in callback', user);
     try {
       await connectDb();
 
@@ -41,8 +40,7 @@ export const authCallbacks = {
         }
         return true;
       }
-    } catch (err) {
-      console.log('error', err);
+    } catch {
       return false;
     }
 

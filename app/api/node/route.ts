@@ -1,9 +1,12 @@
 import connectDb from '@/lib/db/connection';
+import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
 import { nodeService } from '@/services/node';
 import { projectService } from '@/services/project';
 import { ProjectPushNodeDTO } from '@/types';
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET(req: Request) {
   try {
@@ -26,16 +29,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     await connectDb();
-
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) throw new HttpError('Unauthorized', 401);
+    body.userId = session.user._id;
     const node = await nodeService.createNode(body);
-    if (node.error)
-      return NextResponse.json(
-        {
-          success: false,
-          message: node.message,
-        },
-        { status: node.status }
-      );
 
     await projectService.pushNode(node.projectId, {
       ...body,

@@ -7,15 +7,19 @@ import { LayoutButtons } from './components/layout-buttons';
 import { CreateFolderButton } from './components/create-folder-button';
 import { useProjectsByUserIdQuery } from '@/hooks/project/useProjectQuery';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 export default function Page() {
+  const [isCreating, setIsCreating] = useState(false);
+  const { data: session, status } = useSession();
+
   const {
     data: projects,
     isLoading: loading,
     // error,
-  } = useProjectsByUserIdQuery('665b09bf080766539a81e938');
-  const [isCreating, setIsCreating] = useState(false);
+  } = useProjectsByUserIdQuery(session?.user?._id as string);
 
+  if (status === 'loading') return;
   return (
     <SidebarProvider
       style={

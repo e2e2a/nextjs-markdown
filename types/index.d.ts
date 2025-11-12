@@ -15,7 +15,7 @@ export type IProfile = {
 export type CreateProfileDTO = IProfile;
 
 export type CreateNodeDTO = {
-  userId: string;
+  userId?: string;
   projectId: string;
   parentId?: string | null;
   projects?: IProject[] | [];
@@ -25,7 +25,7 @@ export type CreateNodeDTO = {
 
 export type INode = {
   _id: string;
-  userId: string;
+  userId?: string;
   projectId: string;
   parentId: string;
   type: string;

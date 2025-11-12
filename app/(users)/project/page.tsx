@@ -25,11 +25,13 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar
+      // variant="inset" // if want having padding in box
+      />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
+          <div className="@container/main flex flex-1 flex-col p-0! m-0!">
             <div className="grid grid-cols-1 px-4 lg:px-6 pt-4">
               <div className="flex justify-end items-center w-full gap-x-4">
                 <LayoutButtons />

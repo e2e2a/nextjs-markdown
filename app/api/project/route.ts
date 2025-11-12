@@ -1,6 +1,5 @@
 import connectDb from '@/lib/db/connection';
 import { handleError } from '@/lib/handleError';
-import { IProject } from '@/models/project';
 import { projectService } from '@/services/project';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -15,7 +14,6 @@ export async function GET(req: NextRequest) {
     switch (true) {
       case !!userId:
         projects = await projectService.findProjectsByUserId(userId!);
-        console.log('projectaa', projects);
         break;
       case !!id:
         projects = await projectService.findProject(id!);

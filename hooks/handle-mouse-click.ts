@@ -14,12 +14,10 @@ export function handleMouseClick(
 ) {
   e.stopPropagation();
 
-  // if (e.button === 0 || e.button === 1 || e.button === 2) {
   if (e.button === 0 || e.button === 1) {
-    console.log('clicked node', data);
     if (active !== data || active?._id !== data?._id) {
       if (isCreating) {
-        // setIsCreating(false);
+        setIsCreating(false);
       }
       if (updateNode) {
         updateTitle(file);

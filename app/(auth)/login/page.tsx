@@ -6,7 +6,7 @@ import { Session } from 'next-auth';
 
 export default function LoginPage() {
   const { data: session, status } = useSession();
-  console.log('status', status);
+
   if (status === 'loading') return;
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">

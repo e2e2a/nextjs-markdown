@@ -22,28 +22,22 @@ interface IProps {
 export function DangerConfirmDialog({ triggerTitle, title, description, node }: IProps) {
   const [isOpen, setIsOpen] = useState(false);
   const mutation = useNodeMutations();
-  const updateTitle = useCallback(
+  const updateArchived = useCallback(
     (node: INode) => {
       const payload = {
-        userId: '665b09bf080766539a81e938',
         _id: node?._id as string,
         type: node?.type,
-        // title: node.title,
-        // content: null,
         archived: {
           isArchived: true,
           archivedAt: new Date(),
-          archivedBy: '665b09bf080766539a81e938',
         },
       };
-      console.log('running');
+
       mutation.update.mutate(payload, {
-        onSuccess: res => {
-          console.log('res', res);
+        onSuccess: () => {
           return;
         },
         onError: err => {
-          console.log('err', err);
           makeToastError(err.message);
           return;
         },
@@ -71,7 +65,7 @@ export function DangerConfirmDialog({ triggerTitle, title, description, node }: 
             className="bg-blue-500 hover:bg-blue-500/90"
             onClick={() => {
               setIsOpen(false);
-              setTimeout(() => updateTitle(node), 0);
+              setTimeout(() => updateArchived(node), 0);
             }}
           >
             Continue

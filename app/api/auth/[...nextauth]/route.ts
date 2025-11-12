@@ -46,7 +46,6 @@ export const authOptions = {
   callbacks: authCallbacks,
   events: {
     async createUser({ user }: { user: AdapterUser }) {
-      console.log('✅ createUser event fired:', user);
       await connectDb();
 
       const authUser = await userRepository.findUser(user.id!);

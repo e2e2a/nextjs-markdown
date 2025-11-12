@@ -31,7 +31,6 @@ export default function MarkdownSection({ node, active }: IProps) {
   const updateContent = useCallback(() => {
     if (!node || node.type === 'folder') return;
     const payload = {
-      userId: '665b09bf080766539a81e938',
       _id: node._id as string,
       content: value,
       type: node.type,
@@ -57,7 +56,6 @@ export default function MarkdownSection({ node, active }: IProps) {
   useEffect(() => {
     if (!value) return;
     const delay = setTimeout(() => {
-      // console.log('payload', payload);
       updateContent();
     }, 500);
 
@@ -72,7 +70,7 @@ export default function MarkdownSection({ node, active }: IProps) {
     const handleCursorActivity = () => {
       const selection = cmInstance.getSelection();
       selectionRef.current = selection;
-      if (selection) console.log('Selection updated in ref:', selection);
+      // if (selection) console.log('Selection updated in ref:', selection);
     };
 
     cmInstance.on('cursorActivity', handleCursorActivity);
@@ -88,7 +86,7 @@ export default function MarkdownSection({ node, active }: IProps) {
       alert('Select text first.');
       return;
     }
-    console.log('Adding comment to:', currentSelection);
+    // console.log('Adding comment to:', currentSelection);
     alert(`Added comment to: "${currentSelection}"`);
   }, []);
 

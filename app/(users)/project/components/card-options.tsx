@@ -23,7 +23,7 @@ interface IProps {
     _id: string;
     oldTitle?: string;
     title?: string;
-    archived?: { isArchived: boolean; archivedAt: Date; archivedBy: string };
+    archived?: { isArchived: boolean; archivedAt: Date };
   }) => void;
 }
 
@@ -88,7 +88,6 @@ export function CardOptions({ project, setUpdate, setValue, handleUpdate }: IPro
                 archived: {
                   isArchived: true,
                   archivedAt: new Date(),
-                  archivedBy: '665b09bf080766539a81e938',
                 },
               });
             }}

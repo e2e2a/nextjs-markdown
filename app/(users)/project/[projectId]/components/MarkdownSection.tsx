@@ -75,7 +75,6 @@ export default function MarkdownSection({ node, active }: IProps) {
 
     cmInstance.on('cursorActivity', handleCursorActivity);
 
-    // Cleanup listener
     return () => {
       cmInstance.off('cursorActivity', handleCursorActivity);
     };
@@ -139,7 +138,6 @@ export default function MarkdownSection({ node, active }: IProps) {
         .EasyMDEContainer,
         .EasyMDEContainer .CodeMirror {
           border: none !important;
-          // border top 1px
           box-shadow: none !important;
         }
         .CodeMirror {

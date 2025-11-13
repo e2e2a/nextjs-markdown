@@ -116,7 +116,6 @@ export function SidebarContextMenu({
             <ContextMenuItem
               className="hover:bg-red-200 focus:bg-red-300 cursor-pointer p-0 px-0 w-full"
               onClick={e => e.preventDefault()}
-              // onContextMenu={e => e.preventDefault()}
             >
               <DangerConfirmDialog
                 triggerTitle="Trash"

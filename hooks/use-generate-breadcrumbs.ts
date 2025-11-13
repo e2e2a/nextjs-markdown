@@ -31,13 +31,11 @@ export function generateBreadcrumbs(
   }
 
   return [
-    // { title: 'Project', href: '/project' },
     { title: 'Project', _id: '', parentId: '' },
     ...path.map(doc => ({
       title: doc.title!,
       _id: doc._id,
       parentId: doc.parentId,
     })),
-    // href: `/project/${doc.title!.toLowerCase().replace(/\s+/g, '-')}`,
   ];
 }

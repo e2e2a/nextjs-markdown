@@ -1,14 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-// import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-// import { SessionProvider } from 'next-auth/react';
+
 type IProps = {
   children: React.ReactNode;
-  // session: any;
 };
 
-// export default function Providers({ children, session }: IProps) {
 export default function Providers({ children }: IProps) {
   const [queryClient] = useState(
     () =>
@@ -26,11 +23,9 @@ export default function Providers({ children }: IProps) {
   );
 
   return (
-    // <SessionProvider session={session} refetchOnWindowFocus={false} refetchWhenOffline={false}>
     <QueryClientProvider client={queryClient}>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       {children}
     </QueryClientProvider>
-    // </SessionProvider>
   );
 }

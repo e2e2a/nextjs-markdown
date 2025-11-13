@@ -7,7 +7,6 @@ export const makeToastSucess = (text: string) => {
       background: '#fff',
       color: '#333',
     },
-    // position: "top-right",
   });
 };
 
@@ -18,6 +17,5 @@ export const makeToastError = (text: string) => {
       background: '#fff',
       color: '#333',
     },
-    // position: "top-right",
   });
 };

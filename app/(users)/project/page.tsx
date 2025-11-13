@@ -13,11 +13,9 @@ export default function Page() {
   const [isCreating, setIsCreating] = useState(false);
   const { data: session, status } = useSession();
 
-  const {
-    data: projects,
-    isLoading: loading,
-    // error,
-  } = useProjectsByUserIdQuery(session?.user?._id as string);
+  const { data: projects, isLoading: loading } = useProjectsByUserIdQuery(
+    session?.user?._id as string
+  );
 
   if (status === 'loading') return;
   return (
@@ -29,9 +27,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar
-      // variant="inset" // if want having padding in box
-      />
+      <AppSidebar />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">

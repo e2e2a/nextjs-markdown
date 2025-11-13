@@ -63,7 +63,7 @@ export default function SidebarItem({
         }, 50);
       }
     } catch {
-      return; // ignore read errors
+      return;
     }
   }, [localStorageKey]);
 
@@ -287,7 +287,7 @@ export default function SidebarItem({
                         'w-full p-0 gap-0 h-4.5 font-medium active:bg-gray-200 hover:bg-gray-200 rounded-none cursor-pointer **:hover:text-black'
                       )}
                       style={{
-                        paddingLeft: `${depth * 8}px`, // indentation
+                        paddingLeft: `${depth * 8}px`,
                       }}
                     >
                       <ChevronRight className={`${isOpen ? 'rotate-90' : 'rotate-0'}`} />

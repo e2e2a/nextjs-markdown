@@ -43,12 +43,7 @@ export function CardOptions({ project, setUpdate, setValue, handleUpdate }: IPro
           <EllipsisVertical />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-56"
-        align="start"
-        onClick={handleClick}
-        // onClickCapture={e => e.stopPropagation()}
-      >
+      <DropdownMenuContent className="w-56" align="start" onClick={handleClick}>
         <DropdownMenuLabel>Settings</DropdownMenuLabel>
 
         <DropdownMenuGroup>

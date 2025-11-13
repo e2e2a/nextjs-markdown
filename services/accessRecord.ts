@@ -1,4 +1,3 @@
-// import { HttpError } from '@/lib/error';
 import { getHeaders } from '@/lib/getHeaders';
 import { accessRecordRepository } from '@/repositories/accessRecord';
 import { CreateAccessRecordDTO, IAccessRecord } from '@/types';

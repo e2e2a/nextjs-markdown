@@ -4,7 +4,6 @@ import 'easymde/dist/easymde.min.css';
 import 'codemirror';
 import AppSidebarLayout from '@/components/markdown/app-sidebar-layout';
 import { useProjectQuery } from '@/hooks/project/useProjectQuery';
-// import { IProject } from '@/models/project';
 import { generateBreadcrumbs } from '@/hooks/use-generate-breadcrumbs';
 import { INode } from '@/types';
 import mongoose from 'mongoose';
@@ -17,9 +16,7 @@ export default function EasyMDEWithCommentToolbar() {
   const projectId = params.projectId as string;
 
   const [prevActive, setPrevActive] = useState<Partial<INode> | null>(null);
-  // const [highlightedText, setHighlightedText] = useState('');
   const { data: project, isLoading: loading, error } = useProjectQuery(projectId);
-  // const project = projects?.find((p: IProject) => p._id === projectId);
 
   const nodes = project?.nodes as INode[] | [];
   const node = prevActive as INode;
@@ -28,7 +25,6 @@ export default function EasyMDEWithCommentToolbar() {
     if (active && active.type === 'file') {
       requestAnimationFrame(() => {
         setPrevActive(active);
-        // setValue(active.content || '');
       });
     }
     return;
@@ -38,7 +34,6 @@ export default function EasyMDEWithCommentToolbar() {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error...</div>;
   if (!project) return <div>Project not found</div>;
-  // if (!projects || projects.length === 0) return <div>No projects</div>;
 
   return (
     <AppSidebarLayout

@@ -1,0 +1,144 @@
+'use client';
+import Link from 'next/link';
+import Navbar from '@/components/public-pages/navbar';
+import Footer from '@/components/public-pages/footer';
+import { ArrowRight } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from '@/components/ui/carousel';
+import { Card, CardContent } from '@/components/ui/card';
+import React from 'react';
+import Autoplay from 'embla-carousel-autoplay';
+import { features } from '@/data/features';
+import { industries } from '@/data/industries';
+
+export default function Page() {
+  const plugin = React.useRef(Autoplay({ delay: 2000, stopOnInteraction: true }));
+  return (
+    <div className="h-auto text-gray-900 bg-gray-50">
+      <Navbar />
+      <div className="grid grid-cols-1 gap-y-10 flex-col place-items-center h-auto">
+        <section className="flex w-full max-w-6xl">
+          <div className="relative rounded-b-3xl w-full flex items-center px-6 bg-linear-to-r from-slate-400/80 to-slate-700 overflow-hidden">
+            <div className="grid grid-cols-1 place-items-center max-w-3xl justify-end h-full">
+              <div className="relative pt-35 h-full w-full flex flex-col pb-12 gap-4">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg">
+                  Mondrey Markdown Solutions to Accelerate Your Workflow
+                </h1>
+                <p className="text-sm md:text-[16px] text-slate-200 drop-shadow-md">
+                  Mondrey helps teams and individuals streamline their writing workflow, stay
+                  organized, and collaborate effectively. Whether you’re creating documentation,
+                  notes, or project content, Mondrey makes Markdown simple, intuitive, and
+                  productive, empowering you to focus on what truly matters.
+                </p>
+
+                <div className="pb-15">
+                  <Link
+                    href="/login"
+                    className="cursor-pointer inline-flex flex-row px-5 py-2 border-white bg-linear-to-r from-slate-700 to-slate-800 text-white font-semibold  shadow-lg rounded-3xl transform transition-all duration-300 ease-in-out
+             hover:from-blue-600 hover:to-indigo-600 hover:scale-105 hover:shadow-xl"
+                  >
+                    Get Started For Free <ArrowRight />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-24 bg-slate-50 flex flex-col items-center text-center">
+          <h2 className="text-4xl font-bold mb-6 text-slate-800">Why Teams Choose Mondrey</h2>
+          <p className="text-gray-600 max-w-2xl mb-12">
+            Empower your team to create, collaborate, and deliver faster with a modern Markdown
+            workspace built for clarity, speed, and teamwork.
+          </p>
+
+          <div className="grid grid-cols-2 gap-8 max-w-6xl w-full px-6">
+            {features.map((feature, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col md:flex-row items-start gap-4 p-6 rounded-2xl bg-linear-to-r from-slate-100 to-slate-200 shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
+              >
+                <div className="shrink-0 p-3 bg-slate-800/90 rounded-xl">
+                  <feature.icon className="h-7 w-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-xl font-semibold text-slate-800 mb-1">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section
+          id="cta"
+          className="relative py-20 w-full max-w-6xl rounded-3xl flex flex-col items-center justify-center text-center bg-linear-to-r from-slate-800 via-slate-900 to-black text-white"
+        >
+          <div className="relative px-6 flex flex-col items-center gap-6">
+            <h2 className="text-3xl md:text-4xl font-extrabold drop-shadow-lg">
+              Bring Clarity and Speed to Your Workflow
+            </h2>
+            <p className="text-gray-300 text-sm md:text-[16px] leading-relaxed max-w-2xl">
+              Skip the setup, skip the mess, Mondrey Markdown helps you write, preview, and
+              collaborate in real time. Everything you need for modern documentation, all in one
+              seamless platform.
+            </p>
+
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl font-semibold text-white bg-linear-to-r from-blue-600 to-indigo-600 shadow-lg transform transition-all hover:scale-105 hover:shadow-xl"
+            >
+              Get Started for Free
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </section>
+
+        <section className="py-16 bg-gray-50 flex flex-col items-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
+            Markdown Solutions for Every Industry
+          </h2>
+
+          <Carousel
+            plugins={[plugin.current]}
+            opts={{
+              align: 'start',
+              loop: true, // Infinite looping
+            }}
+            className="w-full max-w-6xl"
+          >
+            <CarouselContent>
+              {industries.map((industry, idx) => {
+                const Icon = industry.icon;
+                return (
+                  <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-2">
+                      <Card>
+                        <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
+                          <Icon className="text-blue-600" size={48} />
+                          <h3 className="text-xl font-semibold text-center">{industry.title}</h3>
+                          <p className="text-gray-600 text-center">{industry.description}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+
+            <div className="flex justify-between mt-4 w-full px-4">
+              <CarouselPrevious className="btn btn-outline">Prev</CarouselPrevious>
+              <CarouselNext className="btn btn-outline">Next</CarouselNext>
+            </div>
+          </Carousel>
+        </section>
+      </div>
+      <Footer />
+    </div>
+  );
+}

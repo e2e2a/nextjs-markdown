@@ -1,0 +1,135 @@
+'use client';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Github, Linkedin, Twitter, Facebook, ArrowRight } from 'lucide-react';
+import Navbar from '@/components/public-pages/navbar';
+import { aboutBoxes } from '@/data/about';
+import Footer from '@/components/public-pages/footer';
+
+export default function AboutPage() {
+  return (
+    <main className="bg-white">
+      <div className="grid grid-cols-1 gap-y-10 flex-col place-items-center h-auto">
+        <Navbar />
+
+        <section className="flex w-full max-w-6xl">
+          <div className="relative rounded-b-3xl w-full flex items-center px-6 bg-linear-to-r from-slate-400/80 to-slate-700 overflow-hidden">
+            <div className="relative pt-25 h-full flex flex-col items-center w-full pb-12 gap-4">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg text-center">
+                About MondreyMD
+              </h1>
+            </div>
+          </div>
+        </section>
+        <section className="py-10 rounded-3xl bg-slate-50 text-center">
+          <div className="max-w-6xl mx-auto px-6 flex flex-col items-center gap-12">
+            <h2 className="text-4xl font-bold text-slate-800 mb-6">What Drives MondreyMD</h2>
+            <p className="text-gray-600 max-w-3xl mb-12">
+              Learn more about who we are, what we stand for, and the journey that brought MondreyMD
+              to life.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+              {aboutBoxes.map((box, idx) => (
+                <div
+                  key={idx}
+                  className="flex flex-col items-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-transform hover:-translate-y-2"
+                >
+                  <box.icon className="h-10 w-10 text-blue-600 mb-4" />
+                  <h3 className="text-xl font-semibold text-slate-800 mb-2">{box.title}</h3>
+                  <p className="text-gray-600">{box.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="relative py-10 w-full max-w-6xl rounded-3xl flex items-center justify-center bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white mb-8">
+          <div className="mx-auto w-full px-6 flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center gap-6">
+              <Image
+                src="/images/profile.jpg"
+                alt="Founder"
+                width={500}
+                height={500}
+                quality={100}
+                className="rounded-full border-4 border-slate-300 h-auto w-[250px] shadow-md object-cover"
+              />
+              <h2 className="text-3xl font-bold">Hi, I’m Mondrey 👋</h2>
+              <p className="max-w-2xl">
+                I’m the solo developer behind MondreyMD. I built this platform to make Markdown more
+                accessible and collaborative, a tool that helps individuals and teams focus on their
+                content, not their setup.
+              </p>
+            </div>
+
+            {/* Social Links */}
+            <div className="grid grid-cols-1 md:grid-cols-2 w-full">
+              <div className="md:order-2">
+                <div className="flex items-center justify-center md:justify-start gap-5 mb-2 w-full ">
+                  <div className="text-sm">Follow us on</div>
+                  <Link href="https://github.com/yourusername" rel="nofollow" target="_blank">
+                    <div className="rounded-full border brder-white px-2 py-2">
+                      <Github className="w-6 h-6 text-white hover:text-blue-600 transition" />
+                    </div>
+                  </Link>
+                  <Link href="https://twitter.com/yourusername" rel="nofollow" target="_blank">
+                    <div className="rounded-full border brder-white px-2 py-2">
+                      <Twitter className="w-6 h-6 text-white hover:text-blue-600 transition" />
+                    </div>
+                  </Link>
+                  <Link href="https://linkedin.com/in/yourusername" rel="nofollow" target="_blank">
+                    <div className="rounded-full border brder-white px-2 py-2">
+                      <Linkedin className="w-6 h-6 text-white hover:text-blue-600 transition" />
+                    </div>
+                  </Link>
+                  <Link href="https://facebook.com/yourusername" rel="nofollow" target="_blank">
+                    <div className="rounded-full border brder-white px-2 py-2">
+                      <Facebook className="w-6 h-6 text-white hover:text-blue-600 transition" />
+                    </div>
+                  </Link>
+                </div>
+                <div className="text-center md:text-start pb-10 md:pb-0">
+                  <p className="max-w-2xl text-sm">
+                    For more inquries, please contact us at{' '}
+                    <Link
+                      href={'mailto:e2e2a@mondrey.dev'}
+                      rel="nofollow"
+                      className="hover:underline"
+                    >
+                      e2e2a@mondrey.dev
+                    </Link>
+                    .
+                  </p>
+                </div>
+              </div>
+              <div className="flex  justify-center items-center w-full md:order-1">
+                <Link
+                  href="/join"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg transform transition hover:scale-105"
+                >
+                  Join the Team
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-10 mb-10 rounded-3xl bg-white text-center">
+          <div className="max-w-3xl mx-auto px-6">
+            <h2 className="text-3xl font-bold text-slate-800 mb-4">Our Investors</h2>
+            <p className="text-gray-600 mb-8">
+              We’re currently self-funded and focused on growth. Investor partnerships are on the
+              horizon, if you believe in what we’re building, stay tuned or reach out to
+              collaborate.
+            </p>
+            <div className="inline-block px-6 py-3 rounded-xl bg-slate-200 text-slate-600 font-semibold">
+              🚀 Coming Soon
+            </div>
+          </div>
+        </section>
+      </div>
+      <Footer />
+    </main>
+  );
+}

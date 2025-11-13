@@ -1,4 +1,3 @@
-// lib/handleError.ts
 import { NextResponse } from 'next/server';
 import { HttpError } from './error';
 

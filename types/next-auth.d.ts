@@ -1,4 +1,3 @@
-// types/next-auth.d.ts
 import { DefaultSession, DefaultUser } from 'next-auth';
 import { AdapterUser as DefaultAdapterUser } from 'next-auth/adapters';
 

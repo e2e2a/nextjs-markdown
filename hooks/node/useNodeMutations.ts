@@ -27,11 +27,5 @@ export function useNodeMutations() {
     },
   });
 
-  // const remove = useMutation({
-  //   mutationFn: (id: string) => deleteNode(id),
-  //   onSuccess: () => queryClient.invalidateQueries({ queryKey: ['nodes'] }),
-  // });
-
-  // return { create, update, remove };
   return { create, update };
 }

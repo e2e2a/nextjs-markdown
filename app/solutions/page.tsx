@@ -108,7 +108,7 @@ export default function Page() {
             plugins={[plugin.current]}
             opts={{
               align: 'start',
-              loop: true, // Infinite looping
+              loop: true,
             }}
             className="w-full max-w-6xl"
           >

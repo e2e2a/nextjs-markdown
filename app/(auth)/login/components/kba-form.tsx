@@ -45,7 +45,6 @@ export function KBAForm({ session }: IProps) {
   const onSubmit = async (values: z.infer<typeof kbaSchema>) => {
     setLoading(true);
     try {
-      // Call your API to save KBA
       const payload = {
         _id: session?.user._id as string,
         kbaQuestion: values.kbaQuestion,
@@ -56,7 +55,7 @@ export function KBAForm({ session }: IProps) {
         onSuccess: async () => {
           setLoading(false);
           if (session.user.role === 'admin') redirect('/admin');
-          redirect('/dashboard');
+          redirect('/project');
         },
         onError: err => {
           makeToastError(err.message);
@@ -70,9 +69,6 @@ export function KBAForm({ session }: IProps) {
     }
   };
 
-  // const updateContent = useCallback(() => {
-
-  // }, [value, node, mutation]);
   return (
     <div className={cn('flex flex-col gap-6')}>
       <Card>
@@ -87,7 +83,6 @@ export function KBAForm({ session }: IProps) {
                   try {
                     setLoading(true);
                     await signOut();
-                    // router.push('/dashboard');
                   } catch (err) {
                     console.error(err);
                   } finally {

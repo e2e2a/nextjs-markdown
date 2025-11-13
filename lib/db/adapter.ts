@@ -1,7 +1,6 @@
 import { MongoClient } from 'mongodb';
 
 declare global {
-  // Extend NodeJS.Global to include _mongoClientPromise
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
@@ -16,7 +15,6 @@ let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === 'development') {
-  // In dev mode, use a global variable so we don't reconnect every time
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri, options);
     global._mongoClientPromise = client.connect();

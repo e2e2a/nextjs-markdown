@@ -2,7 +2,6 @@ import { CreateProjectDTO, UpdateProjectDTO } from '@/types';
 
 const BASE_URL = '/api/project';
 
-// 🔹 Get singe project
 export const projectClient = {
   async createProject(data: CreateProjectDTO) {
     const res = await fetch(BASE_URL, {
@@ -21,7 +20,6 @@ export const projectClient = {
     return res.json();
   },
 
-  // 🔹 Get projects by userId
   async getProjectsByUserId(userId?: string) {
     const res = await fetch(BASE_URL + `?userId=${userId}`);
     if (!res.ok) throw new Error('Failed to fetch projects');

@@ -18,7 +18,7 @@ export default async function Layout({
   if (session?.user) {
     if (session.user.kbaVerified) {
       if (session.user.role === 'admin') return redirect('/admin');
-      return redirect('/dashboard');
+      return redirect('/project');
     }
   }
   return <div className="">{children}</div>;

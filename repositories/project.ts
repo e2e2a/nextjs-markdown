@@ -1,11 +1,8 @@
 import Project from '@/models/project';
-
 import { PopulateOptions } from 'mongoose';
 import { CreateProjectDTO, IProject, ProjectPushNodeDTO, UpdateProjectDTO } from '@/types';
 
-// recursive populate builder
 export function populateChildren(path: string, depth: number = 3): PopulateOptions {
-  // stop recursion at depth 0
   if (depth <= 0) return { path };
 
   return {

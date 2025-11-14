@@ -134,29 +134,7 @@ export default function MarkdownSection({ node, active }: IProps) {
           Select a file to start <span className="text-blue-500">editing</span>.
         </div>
       )}
-      <style jsx global>{`
-        .EasyMDEContainer,
-        .EasyMDEContainer .CodeMirror {
-          border: none !important;
-          box-shadow: none !important;
-        }
-        .CodeMirror {
-          min-height: calc(100vh - 120px);
-        }
-
-        .CodeMirror-scroll {
-          min-height: calc(100vh - 140px) !important;
-          max-height: calc(100vh - 140px);
-          overflow: hidden !important;
-          overflow-y: scroll !important;
-        }
-
-        .EasyMDEContainer .editor-toolbar {
-          border: none !important;
-          border-bottom: 1px solid var(--border-color, #e5e7eb) !important;
-          box-shadow: none !important;
-        }
-      `}</style>
+      <style jsx global>{``}</style>
     </div>
   );
 }

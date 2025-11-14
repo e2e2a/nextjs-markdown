@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -117,5 +117,209 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .EasyMDEContainer,
+  .EasyMDEContainer .CodeMirror {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .CodeMirror {
+    min-height: calc(100vh - 120px);
+  }
+
+  .CodeMirror-scroll {
+    min-height: calc(100vh - 140px) !important;
+    max-height: calc(100vh - 140px);
+    overflow: hidden !important;
+    overflow-y: scroll !important;
+  }
+
+  .EasyMDEContainer .editor-toolbar {
+    border: none !important;
+    border-bottom: 1px solid var(--border-color, #e5e7eb) !important;
+    box-shadow: none !important;
+  }
+
+  /* ------------------------------ */
+  /* FIX SimpleMDE preview styling  */
+  /* ------------------------------ */
+
+  .editor-preview,
+  .editor-preview-side {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--foreground);
+  }
+
+  /* HEADINGS */
+  .editor-preview h1,
+  .editor-preview-side h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1.4rem 0 0.8rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.3rem;
+  }
+
+  .editor-preview h2,
+  .editor-preview-side h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 1.2rem 0 0.7rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.25rem;
+  }
+
+  .editor-preview h3,
+  .editor-preview-side h3 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 1rem 0 0.6rem;
+  }
+
+  .editor-preview h4,
+  .editor-preview-side h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .editor-preview h5,
+  .editor-preview-side h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.8rem 0 0.5rem;
+  }
+
+  .editor-preview h6,
+  .editor-preview-side h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    opacity: 0.8;
+    margin: 0.7rem 0 0.5rem;
+  }
+
+  /* PARAGRAPHS */
+  .editor-preview p,
+  .editor-preview-side p {
+    margin: 0.75rem 0;
+  }
+
+  /* LINKS */
+  .editor-preview a,
+  .editor-preview-side a {
+    color: var(--color-blue-500);
+    text-decoration: underline;
+    font-weight: 500;
+  }
+
+  /* LISTS */
+  .editor-preview ul,
+  .editor-preview ol,
+  .editor-preview-side ul,
+  .editor-preview-side ol {
+    padding-left: 1.5rem;
+    margin: 0.75rem 0;
+  }
+
+  /* BULLETS */
+  .editor-preview ul li,
+  .editor-preview-side ul li {
+    list-style-type: disc;
+    margin: 0.3rem 0;
+  }
+
+  /* NUMBERS */
+  .editor-preview ol li,
+  .editor-preview-side ol li {
+    list-style-type: decimal;
+    margin: 0.3rem 0;
+  }
+
+  /* NESTED LISTS */
+  .editor-preview ul ul,
+  .editor-preview ol ul,
+  .editor-preview ul ol,
+  .editor-preview ol ol,
+  .editor-preview-side ul ul,
+  .editor-preview-side ol ul,
+  .editor-preview-side ul ol,
+  .editor-preview-side ol ol {
+    margin-left: 1.2rem;
+  }
+
+  /* BLOCKQUOTE */
+  .editor-preview blockquote,
+  .editor-preview-side blockquote {
+    border-left: 4px solid var(--border);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--muted-foreground);
+    font-style: italic;
+  }
+
+  /* INLINE CODE */
+  .editor-preview code,
+  .editor-preview-side code {
+    background: var(--muted);
+    padding: 0.2rem 0.35rem;
+    border-radius: 0.25rem;
+    font-size: 0.95rem;
+  }
+
+  /* CODE BLOCKS */
+  .editor-preview pre,
+  .editor-preview-side pre {
+    background: var(--muted);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+
+  .editor-preview pre code,
+  .editor-preview-side pre code {
+    background: transparent;
+    padding: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* HR */
+  .editor-preview hr,
+  .editor-preview-side hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  /* IMAGES */
+  .editor-preview img,
+  .editor-preview-side img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  /* TABLES */
+  .editor-preview table,
+  .editor-preview-side table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+
+  .editor-preview table th,
+  .editor-preview table td,
+  .editor-preview-side table th,
+  .editor-preview-side table td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .editor-preview table th,
+  .editor-preview-side table th {
+    background: var(--muted);
+    font-weight: 600;
   }
 }

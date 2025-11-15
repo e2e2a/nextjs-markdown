@@ -29,7 +29,7 @@ export default function Page() {
     >
       <AppSidebar />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader title={'Projects'} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col p-0! m-0!">
             <div className="grid grid-cols-1 px-4 lg:px-6 pt-4">

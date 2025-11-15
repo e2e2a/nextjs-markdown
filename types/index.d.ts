@@ -1,3 +1,11 @@
+export type User = {
+  _id?: string;
+  email: string;
+  username: string;
+  email_verified: boolean;
+  role: string;
+};
+
 export type IProfile = {
   _id?: string;
   userId: string;
@@ -74,6 +82,23 @@ export type KBAData = {
   kbaQuestion: string;
   kbaAnswer: string;
 };
+
+export type ArchivedItem = {
+  _id: string;
+  type: string;
+  title: string;
+  size?: string;
+  projectId?: string;
+  parentId?: string;
+  userId?: string;
+  path: string;
+  archived: {
+    isArchived: boolean;
+    archivedAt?: Date;
+    archivedBy?: Pick<User, 'email'>;
+  };
+};
+
 export interface BreadcrumbItem {
   title: string | undefined;
   _id: string;

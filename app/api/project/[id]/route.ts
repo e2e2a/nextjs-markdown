@@ -14,8 +14,11 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
-
-    if (body.archived) body.archived.archivedBy = session.user._id;
+    let archived = false;
+    if (body.archived) {
+      body.archived.archivedBy = session.user._id;
+      archived = true;
+    }
 
     const projectToUpdate = await projectService.updateProjectById(id, {
       ...(body.title ? { title: body.title } : {}),
@@ -32,7 +35,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       {
         success: true,
         message: 'updated successfully',
-        data: { _id: projectToUpdate._id, userId: projectToUpdate.userId },
+        data: { _id: projectToUpdate._id, userId: projectToUpdate.userId, archived },
       },
       { status: 201 }
     );

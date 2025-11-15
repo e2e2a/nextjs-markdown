@@ -12,6 +12,8 @@ export async function GET(req: NextRequest) {
     const id = searchParams.get('id');
     const userId = searchParams.get('userId');
     await connectDb();
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 
     let projects;
     switch (true) {

@@ -60,7 +60,7 @@ const data = {
       },
       {
         title: 'My Trash',
-        url: '#',
+        url: '/trash',
         icon: IconListDetails,
       },
     ],

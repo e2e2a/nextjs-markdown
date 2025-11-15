@@ -134,7 +134,6 @@ export default function MarkdownSection({ node, active }: IProps) {
           Select a file to start <span className="text-blue-500">editing</span>.
         </div>
       )}
-      <style jsx global>{``}</style>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
-import { IconCirclePlusFilled, IconMail, type Icon } from '@tabler/icons-react';
-import { Button } from '@/components/ui/button';
+import { type Icon } from '@tabler/icons-react';
 import { Separator } from '@/components/ui/separator';
 import {
   SidebarGroup,
@@ -48,11 +47,16 @@ export function NavMain({ items }: NavMainProps) {
           </SidebarMenuItem>
         </SidebarMenu> */}
         <SidebarMenu>
-          {items.section1.map(item => (
-            <SidebarMenuItem key={item.title}>
+          {items.section1.map((item, idx) => (
+            <SidebarMenuItem key={idx}>
               <SidebarMenuButton tooltip={item.title}>
-                {item.icon && <item.icon />}
-                <Link href={item.url}>{item.title}</Link>
+                <Link
+                  href={item.url}
+                  className="inline-flex w-full text-black z-100 gap-2 items-center"
+                >
+                  {item.icon && <item.icon className="w-4 h-4" />}
+                  {item.title}
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -62,8 +66,13 @@ export function NavMain({ items }: NavMainProps) {
           {items.section2.map(item => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title}>
-                {item.icon && <item.icon />}
-                <Link href={item.url}>{item.title}</Link>
+                <Link
+                  href={item.url}
+                  className="inline-flex w-full text-black z-100 gap-2 items-center"
+                >
+                  {item.icon && <item.icon className="w-4 h-4" />}
+                  {item.title}
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -73,8 +82,13 @@ export function NavMain({ items }: NavMainProps) {
           {items.section3.map(item => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title}>
-                {item.icon && <item.icon />}
-                <Link href={item.url}>{item.title}</Link>
+                <Link
+                  href={item.url}
+                  className="inline-flex w-full text-black z-100 gap-2 items-center"
+                >
+                  {item.icon && <item.icon className="h-4 w-4" />}
+                  {item.title}
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

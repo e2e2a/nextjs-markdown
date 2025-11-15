@@ -26,6 +26,8 @@ export function useProjectMutations() {
         queryClient.invalidateQueries({ queryKey: ['project', data.data.projectId] });
         queryClient.invalidateQueries({ queryKey: ['projectsByUserId', data.data.userId] });
       }
+      if (data.data.archived)
+        queryClient.invalidateQueries({ queryKey: ['trash', data.data.userId] });
       return;
     },
   });

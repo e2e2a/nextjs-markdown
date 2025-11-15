@@ -4,7 +4,7 @@ import { CreateNodeDTO, INode } from '@/types';
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-const checkExistence = async (data: {
+export const checkNodeExistence = async (data: {
   projectId: string;
   parentId: string;
   type: string;
@@ -35,7 +35,7 @@ const checkExistence = async (data: {
 
 export const nodeService = {
   createNode: async (data: CreateNodeDTO) => {
-    await checkExistence({
+    await checkNodeExistence({
       projectId: data.projectId,
       parentId: data.parentId!,
       type: data.type!,
@@ -48,7 +48,7 @@ export const nodeService = {
 
   updateNodeById: async (id: string, data: Partial<INode>) => {
     if (data.title) {
-      await checkExistence({
+      await checkNodeExistence({
         projectId: data.projectId!,
         parentId: data.parentId!,
         type: data.type!,

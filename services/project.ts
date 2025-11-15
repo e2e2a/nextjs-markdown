@@ -11,7 +11,7 @@ const sortNodes = (nodes: INode[]) => {
   });
 };
 
-const checkExistence = async (data: { userId: string; title: string }) => {
+export const checkExistence = async (data: { userId: string; title: string }) => {
   const projects = await projectRepository.findProjectsByUserId(data.userId);
   const exists = projects.some(
     (proj: IProject) => proj.title?.toLowerCase() === data.title?.toLowerCase()
@@ -89,5 +89,9 @@ export const projectService = {
     }
     if (data.archived) return projectRepository.archiveById(id, data);
     return projectRepository.updateProjectById(id, data);
+  },
+
+  pullNode: async (dataToFind: { _id: string; userId: string }, data: { nodes: string[] }) => {
+    return projectRepository.pullNode(dataToFind, data);
   },
 };

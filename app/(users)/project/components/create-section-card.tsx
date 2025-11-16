@@ -37,7 +37,7 @@ export function CreateSectionCard({ setIsCreating }: IProps) {
   return (
     <div className="">
       <Card className="@container/card">
-        <CardHeader>
+        <CardHeader className="gap-1">
           <CardDescription className="flex items-center justify-between">
             <FolderPlus className="" />
             <div
@@ -48,7 +48,7 @@ export function CreateSectionCard({ setIsCreating }: IProps) {
             </div>
           </CardDescription>
 
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          <CardTitle className="text-xl font-semibold tabular-nums @[250px]/card:text-2xl">
             <input
               type="text"
               ref={inputRef}

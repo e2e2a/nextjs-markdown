@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
         projects = await projectService.findProject(id!);
         break;
       default:
+        projects = [];
         break;
     }
 

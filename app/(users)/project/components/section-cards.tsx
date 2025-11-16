@@ -74,8 +74,8 @@ export function SectionCards({
     return (
       <div className="w-full *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
         {[...Array(3)].map((_, i) => (
-          <Card key={i} className="@container/card">
-            <CardHeader>
+          <Card key={i} className="@container/card gap-3">
+            <CardHeader className="gap-0">
               <CardDescription>
                 <Skeleton className="h-7 w-7 rounded-sm" />
               </CardDescription>
@@ -109,8 +109,8 @@ export function SectionCards({
             <div key={idx}>
               {!update.isUpdating || (update.isUpdating && update._id !== project._id) ? (
                 <Link href={`project/${project._id}`}>
-                  <Card className="@container/card">
-                    <CardHeader>
+                  <Card className="@container/card gap-3">
+                    <CardHeader className="gap-0">
                       <CardDescription className="flex items-center justify-between">
                         <FolderOpenDot className="" />
                         <div className="">
@@ -123,8 +123,11 @@ export function SectionCards({
                         </div>
                       </CardDescription>
 
-                      <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        <h3>{project.title}</h3>
+                      <CardTitle
+                        title={project.title}
+                        className="text-xl font-semibold tabular-nums @[250px]/card:text-2xl truncate"
+                      >
+                        <h3 className="truncate">{project.title}</h3>
                       </CardTitle>
                     </CardHeader>
 
@@ -142,7 +145,7 @@ export function SectionCards({
                 </Link>
               ) : (
                 <Card className="@container/card">
-                  <CardHeader>
+                  <CardHeader className="gap-1">
                     <CardDescription className="flex items-center justify-between">
                       <FolderPen className="" />
                       <div
@@ -153,7 +156,7 @@ export function SectionCards({
                       </div>
                     </CardDescription>
 
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                    <CardTitle className="text-xl font-semibold tabular-nums @[250px]/card:text-2xl">
                       <input
                         type="text"
                         ref={inputRef}
@@ -171,7 +174,6 @@ export function SectionCards({
                           handleUpdate({ _id: update._id, oldTitle: update.oldTitle, title: value })
                         }
                       >
-                        {/* {formattedDate} */}
                         Update
                       </Button>
                     </div>

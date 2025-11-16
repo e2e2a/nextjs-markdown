@@ -5,6 +5,7 @@ import { ArchivedItem, INode, IProject } from '@/types';
 import { checkExistence, projectService } from './project';
 import { BSON } from 'mongodb';
 import { checkNodeExistence } from './node';
+import { memberRepository } from '@/repositories/member';
 
 function calculateSize(doc: IProject | INode) {
   return BSON.calculateObjectSize(doc);
@@ -142,6 +143,7 @@ export const trashService = {
           await projectRepository.deleteOne(userId, pId);
         })
       );
+      await memberRepository.deleteMany(projectIds);
     }
     return;
   },

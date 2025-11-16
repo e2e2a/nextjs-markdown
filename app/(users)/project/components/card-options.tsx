@@ -1,3 +1,4 @@
+'use client';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,8 +11,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { IProject } from '@/types';
-import { EllipsisVertical, FolderPen, Trash2, UsersRound } from 'lucide-react';
+import { Ellipsis, FolderPen, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { MembersDialog } from './members-dialog';
 
 interface IProps {
   project: IProject;
@@ -39,37 +41,28 @@ export function CardOptions({ project, setUpdate, setValue, handleUpdate }: IPro
         className="cursor-pointer hover:bg-transparent focus-visible:ring-0 outline-0"
         asChild
       >
-        <Button variant="ghost" className="p-0! focus-visible:ring-0 outline-0">
-          <EllipsisVertical />
+        <Button variant="ghost" className=" focus-visible:ring-0 outline-0">
+          <Ellipsis />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start" onClick={handleClick}>
         <DropdownMenuLabel>Settings</DropdownMenuLabel>
-
         <DropdownMenuGroup>
-          <DropdownMenuItem className="cursor-pointer" onClick={handleClick}>
-            Members
-            <DropdownMenuShortcut>
-              <UsersRound />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
+          <MembersDialog project={project} />
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={e => {
-              handleClick(e);
+          <div
+            className="cursor-pointer flex justify-between p-2 text-sm focus:bg-neutral-100 hover:bg-neutral-100 rounded-lg"
+            onClick={() => {
               setOpen(false);
               setUpdate({ _id: project._id, oldTitle: project.title, isUpdating: true });
               setValue(project.title);
             }}
           >
-            Rename
-            <DropdownMenuShortcut>
-              <FolderPen />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
+            <div className="">Rename</div>
+            <FolderPen className="h-4 w-4 text-muted-foreground" />
+          </div>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

@@ -6,6 +6,7 @@ import '@/models/user';
 import '@/models/profile';
 import '@/models/session';
 import '@/models/accessRecord';
+import '@/models/member';
 
 const MONGODB_URI = process.env.MONGO_URI;
 

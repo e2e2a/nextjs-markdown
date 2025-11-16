@@ -1,4 +1,4 @@
-export type User = {
+export type IUser = {
   _id?: string;
   email: string;
   username: string;
@@ -95,8 +95,23 @@ export type ArchivedItem = {
   archived: {
     isArchived: boolean;
     archivedAt?: Date;
-    archivedBy?: Pick<User, 'email'>;
+    archivedBy?: Pick<IUser, 'email'>;
   };
+};
+
+export type MembersInvited = {
+  _id?: string;
+  projectId?: Partial<Project>;
+  userId?: Pick<IUser, 'email'>;
+  email: string;
+  status: string;
+  createdAt: Date;
+};
+
+export type InviteMembersDTO = {
+  _id?: string;
+  projectId: string;
+  email: string;
 };
 
 export interface BreadcrumbItem {

@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
     const searchParams = req.nextUrl.searchParams;
     const projectId = searchParams.get('projectId') as string;
-    const members = await memberService.findMembers(session, { projectId });
+    const email = searchParams.get('email') as string;
+    const members = await memberService.findMembers(session, { projectId, email });
 
     return NextResponse.json(members);
   } catch (err) {
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Created successfully',
         projectId: member.projectId,
+        email: member.email,
       },
       { status: 201 }
     );

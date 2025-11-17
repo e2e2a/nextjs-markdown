@@ -19,20 +19,22 @@ export default function EasyMDEWithCommentToolbar() {
   const { data: project, isLoading: loading, error } = useProjectQuery(projectId);
 
   const nodes = project?.nodes as INode[] | [];
-  const node = prevActive as INode;
+  const node = project?.nodes?.find((n: INode) => n._id === prevActive?._id) as INode;
   const breadcrumbs = generateBreadcrumbs(nodes, node);
+
   useEffect(() => {
-    if (active && active.type === 'file') {
+    if (project && active && active.type === 'file') {
       requestAnimationFrame(() => {
         setPrevActive(active);
       });
     }
     return;
-  }, [active]);
+  }, [project, active]);
+
   if (!mongoose.Types.ObjectId.isValid(projectId)) return <div>Project ID is required</div>;
   if (loading) return <div>Loading...</div>;
   if (!project || error) return notFound();
-  console.log('project', project);
+
   return (
     <AppSidebarLayout
       project={project}

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import SimpleMDE from 'easymde';
 import dynamic from 'next/dynamic';
-
 import 'easymde/dist/easymde.min.css';
 import 'codemirror';
 import { INode } from '@/types';
@@ -24,9 +23,6 @@ export default function MarkdownSection({ node, active }: IProps) {
   const cmRef = useRef<CMEditorMinimal | null>(null);
   const selectionRef = useRef<string>('');
   const mutation = useNodeMutations();
-  const onChange = (value: string) => {
-    setValue(value);
-  };
 
   const updateContent = useCallback(() => {
     if (!node || node.type === 'folder') return;
@@ -45,14 +41,16 @@ export default function MarkdownSection({ node, active }: IProps) {
       },
     });
   }, [value, node, mutation]);
+
   useEffect(() => {
     if (active && active.type === 'file') {
       requestAnimationFrame(() => {
-        setValue(active.content || '');
+        setValue(node?.content || '');
       });
     }
     return;
-  }, [active]);
+  }, [active, node]);
+
   useEffect(() => {
     if (!value) return;
     const delay = setTimeout(() => {
@@ -60,7 +58,6 @@ export default function MarkdownSection({ node, active }: IProps) {
     }, 500);
 
     return () => clearTimeout(delay);
-    return;
   }, [value]);
 
   const getCmInstanceCallback = useCallback((cmInstance: CMEditorMinimal) => {

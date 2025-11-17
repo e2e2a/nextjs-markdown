@@ -10,14 +10,14 @@ interface IProps {
 export const memberRepository = {
   create: (data: InviteMembersDTO, invitedBy: string) => new Member({ ...data, invitedBy }).save(),
 
-  getProjects: (filters: Partial<IProps>) =>
+  getMembers: (filters: Partial<IProps>) =>
     Member.find(filters)
       .populate('invitedBy')
       .populate('projectId')
       .lean<MembersInvited[]>()
       .exec(),
 
-  getProject: (filters: Partial<IProps>) => Member.findOne(filters).lean<MembersInvited[]>().exec(),
+  getMember: (filters: Partial<IProps>) => Member.findOne(filters).lean<MembersInvited[]>().exec(),
 
   deleteMany(projectIds: string[]) {
     Member.deleteMany({ projectId: { $in: projectIds } }).exec();

@@ -8,7 +8,7 @@ import { generateBreadcrumbs } from '@/hooks/use-generate-breadcrumbs';
 import { INode } from '@/types';
 import mongoose from 'mongoose';
 import MarkdownSection from './components/MarkdownSection';
-import { useParams } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 
 export default function EasyMDEWithCommentToolbar() {
   const [active, setActive] = useState<Partial<INode> | null>(null);
@@ -30,11 +30,9 @@ export default function EasyMDEWithCommentToolbar() {
     return;
   }, [active]);
   if (!mongoose.Types.ObjectId.isValid(projectId)) return <div>Project ID is required</div>;
-
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error...</div>;
-  if (!project) return <div>Project not found</div>;
-
+  if (!project || error) return notFound();
+  console.log('project', project);
   return (
     <AppSidebarLayout
       project={project}

@@ -1,7 +1,9 @@
 import { HttpError } from '@/lib/error';
+import { memberRepository } from '@/repositories/member';
 import { nodeRepository } from '@/repositories/node';
 import { projectRepository } from '@/repositories/project';
 import { CreateProjectDTO, INode, IProject, ProjectPushNodeDTO } from '@/types';
+import { Session } from 'next-auth';
 
 const sortNodes = (nodes: INode[]) => {
   return [...nodes].sort((a, b) => {
@@ -31,9 +33,16 @@ export const projectService = {
     return projectRepository.create(data);
   },
 
-  findProject: async (id: string) => {
+  findProject: async (session: Session, id: string) => {
     const project = await projectRepository.findProject(id);
     if (!project) return null;
+    if (project.userId.toString() !== session.user._id) {
+      const member = await memberRepository.getMember({
+        projectId: project._id,
+        email: session.user.email,
+      });
+      if (!member) throw new HttpError(`Forbidden.`, 403);
+    }
     if (project.archived?.isArchived) return null;
 
     // Skip if no nodes

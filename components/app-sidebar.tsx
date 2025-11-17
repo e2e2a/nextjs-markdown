@@ -2,17 +2,11 @@
 
 import * as React from 'react';
 import {
-  IconCamera,
-  IconChartBar,
-  IconDashboard,
   IconDatabase,
-  IconFileAi,
-  IconFileDescription,
   IconFileWord,
   IconFolder,
   IconHelp,
   IconInnerShadowTop,
-  IconListDetails,
   IconReport,
   IconSearch,
   IconSettings,
@@ -32,6 +26,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { Handshake, MessageCircleMore, Trash2 } from 'lucide-react';
 
 const data = {
   user: {
@@ -42,11 +37,6 @@ const data = {
   navMain: {
     section1: [
       {
-        title: 'Dashboard',
-        url: '/dashboard',
-        icon: IconDashboard,
-      },
-      {
         title: 'My Projects',
         url: '/project',
         icon: IconFolder,
@@ -54,82 +44,77 @@ const data = {
     ],
     section2: [
       {
-        title: 'Team',
-        url: '/team',
-        icon: IconUsers,
+        title: 'Comments',
+        url: '#',
+        icon: MessageCircleMore,
       },
       {
         title: 'My Trash',
         url: '/trash',
-        icon: IconListDetails,
+        icon: Trash2,
       },
     ],
     section3: [
       {
-        title: 'Recent',
-        url: '#',
-        icon: IconChartBar,
+        title: 'Project Invitations',
+        url: '/invite',
+        icon: Handshake,
       },
       {
-        title: 'Bookmark',
-        url: '#',
-        icon: IconChartBar,
-      },
-      {
-        title: 'Collaborative Notes',
-        url: '#',
-        icon: IconChartBar,
+        title: 'Team',
+        url: '/team',
+        icon: IconUsers,
       },
     ],
   },
-  navClouds: [
-    {
-      title: 'Capture',
-      icon: IconCamera,
-      isActive: true,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Proposal',
-      icon: IconFileDescription,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Prompts',
-      icon: IconFileAi,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-  ],
+  // navClouds: [
+  //   {
+  //     title: 'Capture',
+  //     icon: IconCamera,
+  //     isActive: true,
+  //     url: '#',
+  //     items: [
+  //       {
+  //         title: 'Active Proposals',
+  //         url: '#',
+  //       },
+  //       {
+  //         title: 'Archived',
+  //         url: '#',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     title: 'Proposal',
+  //     icon: IconFileDescription,
+  //     url: '#',
+  //     items: [
+  //       {
+  //         title: 'Active Proposals',
+  //         url: '#',
+  //       },
+  //       {
+  //         title: 'Archived',
+  //         url: '#',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     title: 'Prompts',
+  //     icon: IconFileAi,
+  //     url: '#',
+  //     items: [
+  //       {
+  //         title: 'Active Proposals',
+  //         url: '#',
+  //       },
+  //       {
+  //         title: 'Archived',
+  //         url: '#',
+  //       },
+  //     ],
+  //   },
+  // ],
   navSecondary: [
     {
       title: 'Settings',
@@ -183,7 +168,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        {/* <NavDocuments items={data.documents} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

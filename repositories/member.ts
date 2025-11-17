@@ -2,16 +2,27 @@ import { Member } from '@/models/member';
 import { InviteMembersDTO, MembersInvited } from '@/types';
 const updateOptions = { new: true, runValidators: true };
 
+interface IProps {
+  projectId?: string;
+  email?: string;
+}
+
 export const memberRepository = {
   create: (data: InviteMembersDTO, invitedBy: string) => new Member({ ...data, invitedBy }).save(),
 
-  getProjects: (filters: { projectId?: string; email?: string }) =>
-    Member.find(filters).lean<MembersInvited[]>().exec(),
+  getProjects: (filters: Partial<IProps>) =>
+    Member.find(filters)
+      .populate('invitedBy')
+      .populate('projectId')
+      .lean<MembersInvited[]>()
+      .exec(),
 
-  getProject: (filters: { projectId?: string; email?: string }) =>
-    Member.findOne(filters).lean<MembersInvited[]>().exec(),
+  getProject: (filters: Partial<IProps>) => Member.findOne(filters).lean<MembersInvited[]>().exec(),
 
   deleteMany(projectIds: string[]) {
     Member.deleteMany({ projectId: { $in: projectIds } }).exec();
   },
+
+  updateStatus: (id: string, status: 'pending' | 'accepted' | 'rejected' | 'leave') =>
+    Member.findByIdAndUpdate(id, { $set: { status } }, updateOptions).lean<MembersInvited>().exec(),
 };

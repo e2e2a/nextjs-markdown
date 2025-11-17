@@ -25,12 +25,12 @@ import {
 import { Input } from '@/components/ui/input';
 import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import PaginationDropdown from '../../../../components/paginationDropdown';
 import { cn } from '@/lib/utils';
 import { Trash } from 'lucide-react';
 import { makeToastError } from '@/lib/toast';
 import { useTrashMutations } from '@/hooks/trash/useTrashMutations';
 import { ArchivedItem } from '@/types';
+import PaginationDropdown from '@/components/paginationDropdown';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -88,8 +88,8 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
       <div className="flex items-center justify-between pt-4">
         <Input
           placeholder="Filter titles..."
-          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
-          onChange={event => table.getColumn('title')?.setFilterValue(event.target.value)}
+          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
+          onChange={event => table.getColumn('email')?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
         <PaginationDropdown pagination={pagination} setPagination={setPagination} />

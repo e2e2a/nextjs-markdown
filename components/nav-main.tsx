@@ -1,5 +1,4 @@
 'use client';
-import { type Icon } from '@tabler/icons-react';
 import { Separator } from '@/components/ui/separator';
 import {
   SidebarGroup,
@@ -9,11 +8,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-type NavItem = {
-  title: string;
-  url: string;
-  icon?: Icon;
-};
+import { NavItem } from '@/types';
 
 interface NavMainProps {
   items: {

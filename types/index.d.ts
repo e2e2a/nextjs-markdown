@@ -127,8 +127,7 @@ export interface NavGroup {
 
 export interface NavItem {
   title: string;
-  href?: string;
-  type?: string;
-  items?: NavItem[];
+  url: string;
+  icon?: Icon;
   isActive?: boolean;
 }

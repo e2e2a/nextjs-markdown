@@ -10,9 +10,26 @@ export function useMemberMutations() {
     onSuccess: data => {
       if (data.projectId)
         queryClient.invalidateQueries({ queryKey: ['membersByProjectId', data.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['membersByEmail', data?.email] });
       return;
     },
   });
 
-  return { inviteMember };
+  const updateStatus = useMutation({
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: 'pending' | 'accepted' | 'rejected' | 'leave';
+    }) => memberClient.updateStatus(id, status),
+    onSuccess: data => {
+      if (data.projectId)
+        queryClient.invalidateQueries({ queryKey: ['membersByProjectId', data.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['membersByEmail', data?.email] });
+      return;
+    },
+  });
+
+  return { inviteMember, updateStatus };
 }

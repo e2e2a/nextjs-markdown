@@ -1,4 +1,4 @@
-import NextAuth from 'next-auth';
+import NextAuth, { SessionStrategy } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
@@ -14,6 +14,9 @@ export const authOptions = {
   // debug: true,
   pages: {
     signIn: '/login',
+  },
+  session: {
+    strategy: 'database' as SessionStrategy,
   },
   providers: [
     GoogleProvider({

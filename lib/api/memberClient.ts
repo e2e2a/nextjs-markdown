@@ -13,11 +13,23 @@ export const memberClient = {
     return json;
   },
 
-  async findMembers(filters: { projectId?: string }) {
+  async findMembers(filters: { projectId?: string; email?: string }) {
     const params = new URLSearchParams();
     if (filters.projectId) params.append('projectId', filters.projectId);
+    if (filters.email) params.append('email', filters.email);
     const res = await fetch(`${BASE_URL}?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch project');
     return res.json();
+  },
+
+  async updateStatus(id: string, status: 'pending' | 'accepted' | 'rejected' | 'leave') {
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+    return json;
   },
 };

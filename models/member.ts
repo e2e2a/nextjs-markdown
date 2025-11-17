@@ -5,7 +5,6 @@ export interface IMember extends Document {
   invitedBy: Schema.Types.ObjectId;
   inviting: Schema.Types.ObjectId;
   email: string;
-  token: string;
   status?: string;
 }
 
@@ -17,11 +16,10 @@ const memberSchema = new Schema<IMember>(
     inviting: { type: Schema.Types.ObjectId, ref: 'User', default: null },
 
     email: { type: String },
-    token: { type: String },
 
     status: {
       type: String,
-      enum: ['pending', 'accepted', 'declined'],
+      enum: ['pending', 'accepted', 'rejected', 'leave'],
       default: 'pending',
     },
   },

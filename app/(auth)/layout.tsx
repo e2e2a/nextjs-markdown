@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -14,10 +15,13 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(authOptions);
+  const cook = await cookies();
+  const lastPath = cook.get('lastPath')?.value || '/';
 
   if (session?.user) {
     if (session.user.kbaVerified) {
       if (session.user.role === 'admin') return redirect('/admin');
+      if (lastPath) return redirect(lastPath);
       return redirect('/project');
     }
   }

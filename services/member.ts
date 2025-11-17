@@ -9,7 +9,7 @@ export const memberService = {
   create: async (session: Session, data: InviteMembersDTO) => {
     if (session.user.email === data.email)
       throw new HttpError('Cannot invite your own gmail.', 403);
-    const memberExist = await memberRepository.getProject({
+    const memberExist = await memberRepository.getMember({
       projectId: data.projectId,
       email: data.email,
     });
@@ -26,11 +26,11 @@ export const memberService = {
         const project = await projectRepository.findProject(filters.projectId);
         if (!project) throw new HttpError('Project not found.', 404);
         if (project.userId.toString() !== session.user._id) throw new HttpError('Forbidden.', 403);
-        members = await memberRepository.getProjects({ projectId: filters.projectId });
+        members = await memberRepository.getMembers({ projectId: filters.projectId });
         break;
       case !!filters.email:
         if (session.user.email !== filters.email) throw new HttpError('Forbidden.', 403);
-        members = await memberRepository.getProjects({ email: filters.email });
+        members = await memberRepository.getMembers({ email: filters.email });
         break;
       default:
         members = [];

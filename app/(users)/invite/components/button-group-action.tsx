@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import { useMemberMutations } from '@/hooks/member/useMemberMutations';
 import { makeToastError } from '@/lib/toast';
 import Tooltips from '@/components/tooltips';
+import Link from 'next/link';
 
 const ButtonGroupAction = ({ item }: { item: MembersInvited }) => {
   const mutation = useMemberMutations();
@@ -56,9 +57,11 @@ const ButtonGroupAction = ({ item }: { item: MembersInvited }) => {
       {item.status === 'accepted' && (
         <ButtonGroup>
           <Tooltips description={'View Project'}>
-            <Button variant="outline" className="cursor-pointer">
-              <Eye />
-            </Button>
+            <Link href={`/project/${item.projectId._id}`}>
+              <Button variant="outline" className="cursor-pointer">
+                <Eye />
+              </Button>
+            </Link>
           </Tooltips>
           <Tooltips description={'Leave Project'}>
             <Button

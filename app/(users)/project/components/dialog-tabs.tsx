@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { makeToastError } from '@/lib/toast';
+import { makeToastError, makeToastSucess } from '@/lib/toast';
 import { useMemberMutations } from '@/hooks/member/useMemberMutations';
 import { useMembersByProjectIdQuery } from '@/hooks/member/useMemberQuery';
 
@@ -27,7 +27,7 @@ export function DialogTabs({ project }: IProps) {
     },
   });
 
-  const { data: members, isLoading: loading } = useMembersByProjectIdQuery(project?._id as string);
+  const { data: members } = useMembersByProjectIdQuery(project?._id as string);
 
   const onSubmit = async (values: z.infer<typeof emailSchema>) => {
     const payload = {
@@ -37,6 +37,8 @@ export function DialogTabs({ project }: IProps) {
 
     mutation.inviteMember.mutate(payload, {
       onSuccess: async () => {
+        form.reset();
+        makeToastSucess('Invitation Send.');
         return;
       },
       onError: err => {

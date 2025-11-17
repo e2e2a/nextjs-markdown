@@ -9,7 +9,11 @@ export async function middleware(request: NextRequest) {
   const cookies = parse(cookiesHeader);
   const sessionToken = cookies['next-auth.session-token'];
 
-  if (pathname.startsWith('/invite') || pathname.startsWith('/project')) {
+  if (
+    pathname.startsWith('/invite') ||
+    pathname.startsWith('/project') ||
+    pathname.startsWith('/trash')
+  ) {
     const client = await clientPromise;
     const db = client.db();
     const session = await db.collection('sessions').findOne({ sessionToken });
@@ -26,5 +30,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   runtime: 'nodejs',
-  matcher: ['/project/:path*', '/invite/:path*'],
+  matcher: ['/project/:path*', '/invite/:path*', '/trash/:path*'],
 };

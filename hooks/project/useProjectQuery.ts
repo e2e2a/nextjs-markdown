@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 export function useProjectQuery(id: string) {
   return useQuery({
     queryKey: ['project', id],
-    queryFn: () => projectClient.getProject(id),
+    queryFn: () => projectClient.findProject(id),
     enabled: !!id,
   });
 }

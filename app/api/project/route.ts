@@ -9,7 +9,6 @@ import { HttpError } from '@/lib/error';
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    const id = searchParams.get('id');
     const userId = searchParams.get('userId');
     await connectDb();
     const session = await getServerSession(authOptions);
@@ -19,9 +18,6 @@ export async function GET(req: NextRequest) {
     switch (true) {
       case !!userId:
         projects = await projectService.findProjectsByUserId(userId!);
-        break;
-      case !!id:
-        projects = await projectService.findProject(id!);
         break;
       default:
         projects = [];

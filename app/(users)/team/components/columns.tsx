@@ -30,6 +30,38 @@ export const columns: ColumnDef<MembersInvited>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: 'projectId.title',
+    id: 'title',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="px-0!"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Project Title
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: 'invitedBy.email',
+    id: 'invitingEmail',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="px-0!"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          InvitedBy
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+  },
+  {
     accessorKey: 'email',
     id: 'email',
     header: ({ column }) => {
@@ -39,7 +71,7 @@ export const columns: ColumnDef<MembersInvited>[] = [
           className="px-0!"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Members
+          Member
           <ArrowUpDown />
         </Button>
       );

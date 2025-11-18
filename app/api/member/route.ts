@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const projectId = searchParams.get('projectId') as string;
     const email = searchParams.get('email') as string;
-    const members = await memberService.findMembers(session, { projectId, email });
+    const invitedBy = searchParams.get('invitedBy') as string;
+    const members = await memberService.findMembers(session, { projectId, email, invitedBy });
 
     return NextResponse.json(members);
   } catch (err) {
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
         message: 'Created successfully',
         projectId: member.projectId,
         email: member.email,
+        invitedBy: member.invitedBy,
       },
       { status: 201 }
     );

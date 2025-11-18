@@ -40,6 +40,7 @@ export const projectService = {
       const member = await memberRepository.getMember({
         projectId: project._id,
         email: session.user.email,
+        status: 'accepted',
       });
       if (!member) throw new HttpError(`Forbidden.`, 403);
     }

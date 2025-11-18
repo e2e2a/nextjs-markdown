@@ -16,7 +16,7 @@ export default async function Layout({
 }>) {
   const session = await getServerSession(authOptions);
   const cook = await cookies();
-  const lastPath = cook.get('lastPath')?.value || '/';
+  const lastPath = cook.get('lastPath')?.value;
 
   if (session?.user) {
     if (session.user.kbaVerified) {

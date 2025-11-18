@@ -24,8 +24,9 @@ import {
 import { Input } from '@/components/ui/input';
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import PaginationDropdown from '@/components/paginationDropdown';
+import { cn } from '@/lib/utils';
+import { InviteDialog } from './invite-dialog';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -62,15 +63,21 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
 
   return (
     <div className="w-full space-y-5">
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex flex-col md:flex-row gap-y-2 md:gap-y-0 items-center justify-between pt-4">
         <Input
           placeholder="Filter titles..."
-          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
-          onChange={event => table.getColumn('email')?.setFilterValue(event.target.value)}
-          className="max-w-sm"
+          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
+          onChange={event => table.getColumn('title')?.setFilterValue(event.target.value)}
+          className="w-full md:max-w-sm"
         />
-        <PaginationDropdown pagination={pagination} setPagination={setPagination} />
+        <div className="flex flex-row gap-2 w-full md:w-auto">
+          <InviteDialog />
+          <div className="">
+            <PaginationDropdown pagination={pagination} setPagination={setPagination} />
+          </div>
+        </div>
       </div>
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>

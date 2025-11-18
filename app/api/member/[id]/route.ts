@@ -31,6 +31,38 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         userId: updateMemberStatus.userId,
         email: updateMemberStatus.email,
         projectId: updateMemberStatus.projectId,
+        invitedBy: updateMemberStatus.invitedBy,
+      },
+      { status: 201 }
+    );
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await context.params;
+    await connectDb();
+
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) throw new HttpError('Unauthorized', 401);
+
+    const deletedMember = await memberRepository.deleteMember(id, session.user._id as string);
+    if (!deletedMember)
+      return NextResponse.json(
+        { success: false, message: 'No invitation to be updated.' },
+        { status: 404 }
+      );
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'updated successfully',
+        userId: deletedMember.userId,
+        email: deletedMember.email,
+        projectId: deletedMember.projectId,
+        invitedBy: deletedMember.invitedBy,
       },
       { status: 201 }
     );

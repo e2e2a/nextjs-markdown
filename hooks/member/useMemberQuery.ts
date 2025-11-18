@@ -16,3 +16,11 @@ export function useMembersByProjectIdQuery(projectId: string) {
     enabled: !!projectId,
   });
 }
+
+export function useMembersByOwnerQuery(invitedBy: string) {
+  return useQuery({
+    queryKey: ['membersByOwner', invitedBy],
+    queryFn: () => memberClient.findMembers({ invitedBy }),
+    enabled: !!invitedBy,
+  });
+}

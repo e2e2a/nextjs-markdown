@@ -5,6 +5,8 @@ const updateOptions = { new: true, runValidators: true };
 interface IProps {
   projectId?: string;
   email?: string;
+  invitedBy?: string;
+  status?: string;
 }
 
 export const memberRepository = {
@@ -25,4 +27,7 @@ export const memberRepository = {
 
   updateStatus: (id: string, status: 'pending' | 'accepted' | 'rejected' | 'leave') =>
     Member.findByIdAndUpdate(id, { $set: { status } }, updateOptions).lean<MembersInvited>().exec(),
+
+  deleteMember: (_id: string, invitedBy: string) =>
+    Member.findOneAndDelete({ _id, invitedBy }, updateOptions).lean<MembersInvited>().exec(),
 };

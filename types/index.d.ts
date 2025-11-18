@@ -102,6 +102,7 @@ export type ArchivedItem = {
 export type MembersInvited = {
   _id?: string;
   projectId?: Partial<Project>;
+  invitedBy?: Partial<IUser>;
   userId?: Pick<IUser, 'email'>;
   email: string;
   status: string;

@@ -11,6 +11,7 @@ export function useMemberMutations() {
       if (data.projectId)
         queryClient.invalidateQueries({ queryKey: ['membersByProjectId', data.projectId] });
       queryClient.invalidateQueries({ queryKey: ['membersByEmail', data?.email] });
+      queryClient.invalidateQueries({ queryKey: ['membersByOwner', data?.invitedBy] });
       return;
     },
   });
@@ -27,9 +28,20 @@ export function useMemberMutations() {
       if (data.projectId)
         queryClient.invalidateQueries({ queryKey: ['membersByProjectId', data.projectId] });
       queryClient.invalidateQueries({ queryKey: ['membersByEmail', data?.email] });
+      queryClient.invalidateQueries({ queryKey: ['membersByOwner', data?.invitedBy] });
       return;
     },
   });
 
-  return { inviteMember, updateStatus };
+  const deleteMember = useMutation({
+    mutationFn: ({ id }: { id: string }) => memberClient.deleteMember(id),
+    onSuccess: data => {
+      if (data.projectId)
+        queryClient.invalidateQueries({ queryKey: ['membersByProjectId', data.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['membersByEmail', data?.email] });
+      queryClient.invalidateQueries({ queryKey: ['membersByOwner', data?.invitedBy] });
+      return;
+    },
+  });
+  return { inviteMember, updateStatus, deleteMember };
 }

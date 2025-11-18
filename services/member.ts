@@ -19,7 +19,10 @@ export const memberService = {
     return member;
   },
 
-  findMembers: async (session: Session, filters: { projectId?: string; email?: string }) => {
+  findMembers: async (
+    session: Session,
+    filters: { projectId?: string; email?: string; invitedBy?: string }
+  ) => {
     let members: MembersInvited[];
     switch (true) {
       case !!filters.projectId && mongoose.Types.ObjectId.isValid(filters.projectId):
@@ -31,6 +34,10 @@ export const memberService = {
       case !!filters.email:
         if (session.user.email !== filters.email) throw new HttpError('Forbidden.', 403);
         members = await memberRepository.getMembers({ email: filters.email });
+        break;
+      case !!filters.invitedBy:
+        if (session.user._id !== filters.invitedBy) throw new HttpError('Forbidden.', 403);
+        members = await memberRepository.getMembers({ invitedBy: filters.invitedBy });
         break;
       default:
         members = [];

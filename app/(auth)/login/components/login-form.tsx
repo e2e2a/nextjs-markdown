@@ -25,7 +25,7 @@ export function LoginForm({ className, ...props }: IProps) {
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">
-            <h1 className="font-semibold text-2xl  md:text-3xl">Sign in</h1>
+            <h1 className="font-semibold text-2xl md:text-3xl">Sign in</h1>
           </CardTitle>
           <CardDescription>Login with your Github or Google account</CardDescription>
         </CardHeader>

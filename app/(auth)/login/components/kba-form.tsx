@@ -70,7 +70,7 @@ export function KBAForm({ session }: IProps) {
   };
 
   return (
-    <div className={cn('flex flex-col max-w-md gap-6')}>
+    <div className={cn('flex flex-col max-w-md w-full gap-6')}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">
@@ -115,7 +115,7 @@ export function KBAForm({ session }: IProps) {
                         placeholder="Your answer"
                       />
                     </FormControl>
-                    <FormDescription>Provide an answer to your security question.</FormDescription>
+                    <FormDescription>Please don&apos;t forget your answer.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

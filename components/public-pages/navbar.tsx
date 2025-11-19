@@ -17,7 +17,7 @@ import { signOut } from 'next-auth/react';
 import { Button } from '../ui/button';
 
 const Navbar = () => {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   return (
     <nav className="fixed top-0 w-full backdrop-blur-sm bg-gray-200 shadow-md z-50">
       <div className="py-2 px-6 flex justify-between items-center">
@@ -62,7 +62,7 @@ const Navbar = () => {
                     {status === 'unauthenticated' && (
                       <Link
                         href={'/login'}
-                        className="cursor-pointer block mt-2 px-3 py-1 hover:bg-gray-700/40 text-center border border-white text-black rounded-sm"
+                        className="cursor-pointer block mt-2 px-3 py-1 text-center text-black hover:bg-white/90 bg-white rounded-xs"
                       >
                         Sign in
                       </Link>
@@ -72,13 +72,13 @@ const Navbar = () => {
                         <Button
                           onClick={() => signOut()}
                           variant={'ghost'}
-                          className="block mb-2 h-auto w-full cursor-pointer font-medium rounded-xs px-2! py-[5px]! hover:bg-gray-700/40 border border-white text-black drop-shadow-lg"
+                          className="block mb-2 h-auto w-full cursor-pointer font-medium rounded-xs px-2! py-[5px]! bg-white hover:bg-white/90 text-black drop-shadow-lg"
                         >
                           Log Out
                         </Button>
                         <Link
                           href={'/project'}
-                          className="cursor-pointer block text-center w-full rounded-xs px-3 py-1 hover:brightness-125 font-medium bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white drop-shadow-lg"
+                          className="cursor-pointer block text-center w-full rounded-xs px-3 py-1 hover:brightness-125 font-medium bg-linear-to-r from-slate-950 to-slate-700 text-white drop-shadow-lg"
                         >
                           My workspace
                         </Link>
@@ -103,7 +103,7 @@ const Navbar = () => {
           {status === 'unauthenticated' && (
             <Link
               href={'/login'}
-              className="cursor-pointer rounded-sm px-3 py-1 hover:bg-gray-700/40 border border-white text-black drop-shadow-lg"
+              className="cursor-pointer rounded-sm px-3 py-1 bg-white hover:bg-white/90 text-black drop-shadow-lg"
             >
               Sign in
             </Link>
@@ -113,13 +113,13 @@ const Navbar = () => {
               <Button
                 onClick={() => signOut()}
                 variant={'ghost'}
-                className="block h-auto cursor-pointer font-medium rounded-sm px-2! py-[5px]! hover:bg-gray-700/40 border border-white text-black drop-shadow-lg"
+                className="block h-auto cursor-pointer font-medium rounded-sm px-2! py-[5px]! text-black drop-shadow-lg"
               >
                 Log Out
               </Button>
               <Link
                 href={'/project'}
-                className="cursor-pointer rounded-sm px-2 py-1 hover:brightness-125 font-medium bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white drop-shadow-lg"
+                className="cursor-pointer rounded-sm px-2 py-1 hover:brightness-125 font-medium bg-linear-to-tr from-slate-950 to-slate-700 text-white drop-shadow-lg"
               >
                 My workspace
               </Link>

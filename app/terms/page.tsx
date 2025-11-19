@@ -1,6 +1,11 @@
-// app/terms/page.tsx
-
 import Navbar from '@/components/public-pages/navbar';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service for Collaborative MarkdownMD Platform',
+  description:
+    'Read the terms of service for using our Markdown editor. Understand your rights, responsibilities, and guidelines for secure and effective team collaboration.',
+};
 
 export default function Page() {
   return (

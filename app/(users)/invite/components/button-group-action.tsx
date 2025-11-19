@@ -1,4 +1,4 @@
-import React from 'react';
+'use client';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Eye, LogOut, MailCheck, MailX } from 'lucide-react';

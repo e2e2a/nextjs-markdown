@@ -1,4 +1,11 @@
 import Navbar from '@/components/public-pages/navbar';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy for MarkdownMD Collaboration Platform',
+  description:
+    'Learn how we collect, use, and protect your information while you create and collaborate on Markdown documents. Secure and transparent privacy practices.',
+};
 
 export default function Page() {
   return (

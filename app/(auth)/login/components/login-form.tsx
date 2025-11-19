@@ -1,19 +1,21 @@
+'use client';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
 import { Github } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { KBAForm } from './kba-form';
-import { Session } from 'next-auth';
 import Link from 'next/link';
 
 type IProps = React.ComponentProps<'div'> & {
   className?: string;
-  session: Session;
 };
 
-export function LoginForm({ className, session, ...props }: IProps) {
+export function LoginForm({ className, ...props }: IProps) {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') return;
   if (session?.user && !session?.user.kbaVerified) {
     return <KBAForm session={session} />;
   }

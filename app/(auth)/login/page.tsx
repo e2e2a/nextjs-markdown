@@ -10,16 +10,17 @@ export default function LoginPage() {
   if (status === 'loading') return;
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-      <div className="flex w-full max-w-sm flex-col gap-6">
+      <div className="flex w-full flex-col items-center gap-6">
         <Link href="/" className="flex items-center gap-2 self-center font-medium">
           <Image
             src="/images/logo.png"
-            alt="Hero Background"
-            width={500}
-            height={500}
-            className="h-7 w-7 rounded-sm"
+            alt="MondreyMD Logo"
+            width={200}
+            height={200}
+            priority
+            className="h-auto w-[42px] rounded-sm"
           />
-          Mondrey
+          <h1 className="text-lg">Mondrey</h1>
         </Link>
         <LoginForm session={session as Session} />
       </div>

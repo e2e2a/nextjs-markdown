@@ -5,7 +5,7 @@ export const resources = [
   },
   {
     title: 'Enterprise',
-    href: '#',
+    href: '/enterprise',
   },
   {
     title: 'Solutions',
@@ -24,6 +24,10 @@ export const company = [
   },
   {
     title: 'Privacy Policy',
-    href: '#',
+    href: '/privacy',
+  },
+  {
+    title: 'Terms of Services',
+    href: '/terms',
   },
 ];

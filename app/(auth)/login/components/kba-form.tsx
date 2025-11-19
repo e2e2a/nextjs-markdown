@@ -70,7 +70,7 @@ export function KBAForm({ session }: IProps) {
   };
 
   return (
-    <div className={cn('flex flex-col gap-6')}>
+    <div className={cn('flex flex-col max-w-md gap-6')}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">

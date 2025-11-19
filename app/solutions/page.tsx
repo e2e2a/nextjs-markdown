@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import Navbar from '@/components/public-pages/navbar';
 import Footer from '@/components/public-pages/footer';
 import { ArrowRight } from 'lucide-react';
@@ -15,17 +14,26 @@ import React from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import { features } from '@/data/features';
 import { industries } from '@/data/industries';
+import BodyPublicLink from '@/components/public-pages/body-public-link';
+import Image from 'next/image';
 
 export default function Page() {
   const plugin = React.useRef(Autoplay({ delay: 2000, stopOnInteraction: true }));
   return (
-    <div className="h-auto text-gray-900 bg-gray-50">
+    <div className="h-auto bg-gray-200">
       <Navbar />
-      <div className="grid grid-cols-1 gap-y-10 flex-col place-items-center h-auto">
-        <section className="flex w-full max-w-6xl">
-          <div className="relative rounded-b-3xl w-full flex items-center px-6 bg-linear-to-r from-slate-400/80 to-slate-700 overflow-hidden">
-            <div className="grid grid-cols-1 place-items-center max-w-3xl justify-end h-full">
-              <div className="relative pt-35 h-full w-full flex flex-col pb-12 gap-4">
+      <div className="grid grid-cols-1 gap-y-10 flex-col lg:px-[1%] place-items-center h-auto">
+        <section className="flex w-full ">
+          <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
+            <Image
+              src="/images/banner.png"
+              alt="Solution Page Hero Background"
+              layout="fill"
+              objectFit="cover"
+              priority
+            />
+            <div className="grid grid-cols-1 place-items-center lg:px-[8%] justify-end h-full">
+              <div className="relative pt-35 h-full max-w-3xl w-full flex flex-col pb-12 gap-4">
                 <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg">
                   Mondrey Markdown Solutions to Accelerate Your Workflow
                 </h1>
@@ -35,29 +43,22 @@ export default function Page() {
                   notes, or project content, Mondrey makes Markdown simple, intuitive, and
                   productive, empowering you to focus on what truly matters.
                 </p>
-
                 <div className="pb-15">
-                  <Link
-                    href="/login"
-                    className="cursor-pointer inline-flex flex-row px-5 py-2 border-white bg-linear-to-r from-slate-700 to-slate-800 text-white font-semibold  shadow-lg rounded-3xl transform transition-all duration-300 ease-in-out
-             hover:from-blue-600 hover:to-indigo-600 hover:scale-105 hover:shadow-xl"
-                  >
-                    Get Started For Free <ArrowRight />
-                  </Link>
+                  <BodyPublicLink title="Get Started For Free" href={'/login'} Icon={ArrowRight} />
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="py-24 bg-slate-50 flex flex-col items-center text-center">
-          <h2 className="text-4xl font-bold mb-6 text-slate-800">Why Teams Choose Mondrey</h2>
+        <section className="py-10 rounded-3xl bg-white flex flex-col items-center text-center">
+          <h2 className="text-4xl font-bold mb-6">Why Teams Choose Mondrey</h2>
           <p className="text-gray-600 max-w-2xl mb-12">
             Empower your team to create, collaborate, and deliver faster with a modern Markdown
             workspace built for clarity, speed, and teamwork.
           </p>
 
-          <div className="grid grid-cols-2 gap-8 max-w-6xl w-full px-6">
+          <div className="grid grid-cols-2 gap-8 max-w-5xl w-full px-6">
             {features.map((feature, idx) => (
               <div
                 key={idx}
@@ -75,10 +76,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section
-          id="cta"
-          className="relative py-20 w-full max-w-6xl rounded-3xl flex flex-col items-center justify-center text-center bg-linear-to-r from-slate-800 via-slate-900 to-black text-white"
-        >
+        <section className="relative py-10 rounded-3xl w-full flex items-center justify-center bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white mb-8">
           <div className="relative px-6 flex flex-col items-center gap-6">
             <h2 className="text-3xl md:text-4xl font-extrabold drop-shadow-lg">
               Bring Clarity and Speed to Your Workflow
@@ -88,18 +86,11 @@ export default function Page() {
               collaborate in real time. Everything you need for modern documentation, all in one
               seamless platform.
             </p>
-
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl font-semibold text-white bg-linear-to-r from-blue-600 to-indigo-600 shadow-lg transform transition-all hover:scale-105 hover:shadow-xl"
-            >
-              Get Started for Free
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+            <BodyPublicLink title="Get Started For Free" href={'/login'} Icon={ArrowRight} />
           </div>
         </section>
 
-        <section className="py-16 bg-gray-50 flex flex-col items-center">
+        <section className="py-10 rounded-3xl w-full flex flex-col items-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
             Markdown Solutions for Every Industry
           </h2>
@@ -110,7 +101,7 @@ export default function Page() {
               align: 'start',
               loop: true,
             }}
-            className="w-full max-w-6xl"
+            className="w-full max-w-4xl"
           >
             <CarouselContent>
               {industries.map((industry, idx) => {
@@ -131,7 +122,7 @@ export default function Page() {
               })}
             </CarouselContent>
 
-            <div className="flex justify-between mt-4 w-full px-4">
+            <div className="hidden lg:flex justify-between mt-4 w-full px-4">
               <CarouselPrevious className="btn btn-outline">Prev</CarouselPrevious>
               <CarouselNext className="btn btn-outline">Next</CarouselNext>
             </div>

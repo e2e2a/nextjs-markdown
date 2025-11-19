@@ -4,13 +4,12 @@ import { company, resources } from '@/data/footer';
 
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-slate-900 text-white py-16 px-6">
+    <footer id="contact" className="bg-slate-900/90 text-white py-16 px-6">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between">
         <div className="mb-8 md:mb-0">
-          {/* <h3 className="text-2xl font-bold mb-4">MondreyMD</h3> */}
           <Link
             href={'/'}
-            className="text-xl lg:text-2xl gap-2 flex flex-col items-start font-extrabold tracking-tight"
+            className="text-xl lg:text-2xl gap-2 flex items-start font-extrabold tracking-tight"
           >
             <Image
               src="/images/logo.png"
@@ -24,28 +23,28 @@ const Footer = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5">
           <div className="flex flex-col space-y-2">
-            <span className="text-xl">Resources</span>
+            <span className="text-xl font-semibold">Resources</span>
             {resources.map((data, idx) => (
-              <Link key={idx} href={data.href} className="hover:text-blue-400 transition">
+              <Link
+                key={idx}
+                href={data.href}
+                className="hover:text-blue-400 transition text-muted-foreground"
+              >
                 {data.title}
               </Link>
             ))}
           </div>
           <div className="flex flex-col space-y-2">
-            <span className="text-xl">Company</span>
+            <span className="text-xl font-semibold">Company</span>
             {company.map((data, idx) => (
-              <Link key={idx} href={data.href} className="hover:text-blue-400 transition">
+              <Link
+                key={idx}
+                href={data.href}
+                className="hover:text-blue-400 transition text-muted-foreground"
+              >
                 {data.title}
               </Link>
             ))}
-            <Link
-              href="https://github.com/e2e2a"
-              rel="nofollow"
-              className="hover:text-blue-400 transition"
-              target="_blank"
-            >
-              GitHub
-            </Link>
           </div>
         </div>
       </div>

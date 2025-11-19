@@ -7,7 +7,9 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const cookiesHeader = request.headers.get('cookie') || '';
   const cookies = parse(cookiesHeader);
-  const sessionToken = cookies['next-auth.session-token'];
+  // const sessionToken = cookies['next-auth.session-token'];
+  const sessionToken =
+    cookies['next-auth.session-token'] || cookies['__Secure-next-auth.session-token'];
 
   if (
     pathname.startsWith('/invite') ||
@@ -16,11 +18,9 @@ export async function middleware(request: NextRequest) {
   ) {
     const client = await clientPromise;
     const db = client.db();
-    console.log('another logs', sessionToken);
     const session = await db.collection('sessions').findOne({ sessionToken });
 
     if (!session) {
-      console.log('running12', session);
       const res = NextResponse.redirect(new URL('/login', request.url));
       res.cookies.set('lastPath', request.nextUrl.pathname + request.nextUrl.search, { path: '/' });
       return res;

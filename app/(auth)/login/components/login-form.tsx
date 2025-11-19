@@ -6,6 +6,7 @@ import { Github } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { KBAForm } from './kba-form';
 import { Session } from 'next-auth';
+import Link from 'next/link';
 
 type IProps = React.ComponentProps<'div'> & {
   className?: string;
@@ -18,10 +19,12 @@ export function LoginForm({ className, session, ...props }: IProps) {
   }
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <div className={cn('flex flex-col gap-6 max-w-md w-full', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
+          <CardTitle className="text-xl">
+            <h1 className="font-semibold text-2xl  md:text-3xl">Sign in</h1>
+          </CardTitle>
           <CardDescription>Login with your Github or Google account</CardDescription>
         </CardHeader>
         <CardContent>
@@ -52,8 +55,8 @@ export function LoginForm({ className, session, ...props }: IProps) {
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a> and
-        <a href="#">Privacy Policy</a>.
+        By clicking above, you agree to our <Link href="/terms">Terms of Service</Link> and{' '}
+        <Link href="/privacy">Privacy Policy</Link>.
       </FieldDescription>
     </div>
   );

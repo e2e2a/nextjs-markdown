@@ -1,30 +1,38 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Github, Linkedin, Twitter, Facebook, ArrowRight } from 'lucide-react';
+import { Github, Linkedin, Facebook, ArrowRight, Briefcase } from 'lucide-react';
 import Navbar from '@/components/public-pages/navbar';
 import { aboutBoxes } from '@/data/about';
 import Footer from '@/components/public-pages/footer';
+import BodyPublicLink from '@/components/public-pages/body-public-link';
 
 export default function AboutPage() {
   return (
-    <main className="bg-white">
-      <div className="grid grid-cols-1 gap-y-10 flex-col place-items-center h-auto">
-        <Navbar />
-
-        <section className="flex w-full max-w-6xl">
-          <div className="relative rounded-b-3xl w-full flex items-center px-6 bg-linear-to-r from-slate-400/80 to-slate-700 overflow-hidden">
-            <div className="relative pt-25 h-full flex flex-col items-center w-full pb-12 gap-4">
+    <main className="bg-gray-200">
+      <Navbar />
+      <div className="grid grid-cols-1 gap-y-10 lg:px-[1%] flex-col place-items-center h-auto">
+        <section className="flex w-full h-[300px]">
+          <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
+            <Image
+              src="/images/banner.png"
+              alt="About Page Hero Background"
+              layout="fill"
+              objectFit="cover"
+              priority
+            />
+            <div className="relative pt-35 h-full w-full flex flex-col pb-12 gap-4">
               <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg text-center">
                 About MondreyMD
               </h1>
             </div>
           </div>
         </section>
+
         <section className="py-10 rounded-3xl bg-slate-50 text-center">
           <div className="max-w-6xl mx-auto px-6 flex flex-col items-center gap-12">
-            <h2 className="text-4xl font-bold text-slate-800 mb-6">What Drives MondreyMD</h2>
-            <p className="text-gray-600 max-w-3xl mb-12">
+            <h2 className="text-4xl font-bold text-slate-800">What Drives MondreyMD</h2>
+            <p className="text-gray-600 max-w-3xl">
               Learn more about who we are, what we stand for, and the journey that brought MondreyMD
               to life.
             </p>
@@ -51,7 +59,6 @@ export default function AboutPage() {
                 alt="Founder"
                 width={500}
                 height={500}
-                quality={100}
                 className="rounded-full border-4 border-slate-300 h-auto w-[250px] shadow-md object-cover"
               />
               <h2 className="text-3xl font-bold">Hi, I’m Mondrey 👋</h2>
@@ -67,24 +74,32 @@ export default function AboutPage() {
               <div className="md:order-2">
                 <div className="flex items-center justify-center md:justify-start gap-5 mb-2 w-full ">
                   <div className="text-sm">Follow us on</div>
-                  <Link href="https://github.com/yourusername" rel="nofollow" target="_blank">
+                  <Link href="https://github.com/e2e2a" rel="nofollow" target="_blank">
                     <div className="rounded-full border brder-white px-2 py-2">
                       <Github className="w-6 h-6 text-white hover:text-blue-600 transition" />
                     </div>
                   </Link>
-                  <Link href="https://twitter.com/yourusername" rel="nofollow" target="_blank">
-                    <div className="rounded-full border brder-white px-2 py-2">
-                      <Twitter className="w-6 h-6 text-white hover:text-blue-600 transition" />
-                    </div>
-                  </Link>
-                  <Link href="https://linkedin.com/in/yourusername" rel="nofollow" target="_blank">
+                  <Link
+                    href="https://www.linkedin.com/in/reymond-godoy-5764b935a"
+                    rel="nofollow"
+                    target="_blank"
+                  >
                     <div className="rounded-full border brder-white px-2 py-2">
                       <Linkedin className="w-6 h-6 text-white hover:text-blue-600 transition" />
                     </div>
                   </Link>
-                  <Link href="https://facebook.com/yourusername" rel="nofollow" target="_blank">
+                  <Link
+                    href="https://www.facebook.com/reymond.godoy.71"
+                    rel="nofollow"
+                    target="_blank"
+                  >
                     <div className="rounded-full border brder-white px-2 py-2">
                       <Facebook className="w-6 h-6 text-white hover:text-blue-600 transition" />
+                    </div>
+                  </Link>
+                  <Link href="https://portfolio.mondrey.dev" rel="nofollow" target="_blank">
+                    <div className="rounded-full border brder-white px-2 py-2">
+                      <Briefcase className="w-6 h-6 text-white hover:text-blue-600 transition" />
                     </div>
                   </Link>
                 </div>
@@ -103,20 +118,14 @@ export default function AboutPage() {
                 </div>
               </div>
               <div className="flex  justify-center items-center w-full md:order-1">
-                <Link
-                  href="/join"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg transform transition hover:scale-105"
-                >
-                  Join the Team
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
+                <BodyPublicLink title="Join the Team" href={'#'} Icon={ArrowRight} />
               </div>
             </div>
           </div>
         </section>
 
-        <section className="py-10 mb-10 rounded-3xl bg-white text-center">
-          <div className="max-w-3xl mx-auto px-6">
+        <section className="py-10 mb-10 w-full rounded-3xl bg-white text-center">
+          <div className="mx-auto px-6">
             <h2 className="text-3xl font-bold text-slate-800 mb-4">Our Investors</h2>
             <p className="text-gray-600 mb-8">
               We’re currently self-funded and focused on growth. Investor partnerships are on the

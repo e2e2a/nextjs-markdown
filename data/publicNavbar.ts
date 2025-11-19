@@ -5,7 +5,7 @@ export const PagesData = [
   },
   {
     title: 'Enterprise',
-    href: '#',
+    href: '/enterprise',
   },
   {
     title: 'About',

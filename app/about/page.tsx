@@ -1,4 +1,3 @@
-'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Github, Linkedin, Facebook, ArrowRight, Briefcase } from 'lucide-react';
@@ -6,31 +5,41 @@ import Navbar from '@/components/public-pages/navbar';
 import { aboutBoxes } from '@/data/about';
 import Footer from '@/components/public-pages/footer';
 import BodyPublicLink from '@/components/public-pages/body-public-link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About MondreyMD Collaborative Markdown Platform',
+  description:
+    'Learn about MondreyMD a real-time Markdown editor with team collaboration. Discover our mission to simplify writing and productivity for everyone.',
+};
 
 export default function AboutPage() {
   return (
     <main className="bg-gray-200">
       <Navbar />
       <div className="grid grid-cols-1 gap-y-10 lg:px-[1%] flex-col place-items-center h-auto">
-        <section className="flex w-full h-[300px]">
+        <section className="flex w-full h-[420px]">
           <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
-            <Image
-              src="/images/banner.png"
-              alt="About Page Hero Background"
-              layout="fill"
-              objectFit="cover"
-              priority
-            />
-            <div className="relative pt-35 h-full w-full flex flex-col pb-12 gap-4">
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg text-center">
-                About MondreyMD
-              </h1>
+            <Image src="/images/banner.png" alt="About Page Hero Background" fill={true} priority />
+            <div className="grid grid-cols-1 place-items-center lg:px-[8%] justify-end h-full">
+              <div className="relative pt-35 h-full max-w-3xl w-full flex flex-col pb-12 gap-4">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg">
+                  About MondreyMD
+                </h1>
+                <p className="text-sm md:text-[16px] text-slate-200 drop-shadow-md">
+                  Learn how MondreyMD, the powerful real-time Markdown editor with built-in team
+                  collaboration, helps you create, edit, and publish together, effortlessly.
+                </p>
+                <div className="">
+                  <BodyPublicLink title="Get started" href={'/login'} Icon={ArrowRight} />
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         <section className="py-10 rounded-3xl bg-slate-50 text-center">
-          <div className="max-w-6xl mx-auto px-6 flex flex-col items-center gap-12">
+          <div className="max-w-5xl mx-auto px-6 flex flex-col items-center gap-12">
             <h2 className="text-4xl font-bold text-slate-800">What Drives MondreyMD</h2>
             <p className="text-gray-600 max-w-3xl">
               Learn more about who we are, what we stand for, and the journey that brought MondreyMD
@@ -51,7 +60,7 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
-        <section className="relative py-10 w-full max-w-6xl rounded-3xl flex items-center justify-center bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white mb-8">
+        <section className="relative py-10 w-full max-w-5xl rounded-3xl flex items-center justify-center bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white mb-8">
           <div className="mx-auto w-full px-6 flex flex-col items-center gap-6">
             <div className="flex flex-col items-center gap-6">
               <Image

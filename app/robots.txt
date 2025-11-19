@@ -1,0 +1,10 @@
+Sitemap: https://markdown.mondrey.dev/sitemap.xml
+
+User-Agent: *
+Allow: /
+Disallow: /project/
+Disallow: /trash/
+Disallow: /team/
+Disallow: /invite/
+Disallow: /admin/
+Disallow: /api/

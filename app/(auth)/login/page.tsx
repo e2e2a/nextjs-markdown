@@ -1,13 +1,15 @@
-'use client';
 import { LoginForm } from '@/app/(auth)/login/components/login-form';
-import { useSession } from 'next-auth/react';
-import { Session } from 'next-auth';
 import Image from 'next/image';
 import Link from 'next/link';
-export default function LoginPage() {
-  const { data: session, status } = useSession();
+import { Metadata } from 'next';
 
-  if (status === 'loading') return;
+export const metadata: Metadata = {
+  title: 'Secure Sign In for Collaborative Markdown Editor',
+  description:
+    'Access your account to create, preview, and collaborate on Markdown documents in real time. Fast, secure, and simple login for team productivity.',
+};
+
+export default function LoginPage() {
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full flex-col items-center gap-6">
@@ -22,7 +24,7 @@ export default function LoginPage() {
           />
           <h1 className="text-lg">Mondrey</h1>
         </Link>
-        <LoginForm session={session as Session} />
+        <LoginForm />
       </div>
     </div>
   );

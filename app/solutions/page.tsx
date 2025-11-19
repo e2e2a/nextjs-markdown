@@ -1,35 +1,29 @@
-'use client';
 import Navbar from '@/components/public-pages/navbar';
 import Footer from '@/components/public-pages/footer';
 import { ArrowRight } from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from '@/components/ui/carousel';
-import { Card, CardContent } from '@/components/ui/card';
-import React from 'react';
-import Autoplay from 'embla-carousel-autoplay';
 import { features } from '@/data/features';
-import { industries } from '@/data/industries';
 import BodyPublicLink from '@/components/public-pages/body-public-link';
 import Image from 'next/image';
+import { Metadata } from 'next';
+import CarouselSection from './components/carousel-section';
+
+export const metadata: Metadata = {
+  title: 'Markdown Solutions for Teams and Collaborative Projects',
+  description:
+    'Explore solutions to streamline team collaboration and documentation. Write, preview, and manage Markdown projects efficiently in real time.',
+};
 
 export default function Page() {
-  const plugin = React.useRef(Autoplay({ delay: 2000, stopOnInteraction: true }));
   return (
     <div className="h-auto bg-gray-200">
       <Navbar />
       <div className="grid grid-cols-1 gap-y-10 flex-col lg:px-[1%] place-items-center h-auto">
-        <section className="flex w-full ">
+        <section className="flex w-full h-[420px]">
           <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
             <Image
               src="/images/banner.png"
               alt="Solution Page Hero Background"
-              layout="fill"
-              objectFit="cover"
+              fill={true}
               priority
             />
             <div className="grid grid-cols-1 place-items-center lg:px-[8%] justify-end h-full">
@@ -90,44 +84,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section className="py-10 rounded-3xl w-full flex flex-col items-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-            Markdown Solutions for Every Industry
-          </h2>
-
-          <Carousel
-            plugins={[plugin.current]}
-            opts={{
-              align: 'start',
-              loop: true,
-            }}
-            className="w-full max-w-4xl"
-          >
-            <CarouselContent>
-              {industries.map((industry, idx) => {
-                const Icon = industry.icon;
-                return (
-                  <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-2">
-                      <Card>
-                        <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-                          <Icon className="text-blue-600" size={48} />
-                          <h3 className="text-xl font-semibold text-center">{industry.title}</h3>
-                          <p className="text-gray-600 text-center">{industry.description}</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                );
-              })}
-            </CarouselContent>
-
-            <div className="hidden lg:flex justify-between mt-4 w-full px-4">
-              <CarouselPrevious className="btn btn-outline">Prev</CarouselPrevious>
-              <CarouselNext className="btn btn-outline">Next</CarouselNext>
-            </div>
-          </Carousel>
-        </section>
+        <CarouselSection />
       </div>
       <Footer />
     </div>

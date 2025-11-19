@@ -1,5 +1,3 @@
-'use client';
-
 import Navbar from '@/components/public-pages/navbar';
 import Footer from '@/components/public-pages/footer';
 import { ArrowRight } from 'lucide-react';
@@ -7,6 +5,7 @@ import BodyPublicLink from '@/components/public-pages/body-public-link';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
 import { IconFileText, IconUserPlus, IconUsers } from '@tabler/icons-react';
+import { Metadata } from 'next';
 const teamFeatures = [
   {
     title: 'Real-Time Team Collaboration',
@@ -27,6 +26,13 @@ const teamFeatures = [
     icon: IconUserPlus,
   },
 ];
+
+export const metadata: Metadata = {
+  title: 'Enterprise Collaboration for Teams and Markdown Projects',
+  description:
+    'Discover enterprise features for real-time Markdown collaboration. Empower your team to create, share, and work together efficiently online.',
+};
+
 export default function EnterprisePage() {
   return (
     <div className="h-auto bg-gray-200">
@@ -34,13 +40,12 @@ export default function EnterprisePage() {
 
       {/* Hero Section */}
       <div className="grid grid-cols-1 gap-y-10 flex-col lg:px-[1%] place-items-center h-auto">
-        <section className="flex w-full ">
+        <section className="flex w-full h-[420px]">
           <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
             <Image
               src="/images/banner.png"
               alt="Solution Page Hero Background"
-              layout="fill"
-              objectFit="cover"
+              fill={true}
               priority
             />
             <div className="grid grid-cols-1 place-items-center lg:px-[8%] justify-end h-full">

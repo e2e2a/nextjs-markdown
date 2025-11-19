@@ -1,6 +1,6 @@
 import { CreateProjectDTO, UpdateProjectDTO } from '@/types';
 
-const BASE_URL = '/api/project';
+const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/project`;
 
 export const projectClient = {
   async createProject(data: CreateProjectDTO) {
@@ -14,16 +14,23 @@ export const projectClient = {
     return json;
   },
 
-  async findProject(id: string) {
-    const res = await fetch(BASE_URL + `/${id}`);
+  async findProject(id: string, cookieHeader?: string) {
+    const res = await fetch(BASE_URL + `/${id}`, {
+      headers: {
+        Cookie: cookieHeader || '',
+      },
+      cache: 'no-store',
+    });
+    const json = await res.json();
     if (!res.ok) return null;
-    return res.json();
+    return json;
   },
 
   async getProjectsByUserId(userId?: string) {
     const res = await fetch(BASE_URL + `?userId=${userId}`);
+    const json = await res.json();
     if (!res.ok) throw new Error('Failed to fetch projects');
-    return res.json();
+    return json;
   },
 
   async updateProject(data: { _id: string } & UpdateProjectDTO) {

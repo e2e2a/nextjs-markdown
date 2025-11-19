@@ -1,4 +1,3 @@
-'use client';
 import TypingText from '@/components/ui/shadcn-io/typing-text';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
@@ -6,6 +5,13 @@ import Navbar from '@/components/public-pages/navbar';
 import Footer from '@/components/public-pages/footer';
 import { features } from '@/data/features';
 import BodyPublicLink from '@/components/public-pages/body-public-link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'MondreyMD Collaborative Markdown Editor for Teams',
+  description:
+    'Create, preview, and collaborate on Markdown documents in real time. MondreyMD simplifies team writing workflow and documentation online.',
+};
 
 export default function Home() {
   return (
@@ -19,8 +25,7 @@ export default function Home() {
               <Image
                 src="/images/banner.png"
                 alt="Home Page Hero Background"
-                layout="fill"
-                objectFit="cover"
+                fill={true}
                 priority
               />
             </div>

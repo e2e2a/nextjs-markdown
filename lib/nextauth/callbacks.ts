@@ -26,6 +26,7 @@ export const authCallbacks = {
         const existingProfile = await profileRepository.findByProviderAccountId(
           profile.sub as string
         );
+        console.log('running', existingProfile)
         if (!existingProfile) await profileRepository.create(profile as IProfile);
         if (mongoose.Types.ObjectId.isValid(user.id)) {
           const { ip, deviceType } = await getHeaders();

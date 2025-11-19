@@ -19,6 +19,7 @@ export async function middleware(request: NextRequest) {
     const session = await db.collection('sessions').findOne({ sessionToken });
 
     if (!session) {
+      console.log('running12', session);
       const res = NextResponse.redirect(new URL('/login', request.url));
       res.cookies.set('lastPath', request.nextUrl.pathname + request.nextUrl.search, { path: '/' });
       return res;

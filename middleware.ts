@@ -16,6 +16,7 @@ export async function middleware(request: NextRequest) {
   ) {
     const client = await clientPromise;
     const db = client.db();
+    console.log('another logs', sessionToken);
     const session = await db.collection('sessions').findOne({ sessionToken });
 
     if (!session) {

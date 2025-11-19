@@ -6,14 +6,12 @@ import {
   IconFileWord,
   IconFolder,
   IconHelp,
-  IconInnerShadowTop,
   IconReport,
   IconSearch,
   IconSettings,
   IconUsers,
 } from '@tabler/icons-react';
 
-import { NavDocuments } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
 import { NavSecondary } from '@/components/nav-secondary';
 import { NavUser } from '@/components/nav-user';
@@ -27,6 +25,8 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { Handshake, MessageCircleMore, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const data = {
   user: {
@@ -67,54 +67,6 @@ const data = {
       },
     ],
   },
-  // navClouds: [
-  //   {
-  //     title: 'Capture',
-  //     icon: IconCamera,
-  //     isActive: true,
-  //     url: '#',
-  //     items: [
-  //       {
-  //         title: 'Active Proposals',
-  //         url: '#',
-  //       },
-  //       {
-  //         title: 'Archived',
-  //         url: '#',
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: 'Proposal',
-  //     icon: IconFileDescription,
-  //     url: '#',
-  //     items: [
-  //       {
-  //         title: 'Active Proposals',
-  //         url: '#',
-  //       },
-  //       {
-  //         title: 'Archived',
-  //         url: '#',
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: 'Prompts',
-  //     icon: IconFileAi,
-  //     url: '#',
-  //     items: [
-  //       {
-  //         title: 'Active Proposals',
-  //         url: '#',
-  //       },
-  //       {
-  //         title: 'Archived',
-  //         url: '#',
-  //       },
-  //     ],
-  //   },
-  // ],
   navSecondary: [
     {
       title: 'Settings',
@@ -158,10 +110,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
-              <a href="#">
-                <IconInnerShadowTop className="size-5!" />
-                <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
+              <Link href="/">
+                <Image
+                  alt="Project Logo"
+                  src={'/images/logo.png'}
+                  width={50}
+                  height={50}
+                  priority
+                  className="size-7.5! rounded-sm"
+                />
+                <span className="text-base font-semibold">MondreyMD</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

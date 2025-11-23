@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     const nodeToUpdate = await nodeService.updateNodeById(id, {
       ...(body.title ? { title: body.title } : {}),
-      ...(body.content ? { content: body.content } : {}),
+      ...(body.content === '' || body.content ? { content: body.content } : {}),
       ...(body.archived ? { archived: body.archived } : {}),
       type: body.type,
       projectId: body.projectId,
@@ -39,6 +39,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       {
         success: true,
         message: 'updated successfully',
+        updateContent: !!(body.content === '' || body.content),
         data: { projectId: nodeToUpdate.projectId, userId: nodeToUpdate.userId, archived },
       },
       { status: 201 }

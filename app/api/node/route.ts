@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
     body.userId = session.user._id;
     const node = await nodeService.createNode(body);
-
+    console.log('body', body);
     await projectService.pushNode(node.projectId, {
       ...body,
       nodes: [node._id],

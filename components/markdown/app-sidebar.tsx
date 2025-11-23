@@ -177,7 +177,14 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
                 <SidebarMenuItem className="p-0">
                   <button
                     className="z-10 rounded-none bg-transparent p-0 m-0 hover:text-black hover:brightness-120 dark:hover:text-white cursor-pointer"
-                    onClick={() => setIsCreating(true)}
+                    onClick={() => {
+                      setIsCreating(true);
+                      setFile(val => ({
+                        name: val.name,
+                        oldName: '',
+                        type: 'file',
+                      }));
+                    }}
                   >
                     <FilePlus2 className="h-4 w-4" />
                   </button>

@@ -46,7 +46,7 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
       }
 
       const payload = {
-        projectId: project._id as string,
+        projectId: project._id.toString(),
         parentId: active?.type === 'folder' ? active._id : active?.parentId,
         title: data.name,
         type: data.type,

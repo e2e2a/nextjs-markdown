@@ -45,6 +45,7 @@ export type INode = {
     archivedAt?: Date;
     archivedBy?: mongoose.Schema.Types.ObjectId;
   };
+  updatedAt?: Date;
 };
 
 export type UpdateNodeDTO = Pick<INode, '_id' | 'title' | 'content' | 'archived' | 'userId'>;

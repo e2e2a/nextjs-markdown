@@ -18,13 +18,15 @@ export function useNodeMutations() {
 
   const update = useMutation({
     mutationFn: (data: UpdateNodeDTO) => updateNode(data),
-    onSuccess: () => {
-      // if (data.data.userId) {
-      //   queryClient.invalidateQueries({ queryKey: ['project', data.data.projectId] });
-      //   queryClient.invalidateQueries({ queryKey: ['projectsByUserId', data.data.userId] });
-      // }
-      // if (data.data.archived)
-      //   queryClient.invalidateQueries({ queryKey: ['trash', data.data.userId] });
+    onSuccess: data => {
+      if (!data.updateContent) {
+        if (data.data.userId) {
+          queryClient.invalidateQueries({ queryKey: ['project', data.data.projectId] });
+          queryClient.invalidateQueries({ queryKey: ['projectsByUserId', data.data.userId] });
+        }
+        if (data.data.archived)
+          queryClient.invalidateQueries({ queryKey: ['trash', data.data.userId] });
+      }
       return;
     },
   });

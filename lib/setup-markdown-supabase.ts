@@ -46,9 +46,13 @@ export function setupMarkdownSupabase(
   let isApplyingRemote = false;
   let hasUserEdited = false;
   let isHydrated = false; // Track if we have content loaded // --- Sync Promises ---
+  let initializationDecided = false;
 
   let synced = false;
   let resolveSync: (() => void) | null = null;
+
+  // --- NEW: Resync Debouncer ---
+  let resyncTimeout: NodeJS.Timeout | null = null;
 
   /**
    * Handles the browser's beforeunload event to warn the user if a save is pending.
@@ -99,6 +103,24 @@ export function setupMarkdownSupabase(
       .catch(err => console.warn('Broadcast failed', err));
   };
 
+  // Triggers a full sync, but only once every 100ms (Debouncing)
+  const triggerResync = () => {
+    if (resyncTimeout) return; // Already requested
+    console.warn('[Sync] Detected missing updates. Scheduling resync...');
+
+    resyncTimeout = setTimeout(() => {
+      sendBroadcast(`doc-request-${nodeId}`, { update: [] });
+      resyncTimeout = null;
+    }, 100);
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      // Proactively sync when waking up
+      triggerResync();
+    }
+  };
+
   const onAwarenessUpdate = (
     _: { added: number[]; updated: number[]; removed: number[] },
     origin: unknown
@@ -111,6 +133,7 @@ export function setupMarkdownSupabase(
     sendBroadcast('awareness-update', { update: Array.from(update) });
   };
   awareness.on('update', onAwarenessUpdate);
+
   const onRemoteAwareness = (payload: SupabaseBroadcast<YjsUpdatePayload>) => {
     if (!payload?.payload?.update) return;
     try {
@@ -162,9 +185,18 @@ export function setupMarkdownSupabase(
       const u = new Uint8Array(payload.payload.update);
       Y.applyUpdate(ydoc, u, 'remote');
       markSynced();
-      isHydrated = true; // We got data from someone else
+      if (!isHydrated) {
+        isHydrated = true;
+        initializationDecided = true;
+      }
     } catch (err) {
-      console.error(err);
+      triggerResync();
+      const clientIDs = Array.from(awareness.getStates().keys()).filter(
+        id => id !== awareness.clientID
+      );
+      if (clientIDs.length > 0) {
+        awarenessProtocol.removeAwarenessStates(awareness, clientIDs, 'resync-cleared');
+      }
     } finally {
       isApplyingRemote = false;
     }
@@ -179,49 +211,30 @@ export function setupMarkdownSupabase(
     }
   };
   channel.on('broadcast', { event: `doc-request-${nodeId}` }, onFullStateRequest);
+
   const onFullState = (payload: SupabaseBroadcast<YjsUpdatePayload>) => {
     if (!payload?.payload?.update) return;
     isApplyingRemote = true;
     try {
-      const u = new Uint8Array(payload.payload.update); // If I haven't typed anything, I trust the remote completely
-
-      if (!hasUserEdited) {
-        ydoc.transact(() => {
-          ytext.delete(0, ytext.length);
-          Y.applyUpdate(ydoc, u, 'remote');
-        }, 'remote');
-      } else {
+      const u = new Uint8Array(payload.payload.update);
+      ydoc.transact(() => {
         Y.applyUpdate(ydoc, u, 'remote');
-      }
+      }, 'remote');
 
-      isHydrated = true;
-      markSynced();
+      if (ytext.length > 0) {
+        isHydrated = true;
+        initializationDecided = true;
+        markSynced();
+      }
     } catch (err) {
-      console.error(err);
+      console.error('[Sync] Full State apply failed:', err);
     } finally {
       isApplyingRemote = false;
     }
   };
   channel.on('broadcast', { event: `doc-full-state-${nodeId}` }, onFullState);
 
-  const hasPeers = () => {
-    const states = awareness.getStates();
-    // Filter out our own clientID
-    const peers = Array.from(states.keys()).filter(id => id !== awareness.clientID);
-    return peers.length > 0;
-  };
-
-  const onAwarenessChange = () => {
-    if (hasPeers() && hydrationTimeout) {
-      console.log('[Sync] Peer detected via Awareness. Cancelling DB hydration.');
-      clearTimeout(hydrationTimeout);
-      hydrationTimeout = null;
-    }
-  };
-
-  awareness.on('change', onAwarenessChange);
-
-  let hydrationTimeout: NodeJS.Timeout | null = null;
+  let initTimeout: NodeJS.Timeout | null = null;
 
   channel.subscribe(status => {
     if (status === 'SUBSCRIBED') {
@@ -229,11 +242,17 @@ export function setupMarkdownSupabase(
 
       sendBroadcast(`doc-request-${nodeId}`, { update: [] });
 
-      if (!isHydrated && ytext.length === 0) {
-        hydrationTimeout = setTimeout(() => {
-          // Double check we are still empty and no one replied
-          if (ytext.length === 0 && !isHydrated) {
-            console.log('[Sync] No peers found. Hydrating from DB.');
+      initTimeout = setTimeout(() => {
+        if (initializationDecided || isHydrated) return;
+        const states = awareness.getStates();
+        const peerCount = Array.from(states.keys()).filter(id => id !== awareness.clientID).length;
+
+        if (peerCount > 0) {
+          console.log(`[Sync] ${peerCount} peers detected. Waiting...`);
+          sendBroadcast(`doc-request-${nodeId}`, { update: [] });
+        } else {
+          if (ytext.length === 0) {
+            console.log('[Sync] No peers detected. Applying initial content.');
             ydoc.transact(() => {
               ytext.insert(0, initialContent);
               ymeta.set('initialized', true);
@@ -241,22 +260,29 @@ export function setupMarkdownSupabase(
             isHydrated = true;
             markSynced();
           }
-        }, 250); // .15 second wait
-      }
+        }
+        initializationDecided = true;
+      }, 250);
     }
   });
 
   const checkConnection = () => {
     if (channel.state !== 'joined') channel.subscribe();
   };
+
   if (typeof window !== 'undefined') {
-    // 💡 Attach the critical listener here
     window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
   }
+
   const cleanup = () => {
-    if (hydrationTimeout) clearTimeout(hydrationTimeout);
+    if (resyncTimeout) clearTimeout(resyncTimeout);
+    if (initTimeout) clearTimeout(initTimeout);
     if (saveTimer) clearTimeout(saveTimer);
-    awareness.off('change', onAwarenessChange);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
     awareness.setLocalState(null);
     awareness.off('update', onAwarenessUpdate);
     ydoc.off('update', onYdocUpdate);

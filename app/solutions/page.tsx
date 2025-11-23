@@ -52,13 +52,13 @@ export default function Page() {
             workspace built for clarity, speed, and teamwork.
           </p>
 
-          <div className="grid grid-cols-2 gap-8 max-w-5xl w-full px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-5xl w-full px-6">
             {features.map((feature, idx) => (
               <div
                 key={idx}
                 className="flex flex-col md:flex-row items-start gap-4 p-6 rounded-2xl bg-linear-to-r from-slate-100 to-slate-200 shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
               >
-                <div className="shrink-0 p-3 bg-slate-800/90 rounded-xl">
+                <div className="shrink-0 p-3 bg-blue-600/90 rounded-xl">
                   <feature.icon className="h-7 w-7 text-white" />
                 </div>
                 <div className="text-left">

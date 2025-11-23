@@ -18,7 +18,7 @@ export default function Home() {
     <div className="h-auto text-gray-900 bg-gray-200">
       <Navbar />
 
-      <div className="grid grid-cols-1 lg:px-[1%] place-items-center gap-y-10 flex-col px-7 h-auto">
+      <div className="grid grid-cols-1 lg:px-[1%] place-items-center gap-y-10 flex-col h-auto">
         <section className="flex w-full">
           <div className="relative rounded-b-3xl w-full flex items-center justify-center px-6 overflow-hidden">
             <div className="absolute inset-0">
@@ -88,7 +88,7 @@ export default function Home() {
                   key={index}
                   className="p-6 rounded-lg shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 text-center"
                 >
-                  <Icon className={`mx-auto mb-4 ${feature.color ?? ''}`} size={60} />
+                  <Icon className={`mx-auto mb-4 text-blue-600/90`} size={60} />
                   <h3 className="text-2xl font-semibold mb-2">{feature.title}</h3>
                   <p>{feature.description}</p>
                 </div>

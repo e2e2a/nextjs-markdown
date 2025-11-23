@@ -145,7 +145,12 @@
   /* ------------------------------ */
   /* FIX SimpleMDE preview styling  */
   /* ------------------------------ */
-
+  .cm-scroller {
+    min-height: calc(100vh - 69px) !important;
+    max-height: calc(100vh - 69px);
+    overflow: hidden !important;
+    overflow-y: scroll !important;
+  }
   .editor-preview,
   .editor-preview-side {
     font-size: 1rem;

@@ -1,5 +1,5 @@
 import { projectClient } from '@/lib/api/projectClient';
-import { ProjectSingleClient } from './components/project-single-client';
+import { ProjectSingleClient } from './components/ProjectSingleClient';
 import { headers } from 'next/headers';
 
 export const generateMetadata = async ({

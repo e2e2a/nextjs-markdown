@@ -54,7 +54,7 @@ export const authOptions = {
       const authUser = await userRepository.findUser(user.id!);
       if (authUser)
         await profileRepository.updateByProviderAccountId(authUser.sub, {
-          userId: authUser._id as string,
+          userId: authUser._id.toString(),
         });
     },
   },

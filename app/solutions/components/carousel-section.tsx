@@ -31,7 +31,7 @@ const CarouselSection = () => {
             const Icon = industry.icon;
             return (
               <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-2">
+                <div className="p-2 h-full flex">
                   <Card>
                     <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
                       <Icon className="text-blue-600" size={48} />

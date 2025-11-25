@@ -205,11 +205,10 @@ export function setupMarkdownSupabase(
 
   const onFullStateRequest = (_payload: SupabaseBroadcast<unknown>) => {
     // Only answer if I actually have content
-    if (ytext.length > 0) {
-      const state = Y.encodeStateAsUpdate(ydoc);
-      sendBroadcast(`doc-full-state-${nodeId}`, { update: Array.from(state) });
-    }
+    const state = Y.encodeStateAsUpdate(ydoc);
+    sendBroadcast(`doc-full-state-${nodeId}`, { update: Array.from(state) });
   };
+
   channel.on('broadcast', { event: `doc-request-${nodeId}` }, onFullStateRequest);
 
   const onFullState = (payload: SupabaseBroadcast<YjsUpdatePayload>) => {
@@ -220,12 +219,9 @@ export function setupMarkdownSupabase(
       ydoc.transact(() => {
         Y.applyUpdate(ydoc, u, 'remote');
       }, 'remote');
-
-      if (ytext.length > 0) {
-        isHydrated = true;
-        initializationDecided = true;
-        markSynced();
-      }
+      isHydrated = true;
+      initializationDecided = true;
+      markSynced();
     } catch (err) {
       console.error('[Sync] Full State apply failed:', err);
     } finally {
@@ -248,11 +244,11 @@ export function setupMarkdownSupabase(
         const peerCount = Array.from(states.keys()).filter(id => id !== awareness.clientID).length;
 
         if (peerCount > 0) {
-          console.log(`[Sync] ${peerCount} peers detected. Waiting...`);
+          // console.log(`[Sync] ${peerCount} peers detected. Waiting...`);
           sendBroadcast(`doc-request-${nodeId}`, { update: [] });
         } else {
           if (ytext.length === 0) {
-            console.log('[Sync] No peers detected. Applying initial content.');
+            // console.log('[Sync] No peers detected. Applying initial content.');
             ydoc.transact(() => {
               ytext.insert(0, initialContent);
               ymeta.set('initialized', true);

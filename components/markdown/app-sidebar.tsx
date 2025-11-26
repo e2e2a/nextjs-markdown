@@ -162,9 +162,7 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
         itemType={''}
         /** For updating */
         node={null}
-        active={null}
         setActive={setActive}
-        updateNode={updateNode}
         setUpdateNode={setUpdateNode}
       >
         <div className="min-h-screen">

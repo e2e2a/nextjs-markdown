@@ -48,7 +48,7 @@ export function NavMain({
   };
 
   return (
-    <SidebarGroup className="gap-0 p-0">
+    <SidebarGroup className="gap-0 p-0 m-0">
       {items.map((item, index) => {
         return (
           <div className="" key={index}>
@@ -74,7 +74,7 @@ export function NavMain({
         );
       })}
       {isCreating && active == null && (
-        <SidebarMenuItem className="gap-0 p-0 h-4.5 ">
+        <div className="gap-0 p-0 h-4.5 ">
           {file && file.type === 'folder' ? (
             <SidebarMenuButton
               className={cn('p-0 gap-0 h-4.5 font-medium rounded-none text-black')}
@@ -112,7 +112,7 @@ export function NavMain({
               </div>
             </SidebarMenuButton>
           )}
-        </SidebarMenuItem>
+        </div>
       )}
     </SidebarGroup>
   );

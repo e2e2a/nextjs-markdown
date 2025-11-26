@@ -15,7 +15,7 @@ export function handleMouseClick(
   e.stopPropagation();
 
   if (e.button === 0 || e.button === 1) {
-    if (active !== data || active?._id !== data?._id) {
+    if (active?._id !== data?._id) {
       if (isCreating) {
         setIsCreating(false);
       }
@@ -23,8 +23,8 @@ export function handleMouseClick(
         updateTitle(file);
         setUpdateNode(false);
       }
+      setActive(data);
     }
-    setActive(data);
   }
   return;
 }

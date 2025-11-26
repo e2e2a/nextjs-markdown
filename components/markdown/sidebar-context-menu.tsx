@@ -17,9 +17,7 @@ interface ContainerProps {
   setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
   //** For updating */
   node: INode | null;
-  active: Partial<INode> | null;
   setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
-  updateNode: boolean;
   setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -30,9 +28,7 @@ export function SidebarContextMenu({
   setIsCreating,
   setFile,
   node,
-  active,
   setActive,
-  updateNode,
   setUpdateNode,
   setIsOpen,
 }: ContainerProps) {

@@ -19,8 +19,6 @@ export function ProjectSingleClient() {
 
   const [prevActive, setPrevActive] = useState<Partial<INode> | null>(null);
   const { data: project, isLoading: loading, error } = useProjectQuery(projectId);
-  console.log('[PAGE PROJECT]', project);
-  console.log('[PAGE ACTIVE]', active);
   const nodes = project?.nodes as INode[] | [];
   const node = project?.nodes?.find((n: INode) => n._id === prevActive?._id) as INode; // create another api to get single node
   const breadcrumbs = generateBreadcrumbs(nodes, node);

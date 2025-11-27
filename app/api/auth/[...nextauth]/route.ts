@@ -16,7 +16,7 @@ export const authOptions = {
     signIn: '/login',
   },
   session: {
-    strategy: 'database' as SessionStrategy,
+    strategy: 'jwt' as SessionStrategy,
   },
   providers: [
     GoogleProvider({

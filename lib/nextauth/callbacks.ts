@@ -48,14 +48,14 @@ export const authCallbacks = {
     return true;
   },
   async session(params: { session: Session; user: AdapterUser; token: JWT }) {
-    const { session, user } = params;
+    const { session, token } = params;
     await connectDb();
+    console.log('runningqwe', token);
 
-    if (user && user.id) {
-      session.user._id = user.id as string;
-      session.user.sub = user.sub as string;
-
-      const authUser = await userRepository.findUser(user.id);
+    if (token && token._id) {
+      session.user._id = token._id as string;
+      session.user.sub = token.sub as string;
+      const authUser = await userRepository.findUser(token._id);
       if (authUser) {
         session.user.username = authUser.username as string;
         session.user.email = authUser.email as string;
@@ -88,7 +88,12 @@ export const authCallbacks = {
     if (user) {
       token._id = user.id;
       token.role = user.role;
+      token.email = user.email as string;
+      token.role = user.role as 'user' | 'admin';
+      token.email_verified = user.email_verified;
+      token.tryingSomething = 'asd'
     }
+
     return token;
   },
 };

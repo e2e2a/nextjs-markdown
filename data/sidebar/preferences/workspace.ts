@@ -1,14 +1,11 @@
-import { IconFolder } from '@tabler/icons-react';
-import { MessageCircleMore } from 'lucide-react';
-
 export const sidebarData = [
   {
     title: 'Account',
-    icon: IconFolder,
+    icon: 'UserCog',
     items: [
       {
         title: 'Profile Info',
-        url: '#',
+        url: '/preferences/profile/info',
       },
       {
         title: 'Security',
@@ -18,34 +15,19 @@ export const sidebarData = [
   },
   {
     title: 'Settings',
-    icon: IconFolder,
+    icon: 'Settings',
     items: [
       {
         title: 'Invitations',
-        url: '#',
-        icon: MessageCircleMore,
+        url: '/preferences/invitation',
       },
       {
         title: 'Workspaces',
-        url: '#',
+        url: '/preferences/workspace',
       },
       {
         title: 'Legacy 2FA',
-        url: '#',
-      },
-    ],
-  },
-  {
-    title: 'Configurations',
-    icon: IconFolder,
-    items: [
-      {
-        title: 'Resources Policies',
-        url: '#',
-      },
-      {
-        title: 'Activity Feed',
-        url: '#',
+        url: '/preferences/2fa',
       },
     ],
   },

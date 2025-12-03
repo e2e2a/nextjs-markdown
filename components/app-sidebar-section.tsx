@@ -1,6 +1,5 @@
 'use client';
-
-import * as React from 'react';
+import React from 'react';
 import { Triangle } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -12,16 +11,25 @@ import {
 } from './ui/sidebar';
 import { INavItem } from '@/types';
 import Link from 'next/link';
+import * as LucideIcons from 'lucide-react';
+
 interface IProps {
   item: INavItem;
 }
+
+type IconComponentType = React.ComponentType<React.ComponentPropsWithoutRef<'svg'>>;
+const iconMap: { [key: string]: IconComponentType } = LucideIcons as unknown as {
+  [key: string]: IconComponentType;
+};
+
 export function AppSidebarSection({ item }: IProps) {
+  const IconComponent = iconMap[item?.icon];
   return (
     <Collapsible key={item.title} asChild defaultOpen={true} className="group/collapsible">
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton tooltip={item.title.toUpperCase()} className="uppercase font-bold">
-            {item.icon && <item.icon />}
+            {IconComponent && <IconComponent />}
             <span>{item.title}</span>
             <Triangle className="ml-auto h-2 w-2! fill-primary transition-transform duration-200 rotate-180 group-data-[state=open]/collapsible:rotate-0" />
           </SidebarMenuButton>

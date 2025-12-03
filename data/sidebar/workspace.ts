@@ -1,9 +1,7 @@
-import { CreditCard, Network, UserLock } from 'lucide-react';
-
 export const sidebarData = [
   {
     title: 'Identity & Access',
-    icon: UserLock,
+    icon: 'UserLock',
     items: [
       {
         title: 'All Projects',
@@ -21,7 +19,7 @@ export const sidebarData = [
   },
   {
     title: 'Billing',
-    icon: CreditCard,
+    icon: 'CreditCard',
     items: [
       {
         title: 'Overview',
@@ -35,7 +33,7 @@ export const sidebarData = [
   },
   {
     title: 'Configurations',
-    icon: Network,
+    icon: 'Network',
     items: [
       {
         title: 'Resources Policies',

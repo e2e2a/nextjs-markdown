@@ -7,6 +7,7 @@ import { DataTable } from './data-table';
 import { columns } from './columns';
 import { ArchivedItem } from '@/types';
 import { useTrashQueryByUserId } from '@/hooks/trash/useTrashQuery';
+import { sidebarData } from '@/data/sidebar/users';
 
 export function TrashClient() {
   const { data: session, status } = useSession();
@@ -23,7 +24,7 @@ export function TrashClient() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      <AppSidebar data={sidebarData} />
       <SidebarInset>
         <SiteHeader title={'My Trash'} />
         <div className="flex flex-1 flex-col">

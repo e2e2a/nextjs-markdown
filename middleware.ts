@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/trash')
   ) {
     const token = await getToken({ req: request, secret: SECRET });
-
+    console.log('middleware token', token);
     if (!token) {
       const res = NextResponse.redirect(new URL('/login', request.url));
       res.cookies.set('lastPath', request.nextUrl.pathname + request.nextUrl.search, { path: '/' });

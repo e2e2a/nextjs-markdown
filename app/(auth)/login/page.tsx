@@ -1,7 +1,8 @@
-import { LoginForm } from '@/app/(auth)/login/components/login-form';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { Suspense } from 'react';
+import { LoginForm } from './components/login-form';
 
 export const metadata: Metadata = {
   title: 'Secure Sign In for Collaborative Markdown Editor',
@@ -24,7 +25,9 @@ export default function LoginPage() {
           />
           <h1 className="text-lg">Mondrey</h1>
         </Link>
-        <LoginForm />
+        <Suspense fallback={<div>Loading login page...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

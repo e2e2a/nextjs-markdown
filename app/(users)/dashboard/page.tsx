@@ -2,6 +2,7 @@
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { sidebarData } from '@/data/sidebar/users';
 
 export default function Page() {
   return (
@@ -13,7 +14,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar className="p-0" variant="inset" />
+      <AppSidebar data={sidebarData} className="p-0" variant="inset" />
       <SidebarInset>
         <SiteHeader title="dashboard" />
         <div className="flex flex-1 flex-col">

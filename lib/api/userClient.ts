@@ -1,0 +1,34 @@
+import { IOnboard } from '@/types';
+
+const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/user`;
+
+export const userClient = {
+  async verifyEmail(data: { token: string; code: string }) {
+    const res = await fetch(`${BASE_URL}/verify`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+    return json;
+  },
+
+  async onboard(data: IOnboard) {
+    const res = await fetch(`${BASE_URL}/onboard`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+    return json;
+  },
+
+  async findUser(id: string) {
+    const res = await fetch(BASE_URL + `/${id}`, { cache: 'no-store' });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+    return json;
+  },
+};

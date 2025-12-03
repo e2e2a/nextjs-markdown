@@ -1,17 +1,18 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Merriweather, Raleway } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/provider/query-provider';
 import { Toaster } from 'react-hot-toast';
 import SessionProviderWrapper from '@/components/provider/session-provider';
+import SessionGuard from '@/components/provider/session-guard';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const raleway = Raleway({
+  variable: '--font-raleway',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const merriweather = Merriweather({
+  variable: '--font-merriweather',
   subsets: ['latin'],
 });
 
@@ -30,11 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${raleway.variable} ${merriweather.variable} antialiased`}>
         <SessionProviderWrapper>
           <Providers>
-            {children}
-            <Toaster position="top-center" reverseOrder={false} />
+            <SessionGuard>
+              {children}
+              <Toaster position="top-center" reverseOrder={false} />
+            </SessionGuard>
           </Providers>
         </SessionProviderWrapper>
       </body>

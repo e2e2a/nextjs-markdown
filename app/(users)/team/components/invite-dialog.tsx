@@ -90,7 +90,11 @@ export function InviteDialog() {
                 <FormItem>
                   <FormLabel>Select Project</FormLabel>
                   <FormControl>
-                    <ProjectCombobox projects={projects || []} {...field} />
+                    <ProjectCombobox
+                      projects={projects || []}
+                      {...field}
+                      value={field.value ?? ''}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,26 +1,19 @@
 export type IUser = {
   _id?: string;
+  sub?: string;
   email: string;
-  username: string;
   email_verified: boolean;
   role: string;
-};
+  isOnboard: boolean;
+  goal?: string;
 
-export type IProfile = {
-  _id?: string;
-  userId: string;
-  sub: string;
-  email: string;
-  email_verified: boolean;
-  name: string;
-  picture: string;
+  image?: string;
+  company?: string;
+  country?: string;
+  phoneNumber?: string;
   given_name: string;
   family_name: string;
-  kbaQuestion?: string;
-  kbaAnswer?: string;
 };
-
-export type CreateProfileDTO = IProfile;
 
 export type CreateNodeDTO = {
   userId?: string;
@@ -29,6 +22,12 @@ export type CreateNodeDTO = {
   projects?: IProject[] | [];
   type: string;
   title?: string;
+};
+
+export type IArchived = {
+  isArchived: boolean;
+  archivedAt?: Date;
+  archivedBy?: Pick<IUser, 'email'>;
 };
 
 export type INode = {
@@ -40,11 +39,7 @@ export type INode = {
   children: INode[];
   title?: string | null;
   content?: string | null;
-  archived?: {
-    isArchived: boolean;
-    archivedAt?: Date;
-    archivedBy?: mongoose.Schema.Types.ObjectId;
-  };
+  archived?: IArchived;
   updatedAt?: Date;
 };
 
@@ -56,28 +51,28 @@ export type IProject = {
   title: string;
   nodes: INode[];
   members?: string[];
-  archived: {
-    isArchived: boolean;
-    archivedAt?: Date;
-    archivedBy?: string;
-  };
+  archived: IArchived;
 };
 
 export type CreateProjectDTO = Partial<IProject>;
 export type UpdateProjectDTO = Pick<INode, 'title'>;
 export type ProjectPushNodeDTO = Partial<IProject>;
 
-export type IAccessRecord = {
-  userId: string;
+export type IRateLimitType = 'login' | 'register' | 'sendEmail' | 'verify';
+export type IRateLimit = {
+  userId?: string;
   ip: string;
   deviceType: string;
   browser?: string;
   os?: string;
   userAgent?: string;
-  lastLogin: Date;
+
+  type: IRateLimitType;
+  retryCount: number;
+  retryResetAt: Date;
 };
 
-export type CreateAccessRecordDTO = IAccessRecord;
+export type CreateIRateLimitDTO = IRateLimit;
 
 export type KBAData = {
   kbaQuestion: string;
@@ -93,11 +88,7 @@ export type ArchivedItem = {
   parentId?: string;
   userId?: string;
   path: string;
-  archived: {
-    isArchived: boolean;
-    archivedAt?: Date;
-    archivedBy?: Pick<IUser, 'email'>;
-  };
+  archived: IArchived;
 };
 
 export type MembersInvited = {
@@ -116,6 +107,51 @@ export type InviteMembersDTO = {
   email: string;
 };
 
+export type IWorkspace = {
+  ownerUserId: IUser | string;
+  title: string;
+  archived?: IArchived;
+};
+
+export type AuthUser = {
+  authType: 'login' | 'register';
+  email: string;
+  password: string;
+};
+
+export type IToken = {
+  email: string;
+  emailToChange?: string;
+  token: string;
+  code: string;
+  type: 'EmailVerification' | 'ChangeEmailVerification';
+  expires: Date;
+  expiresCode: Date;
+};
+
+export type IOnboard = {
+  step1: IOnboardStep1;
+  step2: IOnboardStep2;
+  step3: IOnboardStep3;
+};
+
+type IOnboardStep1 = {
+  given_name: string;
+  family_name: string;
+  middle_name?: string;
+  company?: string;
+  country?: string;
+  phoneNumber?: string;
+};
+
+type IOnboardStep2 = {
+  goal: string;
+};
+
+type IOnboardStep3 = {
+  title: string;
+};
+
 export interface BreadcrumbItem {
   title: string | undefined;
   _id: string;
@@ -127,9 +163,18 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-export interface NavItem {
+export interface ISectionItem {
   title: string;
   url: string;
-  icon?: Icon;
   isActive?: boolean;
+}
+
+export interface INavItem {
+  title: string;
+  icon?: Icon;
+  items: ISectionItem[];
+}
+
+export interface INav {
+  section: INavItem[];
 }

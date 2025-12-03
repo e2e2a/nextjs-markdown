@@ -2,58 +2,143 @@
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
-import { Github } from 'lucide-react';
-import { signIn, useSession } from 'next-auth/react';
-import { KBAForm } from './kba-form';
+import { Field, FieldDescription, FieldGroup, FieldSeparator } from '@/components/ui/field';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
+import { redirect, useSearchParams } from 'next/navigation';
+import { makeToastError, makeToastSucess } from '@/lib/toast';
+import { useEffect, useState } from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Input } from '@/components/ui/input';
+import { loginSchema } from '@/lib/validators/login';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  Form,
+} from '@/components/ui/form';
+import { useAuthMutations } from '@/hooks/auth/useAuthMutations';
+import OauthField from '@/components/oauth-field';
 
 type IProps = React.ComponentProps<'div'> & {
   className?: string;
 };
 
+type RegisterInput = z.infer<typeof loginSchema>;
+
 export function LoginForm({ className, ...props }: IProps) {
-  const { data: session, status } = useSession();
+  const [loading, setLoading] = useState(false);
+  const params = useSearchParams();
+  const error = params.get('error');
+  const mutation = useAuthMutations();
 
-  if (status === 'loading') return;
-  if (session?.user && !session?.user.kbaVerified) {
-    return <KBAForm session={session} />;
-  }
+  const form = useForm<RegisterInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
+  useEffect(() => {
+    if (!error) return;
+    if (error) {
+      makeToastError(error);
+    }
+  }, [error]);
+
+  const onSubmit = async (values: RegisterInput) => {
+    const { email, password } = values;
+    setLoading(true);
+    mutation.auth.mutate(
+      {
+        authType: 'login',
+        email,
+        password,
+      },
+      {
+        onSuccess: async data => {
+          if (data && data.token) {
+            redirect(`/verify?token=${encodeURIComponent(data.token)}`);
+          } else {
+            await signIn('credentials', {
+              email: data.email,
+              callbackUrl: '/login',
+            });
+            makeToastSucess('Redirecting To Workspace!');
+          }
+        },
+        onError: err => {
+          makeToastError(err.message);
+          setLoading(false);
+          return;
+        },
+      }
+    );
+  };
   return (
     <div className={cn('flex flex-col gap-6 max-w-md w-full', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">
-            <h1 className="font-semibold text-2xl md:text-3xl">Sign in</h1>
+            <h1 className="font-semibold text-2xl md:text-3xl">Log in to your account</h1>
           </CardTitle>
-          <CardDescription>Login with your Github or Google account</CardDescription>
+          <CardDescription>
+            <span>Don&apos;t have an account?</span>{' '}
+            <Link href={'/register'} className="hover:underline text-primary">
+              Sign Up
+            </Link>
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
-            <FieldGroup>
-              <Field>
-                <Button variant="outline" type="button" className="cursor-pointer">
-                  <Github className="h-6 w-6 stroke-3" />
-                  Login with Github
-                </Button>
-                <Button
-                  onClick={() => signIn('google')}
-                  variant="outline"
-                  type="button"
-                  className="cursor-pointer"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Login with Google
-                </Button>
-              </Field>
-            </FieldGroup>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FieldGroup>
+                <Field>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="johndoe@domain.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="******" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="w-full text-center">
+                    <Button type="submit" disabled={loading} className="w-full cursor-pointer">
+                      Login
+                    </Button>
+                  </div>
+                </Field>
+                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+                  Or continue with
+                </FieldSeparator>
+                <OauthField callbackUrl="/login" loading={loading} setLoading={setLoading} />
+              </FieldGroup>
+            </form>
+          </Form>
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">

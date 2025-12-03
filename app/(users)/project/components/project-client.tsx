@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { LayoutButtons } from './layout-buttons';
 import { CreateFolderButton } from './create-folder-button';
+import { sidebarData } from '@/data/sidebar/users';
 
 export function ProjectClient() {
   const [isCreating, setIsCreating] = useState(false);
@@ -27,7 +28,7 @@ export function ProjectClient() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      <AppSidebar data={sidebarData} />
       <SidebarInset>
         <SiteHeader title={'Projects'} />
         <div className="flex flex-1 flex-col">

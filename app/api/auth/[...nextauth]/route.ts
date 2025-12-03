@@ -1,4 +1,4 @@
-import NextAuth, { SessionStrategy } from 'next-auth';
+import NextAuth, { SessionStrategy, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
@@ -6,17 +6,18 @@ import clientPromise from '@/lib/db/adapter';
 import { authCallbacks } from '@/lib/nextauth/callbacks';
 import { userRepository } from '@/repositories/user';
 import connectDb from '@/lib/db/connection';
-import { profileRepository } from '@/repositories/profile';
-import { AdapterUser } from 'next-auth/adapters';
+// import { AdapterUser } from 'next-auth/adapters';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
-  // debug: true,
+  debug: true,
   pages: {
     signIn: '/login',
   },
   session: {
     strategy: 'jwt' as SessionStrategy,
+    maxAge: 60 * 60 * 24, // 1 day
   },
   providers: [
     GoogleProvider({
@@ -25,6 +26,9 @@ export const authOptions = {
       authorization: {
         params: {
           redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/google`,
+          // prompt: "consent",
+          // access_type: "offline",
+          // response_type: "code"
         },
       },
       profile: async profile => {
@@ -33,10 +37,11 @@ export const authOptions = {
           sub: profile.sub,
           username: profile.given_name,
           email: profile.email,
+          image: null,
           role: 'user',
           email_verified: profile.email_verified,
           emailVerified: new Date(),
-          kbaVerified: false,
+          isOnboard: false,
         };
       },
     }),
@@ -44,18 +49,40 @@ export const authOptions = {
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
     }),
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+      },
+      async authorize(credentials): Promise<User | null> {
+        if (!credentials) return null;
+        await connectDb();
+        const user = await userRepository.findUserBy({ email: credentials.email }, true);
+        if (!user) return null;
+
+        return {
+          _id: user._id!.toString(),
+          id: user._id!.toString(),
+          email: user.email,
+          role: user.role,
+          email_verified: user.email_verified,
+          isOnboard: user.isOnboarded,
+          emailVerified: null, // next-auth problem
+        };
+      },
+    }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: authCallbacks,
   events: {
-    async createUser({ user }: { user: AdapterUser }) {
-      await connectDb();
-
-      const authUser = await userRepository.findUser(user.id!);
-      if (authUser)
-        await profileRepository.updateByProviderAccountId(authUser.sub, {
-          userId: authUser._id.toString(),
-        });
+    // async createUser({ user }: { user: AdapterUser }) {
+    async createUser() {
+      // await connectDb();
+      // const authUser = await userRepository.findUser(user.id!);
+      // if (authUser)
+      //   await profileRepository.updateByProviderAccountId(authUser?.sub as string, {
+      //     userId: authUser._id!.toString(),
+      //   });
     },
   },
 };

@@ -19,10 +19,12 @@ export default async function Layout({
   const lastPath = cook.get('lastPath')?.value;
 
   if (session?.user) {
-    if (session.user.kbaVerified) {
+    if (session.user.isOnboard) {
       if (session.user.role === 'admin') return redirect('/admin');
       if (lastPath) return redirect(lastPath);
-      return redirect('/project');
+      return redirect('/preferences/workspace');
+    } else {
+      return redirect('/onboard');
     }
   }
   return <div className="">{children}</div>;

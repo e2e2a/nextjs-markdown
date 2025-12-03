@@ -7,6 +7,7 @@ import { MembersInvited } from '@/types';
 import { useMembersByOwnerQuery } from '@/hooks/member/useMemberQuery';
 import { DataTable } from './data-table';
 import { columns } from './columns';
+import { sidebarData } from '@/data/sidebar/users';
 
 export function TeamClient() {
   const { data: session, status } = useSession();
@@ -23,7 +24,7 @@ export function TeamClient() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      <AppSidebar data={sidebarData} />
       <SidebarInset>
         <SiteHeader title={'My Teams'} />
         <div className="flex flex-1 flex-col">

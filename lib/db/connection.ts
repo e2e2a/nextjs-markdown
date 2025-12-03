@@ -3,9 +3,11 @@ import '@/models/node';
 import '@/models/project';
 import '@/models/account';
 import '@/models/user';
-import '@/models/profile';
-import '@/models/accessRecord';
+import '@/models/rateLimit';
 import '@/models/member';
+import '@/models/workspace';
+import '@/models/workspaceMember';
+import '@/models/token';
 
 const MONGODB_URI = process.env.MONGO_URI;
 

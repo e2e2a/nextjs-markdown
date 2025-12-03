@@ -3,6 +3,7 @@ import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { InvitationTabs } from './components/invation-tabs';
 import { Metadata } from 'next';
+import { sidebarData } from '@/data/sidebar/users';
 
 export const metadata: Metadata = {
   title: 'Project Invitations',
@@ -18,7 +19,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      <AppSidebar data={sidebarData} />
       <SidebarInset>
         <SiteHeader title={'Project Invitations'} />
         <div className="flex flex-1 flex-col">

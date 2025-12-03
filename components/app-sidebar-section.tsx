@@ -1,0 +1,45 @@
+'use client';
+
+import * as React from 'react';
+import { Triangle } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from './ui/sidebar';
+import { INavItem } from '@/types';
+import Link from 'next/link';
+interface IProps {
+  item: INavItem;
+}
+export function AppSidebarSection({ item }: IProps) {
+  return (
+    <Collapsible key={item.title} asChild defaultOpen={true} className="group/collapsible">
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton tooltip={item.title.toUpperCase()} className="uppercase font-bold">
+            {item.icon && <item.icon />}
+            <span>{item.title}</span>
+            <Triangle className="ml-auto h-2 w-2! fill-primary transition-transform duration-200 rotate-180 group-data-[state=open]/collapsible:rotate-0" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {item.items?.map(subItem => (
+              <SidebarMenuSubItem key={subItem.title}>
+                <SidebarMenuSubButton asChild>
+                  <Link href={subItem.url}>
+                    <span className="">{subItem.title}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  );
+}

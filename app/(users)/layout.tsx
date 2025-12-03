@@ -12,7 +12,8 @@ export const metadata: Metadata = {
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || !session?.user.kbaVerified) redirect('/login');
+  if (!session?.user) redirect('/login');
+  if (!session?.user.isOnboard) redirect('/onboard');
 
   return <div className="overflow-y-hidden">{children}</div>;
 }

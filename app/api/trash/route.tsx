@@ -23,7 +23,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
     await connectDb();
-    console.log('body', body);
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
     const retrieve = await trashService.retrieve(session.user._id as string, body);

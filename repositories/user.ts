@@ -16,8 +16,8 @@ export const userRepository = {
   updateUserBy: async (data: Partial<IUser>, dataToUpdate: Partial<{ password: string } & IUser>) =>
     User.findOneAndUpdate(data, dataToUpdate, updateOptions).exec(),
 
-  findUserBy: async (data: Partial<IUser>, excludePassword: boolean) => {
-    let query = User.findOne(data);
+  findUserByEmail: async (email: string, excludePassword: boolean) => {
+    let query = User.findOne({ email });
     if (excludePassword) query = query.select('-password');
 
     const user = await query.exec();

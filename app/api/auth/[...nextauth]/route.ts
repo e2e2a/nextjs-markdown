@@ -57,7 +57,7 @@ export const authOptions = {
       async authorize(credentials): Promise<User | null> {
         if (!credentials) return null;
         await connectDb();
-        const user = await userRepository.findUserBy({ email: credentials.email }, true);
+        const user = await userRepository.findUserByEmail(credentials.email, true);
         if (!user) return null;
 
         return {

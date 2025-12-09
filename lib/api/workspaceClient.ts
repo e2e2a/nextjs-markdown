@@ -1,0 +1,30 @@
+import { IWorkspaceMemberCreateDTO } from '@/types';
+const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspace`;
+
+export const workspaceClient = {
+  async create(data: { title: string; members: IWorkspaceMemberCreateDTO[] }) {
+    const res = await fetch(BASE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+
+    return json;
+  },
+
+  async getUserWorkspaces() {
+    const res = await fetch(`${BASE_URL}/me`);
+    if (!res.ok) throw new Error('Failed to fetch workspace');
+    return res.json();
+  },
+
+  async leave(workspaceId: string) {
+    const res = await fetch(`${BASE_URL}/${workspaceId}/member/me`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to fetch workspace');
+    return res.json();
+  },
+};

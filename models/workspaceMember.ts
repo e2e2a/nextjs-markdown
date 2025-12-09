@@ -2,15 +2,27 @@ import mongoose, { Schema, models, model, Document } from 'mongoose';
 
 export interface IWorkspaceMemberSchema extends Document {
   workspaceId: mongoose.Schema.Types.ObjectId;
+  invitedBy: Schema.Types.ObjectId;
+  email: string;
   userId: mongoose.Schema.Types.ObjectId;
-  role: string;
+  role: 'owner' | 'member' | 'viewer';
+  status: 'pending' | 'accepted';
 }
 
 const workspaceMemberSchema = new Schema<IWorkspaceMemberSchema>(
   {
     workspaceId: { type: Schema.Types.ObjectId, ref: 'Workspace' },
-    userId: { type: Schema.Types.ObjectId, ref: 'Workspace' },
-    role: { type: String, enum: ['owner', 'member'], default: 'user' }, // maybe i can do a viewer here soon
+    invitedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    email: { type: String },
+    role: { type: String, enum: ['owner', 'member', 'viewer'] },
+
+    status: {
+      type: String,
+      enum: ['pending', 'accepted'],
+      default: 'pending',
+    },
   },
   {
     versionKey: false,

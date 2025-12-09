@@ -8,7 +8,8 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
     /**
      * Forcing logout if the user is deleted
      */
-    if (session && session?.deleted) signOut({ callbackUrl: '/login' });
+    if (session && (session?.deleted || !session.user.email_verified))
+      signOut({ callbackUrl: '/login' });
   }, [session]);
 
   return <>{children}</>;

@@ -8,6 +8,7 @@ import { tokenService } from './token';
 import nodemailer from 'nodemailer';
 import { verificationTemplate } from '@/components/email-template/verification-code';
 import { rateLimitService } from './rateLimit';
+import { tokenRepository } from '@/repositories/token';
 
 const sendEmail = async (
   email: string,
@@ -31,16 +32,18 @@ const sendEmail = async (
     return false;
   }
 };
+
 export const authServices = {
-  login: async (data: AuthUser) => {
+  login: async (data: { email: string; password: string }) => {
     const result = loginSchema.safeParse(data);
     if (!result.success) throw new HttpError('Invalid fields.', 400);
 
-    await rateLimitService.checkLimit(data.authType, data.email);
+    await rateLimitService.checkLimit('login', data.email);
 
-    const user = await userRepository.findUserBy({ email: result.data.email }, false);
+    const user = await userRepository.findUserByEmail(result.data.email, false);
     if (!user) throw new HttpError('Email has not been yet registered.', 409);
     if (!user.password) throw new HttpError('Account is linked to another provider.', 409);
+    if (!user.email_verified) throw new HttpError('Email is not verified.', 400);
 
     const verify = await compareText(result.data.password, user.password);
     if (!verify) throw new HttpError('Invalid Credentials.', 409);
@@ -52,7 +55,7 @@ export const authServices = {
     const result = validateRegisterSchema.safeParse(data);
     if (!result.success) throw new HttpError('Invalid fields.', 400);
     let user = null;
-    user = await userRepository.findUserBy({ email: result.data.email }, false);
+    user = await userRepository.findUserByEmail(result.data.email, false);
     const hashedPassword = await hashText(result.data.password);
     if (user) {
       if (user.email_verified) throw new HttpError('Email already exists in this level.', 409);
@@ -66,10 +69,32 @@ export const authServices = {
     }
     if (!user) throw new HttpError('Something went wrong.', 500);
 
-    await rateLimitService.checkLimit(data.authType, data.email); // set rateLimit for register
+    await rateLimitService.checkLimit('register', data.email); // set rateLimit for register
 
     const token = await tokenService.generateToken(user.email, 'EmailVerification');
+    if (!token) throw new HttpError('Something went wrong.', 500);
+
     sendEmail(user.email, 'Verification Code', token.type, token.code);
     return { email: data.email, token: token.token };
+  },
+
+  verifyEmailByCodeAndToken: async (data: { code: string; token: string }) => {
+    const tokenDoc = await tokenRepository.getToken({ token: data.token });
+    if (!tokenDoc) throw new HttpError('Invalid or expired token.', 404);
+
+    if (tokenDoc.expires < new Date()) throw new HttpError('Token has expired.', 410);
+    const limit = await rateLimitService.checkLimit('verify', tokenDoc.email);
+    if (tokenDoc.expiresCode < new Date()) throw new HttpError('Code has expired.', 410);
+
+    const verify = await compareText(data.code, tokenDoc.code);
+    if (!verify) throw new HttpError('Code does not matched.', 403);
+    const user = await userRepository.updateUserBy(
+      { email: tokenDoc.email },
+      { email_verified: true }
+    );
+    if (!user) throw new HttpError('No user Found.', 404);
+
+    await tokenRepository.deleteToken(tokenDoc._id);
+    return { email: user.email, retries: limit?.retryCount };
   },
 };

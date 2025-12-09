@@ -46,12 +46,8 @@ export function RegisterForm({ className, ...props }: IProps) {
   const onSubmit = async (values: RegisterInput) => {
     const { email, password } = values;
     setLoading(true);
-    mutation.auth.mutate(
-      {
-        authType: 'register',
-        email,
-        password,
-      },
+    mutation.register.mutate(
+      { email, password },
       {
         onSuccess: async data => {
           redirect(`/verify?token=${encodeURIComponent(data.token)}`);
@@ -73,7 +69,7 @@ export function RegisterForm({ className, ...props }: IProps) {
           </CardTitle>
           <CardDescription>
             <span>Have an account?</span>{' '}
-            <Link href={'/login'} className="hover:underline text-primary">
+            <Link href={'/login'} className="underline text-primary">
               Log in now
             </Link>
           </CardDescription>

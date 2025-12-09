@@ -1,7 +1,7 @@
-import React from 'react';
+import { InvitationClient } from './components/invitation-client';
 
 const Page = () => {
-  return <div>invitations Page</div>;
+  return <InvitationClient />;
 };
 
 export default Page;

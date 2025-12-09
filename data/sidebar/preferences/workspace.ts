@@ -26,6 +26,10 @@ export const sidebarData = [
         url: '/preferences/workspace',
       },
       {
+        title: 'User Preferences',
+        url: '/preferences/personalization',
+      },
+      {
         title: 'Legacy 2FA',
         url: '/preferences/2fa',
       },

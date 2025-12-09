@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FormField, FormItem } from '@/components/ui/form';
-import { Step1Schema, Step2Schema, Step3Schema } from '@/lib/validators/onboard';
+import { Step1Schema, Step2Schema } from '@/lib/validators/onboard';
 import { makeToastError } from '@/lib/toast';
 import { useUserMutations } from '@/hooks/user/useUserMutations';
 import { notFound } from 'next/navigation';
 import { useUserQuery } from '@/hooks/user/useUserQuery';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { workspaceSchema } from '@/lib/validators/workspace';
 
 export function OnboardForms() {
   const { data: session, status, update } = useSession();
@@ -39,7 +40,7 @@ export function OnboardForms() {
       goal: '',
     },
   });
-  const form3 = useForm({ resolver: zodResolver(Step3Schema) });
+  const form3 = useForm({ resolver: zodResolver(workspaceSchema) });
 
   const next = async () => {
     if (step === 1) {
@@ -71,7 +72,7 @@ export function OnboardForms() {
             name: `${payload.step1.given_name} ${payload.step1.family_name}`,
             isOnboard: true,
           });
-          if (data.workspaceId) setLink(`/workspace/${data.workspaceId}`);
+          if (data.workspaceId) setLink(`/workspace/${data.workspaceId}/projects`);
           setStep(4);
           return;
         },

@@ -45,21 +45,14 @@ export function LoginForm({ className, ...props }: IProps) {
   });
 
   useEffect(() => {
-    if (!error) return;
-    if (error) {
-      makeToastError(error);
-    }
+    if (error) makeToastError(error);
   }, [error]);
 
   const onSubmit = async (values: RegisterInput) => {
     const { email, password } = values;
     setLoading(true);
-    mutation.auth.mutate(
-      {
-        authType: 'login',
-        email,
-        password,
-      },
+    mutation.login.mutate(
+      { email, password },
       {
         onSuccess: async data => {
           if (data && data.token) {
@@ -89,7 +82,7 @@ export function LoginForm({ className, ...props }: IProps) {
           </CardTitle>
           <CardDescription>
             <span>Don&apos;t have an account?</span>{' '}
-            <Link href={'/register'} className="hover:underline text-primary">
+            <Link href={'/register'} className="underline text-primary">
               Sign Up
             </Link>
           </CardDescription>

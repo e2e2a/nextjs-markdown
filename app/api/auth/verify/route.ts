@@ -1,7 +1,7 @@
 import connectDb from '@/lib/db/connection';
 import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
-import { userService } from '@/services/user';
+import { authServices } from '@/services/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     await connectDb();
 
-    const token = await userService.verifyEmailByCodeAndToken(body);
+    const token = await authServices.verifyEmailByCodeAndToken(body);
     if (!token) throw new HttpError('Invalid Token.', 404);
 
     return NextResponse.json(

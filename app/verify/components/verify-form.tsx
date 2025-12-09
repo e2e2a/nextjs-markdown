@@ -18,9 +18,9 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTokenMutations } from '@/hooks/token/userTokenMutations';
 import { makeToastError } from '@/lib/toast';
-import { useUserMutations } from '@/hooks/user/useUserMutations';
 import { signIn } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { useAuthMutations } from '@/hooks/auth/useAuthMutations';
 
 type IProps = {
   tokenValue: string;
@@ -33,13 +33,14 @@ type VerifyInput = z.infer<typeof verifySchema>;
 export function VerifyForm({ tokenValue, expiresCode, className, ...props }: IProps) {
   const [loading, setLoading] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const userMutate = useUserMutations();
+  const userMutate = useAuthMutations();
   const mutation = useTokenMutations();
 
   useEffect(() => {
     const calculateRemainingTime = () => {
       const now = new Date().getTime();
       const expiry = new Date(expiresCode).getTime();
+      // const expiry = new Date(Date.now()).getTime();
       const difference = expiry - now;
 
       if (difference > 0) {

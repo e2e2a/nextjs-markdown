@@ -12,6 +12,7 @@ import {
 import { INavItem } from '@/types';
 import Link from 'next/link';
 import * as LucideIcons from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 interface IProps {
   item: INavItem;
@@ -24,6 +25,8 @@ const iconMap: { [key: string]: IconComponentType } = LucideIcons as unknown as 
 
 export function AppSidebarSection({ item }: IProps) {
   const IconComponent = iconMap[item?.icon];
+  const pathname = usePathname();
+
   return (
     <Collapsible key={item.title} asChild defaultOpen={true} className="group/collapsible">
       <SidebarMenuItem>
@@ -36,11 +39,11 @@ export function AppSidebarSection({ item }: IProps) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
-            {item.items?.map(subItem => (
-              <SidebarMenuSubItem key={subItem.title}>
-                <SidebarMenuSubButton asChild>
+            {item.items?.map((subItem, idx) => (
+              <SidebarMenuSubItem key={idx}>
+                <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
                   <Link href={subItem.url}>
-                    <span className="">{subItem.title}</span>
+                    <span>{subItem.title}</span>
                   </Link>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>

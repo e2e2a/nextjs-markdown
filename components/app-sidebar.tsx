@@ -12,14 +12,16 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { INavItem } from '@/types';
+import { BRAND_NAME } from '@/data/brand';
 
 type IProps = React.ComponentProps<typeof Sidebar> & {
   data: INavItem[];
+  collapsible: 'offcanvas' | 'icon' | 'none';
 };
 
-export function AppSidebar({ data, ...props }: IProps) {
+export function AppSidebar({ data, collapsible, ...props }: IProps) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible={collapsible} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -33,7 +35,7 @@ export function AppSidebar({ data, ...props }: IProps) {
                   priority
                   className="size-7! rounded-sm"
                 />
-                <span className="text-base font-semibold">MondreyMD</span>
+                <span className="text-base font-semibold">{BRAND_NAME}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

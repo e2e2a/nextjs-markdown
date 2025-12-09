@@ -18,6 +18,7 @@ export const tokenService = {
 
     const tokenDoc = await tokenRepository.getToken({ email, type });
     const code = await generateRandomString();
+    console.log('Generated code:', code);
     const hashCode = await hashText(code);
     if (!tokenDoc) {
       const newToken = await tokenRepository.create({
@@ -57,6 +58,7 @@ export const tokenService = {
     if (!tokenDoc) throw new HttpError('Invalid token.', 404);
     const now = new Date();
     const code = await generateRandomString();
+    console.log('Resent code:', code);
     const hashCode = await hashText(code);
     const expiresCode = new Date(now.getTime() + 5 * 60 * 1000);
     tokenDoc.expiresCode = expiresCode;

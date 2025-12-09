@@ -3,6 +3,7 @@ import { INode } from './node';
 
 export interface IProject extends Document {
   userId: mongoose.Schema.Types.ObjectId;
+  workspaceId: mongoose.Schema.Types.ObjectId;
   title: string;
   nodes: (Schema.Types.ObjectId | INode)[];
   archived: {
@@ -15,8 +16,9 @@ export interface IProject extends Document {
 const projectSchema = new Schema<IProject>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    workspaceId: { type: Schema.Types.ObjectId, ref: 'User' },
     title: { type: String },
-    nodes: [{ type: Schema.Types.ObjectId, ref: 'Node' }],
+    // nodes: [{ type: Schema.Types.ObjectId, ref: 'Node' }],
     archived: {
       isArchived: { type: Boolean, default: false },
       archivedAt: Date,

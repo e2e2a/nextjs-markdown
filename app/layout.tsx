@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { Merriweather, Raleway } from 'next/font/google';
+import { Merriweather, Roboto } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/provider/query-provider';
 import { Toaster } from 'react-hot-toast';
 import SessionProviderWrapper from '@/components/provider/session-provider';
 import SessionGuard from '@/components/provider/session-guard';
 
-const raleway = Raleway({
-  variable: '--font-raleway',
+const roboto = Roboto({
+  variable: '--font-roboto',
   subsets: ['latin'],
 });
 
@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${raleway.variable} ${merriweather.variable} antialiased`}>
+      <body className={`${roboto.variable} ${merriweather.variable} antialiased`}>
         <SessionProviderWrapper>
           <Providers>
             <SessionGuard>

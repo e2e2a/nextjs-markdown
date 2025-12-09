@@ -108,13 +108,37 @@ export type InviteMembersDTO = {
 };
 
 export type IWorkspace = {
+  _id?: string;
   ownerUserId: IUser | string;
   title: string;
   archived?: IArchived;
 };
 
+export interface IWorkspaceMemberCreateDTO {
+  role: 'owner' | 'member' | 'viewer';
+  email: string;
+}
+
+export type IUserWorkspaces = {
+  _id?: string;
+  workspaceId: Partial<IWorkspace>;
+  userId?: Partial<IUser>;
+  email: string;
+  role: 'owner' | 'member' | 'viewer';
+  status: 'pending' | 'accepted';
+  ownerCount?: number;
+};
+
+export type IUserInvitations = {
+  _id?: string;
+  workspaceId: Partial<IWorkspace>;
+  invitedBy?: Partial<IUser>;
+  email: string;
+  role: 'owner' | 'member' | 'viewer';
+  status: 'pending' | 'accepted';
+};
+
 export type AuthUser = {
-  authType: 'login' | 'register';
   email: string;
   password: string;
 };

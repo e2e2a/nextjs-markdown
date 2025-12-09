@@ -12,7 +12,7 @@ export interface IWorkspaceSchema extends Document {
 
 const workspaceSchema = new Schema<IWorkspaceSchema>(
   {
-    ownerUserId: { type: Schema.Types.ObjectId, ref: 'User' },
+    ownerUserId: { type: Schema.Types.ObjectId, ref: 'User' }, // this will be change to email: string in future for feature delete user
     title: { type: String },
     archived: {
       isArchived: { type: Boolean, default: false },

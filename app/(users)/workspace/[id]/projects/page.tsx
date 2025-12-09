@@ -1,5 +1,5 @@
-import { WorkspaceClient } from './components/workspace-client';
 import { Metadata } from 'next';
+import { WorkspaceProjectsClient } from './components/workspace-projects-client';
 
 export const metadata: Metadata = {
   title: 'My Teams',
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 const Page = () => {
   return (
     <div>
-      <WorkspaceClient />
+      <WorkspaceProjectsClient />
     </div>
   );
 };

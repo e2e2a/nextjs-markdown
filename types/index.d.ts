@@ -47,6 +47,7 @@ export type UpdateNodeDTO = Pick<INode, '_id' | 'title' | 'content' | 'archived'
 
 export type IProject = {
   _id: string;
+  workspaceId: string;
   userId: string;
   title: string;
   nodes: INode[];
@@ -110,12 +111,13 @@ export type InviteMembersDTO = {
 export type IWorkspace = {
   _id?: string;
   ownerUserId: IUser | string;
+  // projects?: IProject[];
   title: string;
   archived?: IArchived;
 };
 
 export interface IWorkspaceMemberCreateDTO {
-  role: 'owner' | 'member' | 'viewer';
+  role: 'owner' | 'editor' | 'viewer';
   email: string;
 }
 
@@ -124,7 +126,7 @@ export type IUserWorkspaces = {
   workspaceId: Partial<IWorkspace>;
   userId?: Partial<IUser>;
   email: string;
-  role: 'owner' | 'member' | 'viewer';
+  role: 'owner' | 'editor' | 'viewer';
   status: 'pending' | 'accepted';
   ownerCount?: number;
 };
@@ -134,7 +136,7 @@ export type IUserInvitations = {
   workspaceId: Partial<IWorkspace>;
   invitedBy?: Partial<IUser>;
   email: string;
-  role: 'owner' | 'member' | 'viewer';
+  role: 'owner' | 'editor' | 'viewer';
   status: 'pending' | 'accepted';
 };
 

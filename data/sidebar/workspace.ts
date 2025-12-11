@@ -5,7 +5,7 @@ export const sidebarData = [
     items: [
       {
         title: 'All Projects',
-        url: '#',
+        url: '/projects',
       },
       {
         title: 'Users',

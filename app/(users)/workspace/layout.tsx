@@ -6,5 +6,9 @@ export default async function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <SidebarWrapper data={sidebarData}>{children}</SidebarWrapper>;
+  return (
+    <SidebarWrapper data={sidebarData} type={'workspace'}>
+      {children}
+    </SidebarWrapper>
+  );
 }

@@ -16,6 +16,7 @@ import { usePathname } from 'next/navigation';
 
 interface IProps {
   item: INavItem;
+  initialLink: string;
 }
 
 type IconComponentType = React.ComponentType<React.ComponentPropsWithoutRef<'svg'>>;
@@ -23,7 +24,7 @@ const iconMap: { [key: string]: IconComponentType } = LucideIcons as unknown as 
   [key: string]: IconComponentType;
 };
 
-export function AppSidebarSection({ item }: IProps) {
+export function AppSidebarSection({ item, initialLink }: IProps) {
   const IconComponent = iconMap[item?.icon];
   const pathname = usePathname();
 
@@ -42,7 +43,7 @@ export function AppSidebarSection({ item }: IProps) {
             {item.items?.map((subItem, idx) => (
               <SidebarMenuSubItem key={idx}>
                 <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                  <Link href={subItem.url}>
+                  <Link href={`${initialLink}${subItem.url}`}>
                     <span>{subItem.title}</span>
                   </Link>
                 </SidebarMenuSubButton>

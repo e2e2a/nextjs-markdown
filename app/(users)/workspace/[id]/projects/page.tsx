@@ -6,11 +6,7 @@ export const metadata: Metadata = {
 };
 
 const Page = () => {
-  return (
-    <div>
-      <WorkspaceProjectsClient />
-    </div>
-  );
+  return <WorkspaceProjectsClient />;
 };
 
 export default Page;

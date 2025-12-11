@@ -23,7 +23,7 @@ interface IProps {
 export function Leave({ item }: IProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [disabled] = useState(item.ownerCount === 1);
+  const [disabled] = useState(item.role === 'owner' && item.ownerCount === 1);
 
   const mutation = useWorkspaceMutations();
 

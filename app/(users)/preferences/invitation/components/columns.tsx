@@ -31,11 +31,11 @@ export const columns: ColumnDef<IUserInvitations>[] = [
     ),
   },
   {
-    id: 'Workspace Name',
+    id: 'Details',
     size: 250,
     minSize: 250,
     maxSize: 250,
-    accessorKey: 'workspaceId.title',
+    // accessorKey: 'workspaceId.title',
     header: 'Details',
     cell: ({ row }) => {
       const item = row.original;

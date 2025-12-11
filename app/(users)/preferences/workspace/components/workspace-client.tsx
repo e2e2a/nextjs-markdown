@@ -14,7 +14,7 @@ import { makeToastError } from '@/lib/toast';
 export const WorkspaceClient = () => {
   const { data: session, status } = useSession();
   const { data: workspaces, isLoading, error } = useGetUserWorkspaces(session?.user?._id as string);
-
+  console.log('workspaces', workspaces);
   useEffect(() => {
     if (error) makeToastError(error.message);
   }, [error]);
@@ -23,10 +23,10 @@ export const WorkspaceClient = () => {
 
   return (
     <SidebarInset className="flex flex-col h-screen w-full">
-      <SiteHeader title={'Workspace Name'} />
+      <SiteHeader title={'Workspaces'} />
       <div className="px-3 py-4 w-full flex-1 overflow-y-auto">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Workspace Name</h1>
+          <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Workspaces</h1>
           <Link href={'/preferences/workspace/create'}>
             <Button className="cursor-pointer">Create New Workspace</Button>
           </Link>

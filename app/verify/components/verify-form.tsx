@@ -78,17 +78,13 @@ export function VerifyForm({ tokenValue, expiresCode, className, ...props }: IPr
         },
         onError: err => {
           form.setError('code', {}, { shouldFocus: true });
-          makeToastError(err.message);
-          return;
-        },
-        onSettled: () => {
           setLoading(false);
+
+          makeToastError(err.message);
           return;
         },
       }
     );
-
-    setLoading(false);
   };
 
   const handleResend = async () => {

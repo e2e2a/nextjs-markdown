@@ -1,6 +1,7 @@
 import Project from '@/models/project';
 import { PopulateOptions } from 'mongoose';
-import { CreateProjectDTO, IProject, ProjectPushNodeDTO, UpdateProjectDTO } from '@/types';
+import { IProject, ProjectPushNodeDTO, UpdateProjectDTO } from '@/types';
+import { projectMemberRepository } from './projectMember';
 
 const updateOptions = { new: true, runValidators: true };
 
@@ -21,7 +22,8 @@ export const projectRepository = {
   findProjectByIdAndUserId: (data: { _id: string; userId: string }) =>
     Project.findOne(data).populate('nodes').lean<IProject>(),
 
-  findProjectByTitle: (title: string) => Project.findOne({ title }).populate('nodes'),
+  findProjectByTitle: (workspaceId: string, title: string) =>
+    Project.findOne({ workspaceId, title: { $regex: new RegExp(title, 'i') } }),
 
   findProjectsByUserId: (userId: string) =>
     Project.find({ userId, 'archived.isArchived': false }).populate({
@@ -29,7 +31,16 @@ export const projectRepository = {
       match: { parentId: null },
     }),
 
-  create: (data: CreateProjectDTO) => new Project(data).save(),
+  create: async (data: { workspaceId: string; title: string; createdBy: string }) => {
+    const project = await new Project(data).save();
+    await projectMemberRepository.create({
+      role: 'owner',
+      userId: data.createdBy,
+      workspaceId: data.workspaceId,
+      projectId: project._id.toString(),
+    });
+    return project;
+  },
 
   pushNode(id: string, data: ProjectPushNodeDTO): Promise<IProject | null> {
     return Project.findByIdAndUpdate(

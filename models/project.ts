@@ -1,11 +1,11 @@
 import mongoose, { Schema, models, model, Document } from 'mongoose';
-import { INode } from './node';
 
 export interface IProject extends Document {
-  userId: mongoose.Schema.Types.ObjectId;
   workspaceId: mongoose.Schema.Types.ObjectId;
   title: string;
-  nodes: (Schema.Types.ObjectId | INode)[];
+  // nodes: (Schema.Types.ObjectId | INode)[];
+  createdBy: mongoose.Schema.Types.ObjectId;
+
   archived: {
     isArchived: boolean;
     archivedAt?: Date;
@@ -15,9 +15,10 @@ export interface IProject extends Document {
 
 const projectSchema = new Schema<IProject>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User' },
     workspaceId: { type: Schema.Types.ObjectId, ref: 'User' },
     title: { type: String },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+
     // nodes: [{ type: Schema.Types.ObjectId, ref: 'Node' }],
     archived: {
       isArchived: { type: Boolean, default: false },

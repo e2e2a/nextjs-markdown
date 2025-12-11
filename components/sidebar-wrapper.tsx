@@ -3,15 +3,29 @@ import React, { useEffect, useState } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { INavItem } from '@/types';
+import { useParams } from 'next/navigation';
 
 type IProps = {
   data: INavItem[];
   children: React.ReactNode;
+  type: 'workspace' | 'preferences';
 };
 
-export function SidebarWrapper({ data, children }: IProps) {
+export function SidebarWrapper({ data, children, type }: IProps) {
   const [isMounted, setIsMounted] = useState(false);
-
+  const params = useParams();
+  const id = params?.id as string;
+  let initialLink = '';
+  switch (type) {
+    case 'workspace':
+      initialLink = `/workspace/${id}/`;
+      break;
+    case 'preferences':
+      initialLink = '/preferences';
+      break;
+    default:
+      initialLink = '';
+  }
   // Set mounted state after initial render on the client
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -33,7 +47,7 @@ export function SidebarWrapper({ data, children }: IProps) {
         } as React.CSSProperties
       }
     >
-      <AppSidebar data={data} collapsible="icon" variant="sidebar" />
+      <AppSidebar data={data} initialLink={initialLink} collapsible="icon" variant="sidebar" />
       {children}
     </SidebarProvider>
   );

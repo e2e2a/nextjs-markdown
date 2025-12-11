@@ -10,14 +10,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useCallback, useState } from 'react';
-import { IUserInvitations } from '@/types';
+import { IProject } from '@/types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { makeToastError, makeToastSucess } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { useInvitationMutations } from '@/hooks/invitation/useMutation';
 
 interface IProps {
-  item: IUserInvitations;
+  item: IProject;
 }
 
 export function Actions({ item }: IProps) {
@@ -26,7 +26,7 @@ export function Actions({ item }: IProps) {
 
   const mutation = useInvitationMutations();
 
-  const handleAccept = useCallback(() => {
+  const handleDecline = useCallback(() => {
     setLoading(true);
     mutation.accept.mutate(item.workspaceId._id as string, {
       onSuccess: () => {
@@ -44,7 +44,7 @@ export function Actions({ item }: IProps) {
     });
   }, [item, mutation]);
 
-  const handleDecline = useCallback(() => {
+  const handleAccept = useCallback(() => {
     setLoading(true);
     mutation.decline.mutate(item.workspaceId._id as string, {
       onSuccess: () => {

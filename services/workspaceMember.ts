@@ -5,40 +5,32 @@ import { workspaceMemberRepository } from '@/repositories/workspaceMember';
 export const workspaceMemberService = {
   create: async (
     members: {
-      role: 'owner' | 'member' | 'viewer';
+      role: 'owner' | 'editor' | 'viewer';
       email: string;
       invitedBy: string;
-      status: 'pending' | 'accepted';
       workspaceId: string;
     }[]
   ) => {
     const res = MembersSchema.safeParse(members);
-    if (!res.success) throw new HttpError('Invalid member fields.', 400);
-    await workspaceMemberService.checkDuplicateEmails(members);
-    const newMembers = await workspaceMemberRepository.createMany(members);
-    if (!newMembers) throw new HttpError('Semething went wrong.', 500);
 
-    return newMembers;
+    if (!res.success) throw new HttpError('Invalid member fields.', 400);
+    const existing = await workspaceMemberService.checkWorkspaceMemberExistence(members);
+
+    if (members.length > 0) {
+      let nonExisting = members;
+      if (existing.length > 0) nonExisting = members.filter(e => !existing.includes(e));
+      if (nonExisting.length > 0) await workspaceMemberRepository.createMany(nonExisting);
+    }
+    return true;
   },
 
-  checkDuplicateEmails: async (
+  checkWorkspaceMemberExistence: async (
     members: {
-      role: 'owner' | 'member' | 'viewer';
       email: string;
-      invitedBy: string;
-      status: 'pending' | 'accepted';
       workspaceId: string;
     }[]
   ) => {
     const emails = members.map(m => m.email);
-    const existing = await workspaceMemberRepository.findExistingEmails(
-      members[0].workspaceId,
-      emails
-    );
-
-    if (existing.length > 0)
-      throw new HttpError('Some users are already members of this workspace.', 409);
-
-    return existing;
+    return await workspaceMemberRepository.findExistingEmails(members[0].workspaceId, emails);
   },
 };

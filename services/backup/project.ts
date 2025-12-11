@@ -3,8 +3,7 @@ import { memberRepository } from '@/repositories/member';
 import { nodeRepository } from '@/repositories/node';
 import { projectRepository } from '@/repositories/project';
 import { CreateProjectDTO, INode, IProject, ProjectPushNodeDTO } from '@/types';
-import { Session, User } from 'next-auth';
-import { projectMemberService } from './projectMember';
+import { Session } from 'next-auth';
 
 const sortNodes = (nodes: INode[]) => {
   return [...nodes].sort((a, b) => {
@@ -14,41 +13,23 @@ const sortNodes = (nodes: INode[]) => {
   });
 };
 
+export const checkExistence = async (data: { userId: string; title: string }) => {
+  const projects = await projectRepository.findProjectsByUserId(data.userId);
+  const exists = projects.some(
+    (proj: IProject) => proj.title?.toLowerCase() === data.title?.toLowerCase()
+  );
+
+  if (exists) throw new HttpError(`Project name is ${data.title} already exist.`, 409);
+
+  return;
+};
+
 export const projectService = {
-  create: async (
-    user: User,
-    data: {
-      title: string;
-      workspaceId: string;
-      members: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
-    }
-  ) => {
-    const { workspaceId, title, members } = data;
-    const newProject = await projectRepository.create({
-      workspaceId,
-      title,
-      createdBy: user._id!.toString(),
-    });
-    if (!newProject) throw new HttpError('Semething went wrong.', 500);
-
-    if (members.length > 0) {
-      const membersDataToCreate = members.map(member => ({
-        ...member,
-        projectId: newProject._id.toString(),
-        workspaceId: data.workspaceId,
-      }));
-      const newMembers = await projectMemberService.create(user, membersDataToCreate);
-      if (!newMembers) throw new HttpError('Semething went wrong.', 500);
-    }
-
-    return newProject;
-  },
-
   createProject: async (data: CreateProjectDTO) => {
-    // await checkExistenceProjectTitle({
-    //   userId: data.userId!,
-    //   title: data.title || '',
-    // });
+    await checkExistence({
+      userId: data.userId!,
+      title: data.title || '',
+    });
     return projectRepository.create(data);
   },
 
@@ -110,12 +91,12 @@ export const projectService = {
   findProjectsByUserId: async (userId: string) => projectRepository.findProjectsByUserId(userId),
 
   updateProjectById: async (id: string, data: Partial<IProject>) => {
-    // if (data.title) {
-    //   await checkExistence({
-    //     userId: data.userId!,
-    //     title: data.title || '',
-    //   });
-    // }
+    if (data.title) {
+      await checkExistence({
+        userId: data.userId!,
+        title: data.title || '',
+      });
+    }
     if (data.archived) return projectRepository.archiveById(id, data);
     return projectRepository.updateProjectById(id, data);
   },

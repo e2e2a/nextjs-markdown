@@ -11,7 +11,6 @@ export const workspaceRepository = {
     await workspaceMemberRepository.create({
       role: 'owner',
       email: user.email,
-      userId: user._id!.toString(),
       status: 'accepted',
       workspaceId: workspace._id,
     });

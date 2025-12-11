@@ -1,5 +1,20 @@
+import {
+  getByEmailAndStatusFinalCleanupStages,
+  getOwnerCountStages,
+} from '@/aggregation/workspacemember/findByEmailAndStatus';
+import {
+  getFindMembersInitialMatchStage,
+  getFindMembersLookupStages,
+} from '@/aggregation/workspacemember/findMembers';
+import {
+  getOneMembershipFinalCleanupStages,
+  getInitialStages,
+  getMemberProjectsLookupStage,
+  getOwnerProjectsLookupStage,
+} from '@/aggregation/workspacemember/findOneMembership';
+import { addLookup } from '@/lib/helpers/aggregationHelpers';
 import WorkspaceMember from '@/models/workspaceMember';
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 
 export interface IPopulateWorkspaceMember {
   userId?: boolean;
@@ -7,38 +22,33 @@ export interface IPopulateWorkspaceMember {
   invitedBy?: boolean;
 }
 
-const addLookup = (pipeline: PipelineStage[], localField: string, from: string) => {
-  pipeline.push({
-    $lookup: {
-      from,
-      localField,
-      foreignField: '_id',
-      as: localField,
-    },
-  });
-  pipeline.push({
-    $unwind: { path: `$${localField}`, preserveNullAndEmptyArrays: true },
-  });
-};
-
 export const workspaceMemberRepository = {
   createMany: async (
     members: {
-      role: 'owner' | 'member' | 'viewer';
+      role: 'owner' | 'editor' | 'viewer';
       email: string;
       invitedBy: string;
-      status: 'pending' | 'accepted';
       workspaceId: string;
     }[]
   ) => WorkspaceMember.insertMany(members),
 
   create: async (data: {
-    role: 'owner' | 'member' | 'viewer';
+    role: 'owner' | 'editor' | 'viewer';
     email: string;
-    userId: string;
+    // userId: string;
     status: 'pending' | 'accepted';
     workspaceId: string;
   }) => await new WorkspaceMember(data).save(),
+
+  findMembers: async (data: { workspaceId: string; email: string }) => {
+    const { workspaceId, email } = data;
+    const initialStages = getFindMembersInitialMatchStage(workspaceId, email);
+    const lookupAndCleanupStages = getFindMembersLookupStages();
+    const pipeline: PipelineStage[] = [...initialStages, ...lookupAndCleanupStages, { $limit: 1 }];
+
+    const result = await WorkspaceMember.aggregate(pipeline);
+    return result[0] || null;
+  },
 
   findByEmailAndStatus: async (
     data: { email: string; status: 'pending' | 'accepted' },
@@ -46,28 +56,11 @@ export const workspaceMemberRepository = {
   ) => {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: data });
-    if (populate.workspaceId) addLookup(pipeline, 'workspaceId', 'workspaces');
-    if (populate.userId) addLookup(pipeline, 'userId', 'users');
-    if (populate.invitedBy) addLookup(pipeline, 'invitedBy', 'users');
+    if (populate.workspaceId) addLookup(pipeline, 'workspaceId', '_id', 'workspaces');
+    if (populate.userId) addLookup(pipeline, 'email', 'email', 'users');
+    if (populate.invitedBy) addLookup(pipeline, 'invitedBy', 'email', 'users');
 
-    // Owner count
-    if (data.status === 'accepted') {
-      pipeline.push({
-        $lookup: {
-          from: 'workspacemembers',
-          let: { wid: '$workspaceId._id' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$workspaceId', '$$wid'] } } },
-            { $match: { role: 'owner', status: 'accepted' } },
-          ],
-          as: 'owners',
-        },
-      });
-
-      pipeline.push({
-        $addFields: { ownerCount: { $size: '$owners' } },
-      });
-    }
+    pipeline.push(...getOwnerCountStages());
 
     pipeline.push({
       $project: {
@@ -78,15 +71,11 @@ export const workspaceMemberRepository = {
         role: 1,
         status: 1,
         createdAt: 1,
-        ...(data.status === 'accepted' ? { ownerCount: 1 } : {}),
+        ownerCount: 1,
       },
     });
 
-    // Manual Remove fields
-    pipeline.push({
-      $unset: ['invitedBy.password', 'userId.password'],
-    });
-
+    pipeline.push(...getByEmailAndStatusFinalCleanupStages());
     return await WorkspaceMember.aggregate(pipeline);
   },
 
@@ -94,7 +83,34 @@ export const workspaceMemberRepository = {
     return await WorkspaceMember.find({
       workspaceId,
       email: { $in: emails },
-    });
+    })
+      .lean()
+      .then(docs => docs.map(doc => doc.email));
+  },
+
+  findOneMembership: async (data: { workspaceId: string; email: string }) => {
+    const { workspaceId, email } = data;
+    const workspaceObjectId = new Types.ObjectId(workspaceId);
+
+    const initialStages = getInitialStages(workspaceObjectId, email);
+    const projectLookups = [
+      getMemberProjectsLookupStage(), // For members
+      getOwnerProjectsLookupStage(), // For owners
+    ];
+
+    // Final Projection and Cleanup
+    const finalStages = getOneMembershipFinalCleanupStages();
+
+    // Assemble the complete pipeline
+    const pipeline: PipelineStage[] = [
+      ...initialStages,
+      ...projectLookups,
+      ...finalStages,
+      { $limit: 1 },
+    ];
+
+    const result = await WorkspaceMember.aggregate(pipeline);
+    return result[0] || null;
   },
 
   deleteByWorkspaceIdAndUserId: (data: { workspaceId: string; userId: string }) =>

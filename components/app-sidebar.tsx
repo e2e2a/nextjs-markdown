@@ -17,9 +17,10 @@ import { BRAND_NAME } from '@/data/brand';
 type IProps = React.ComponentProps<typeof Sidebar> & {
   data: INavItem[];
   collapsible: 'offcanvas' | 'icon' | 'none';
+  initialLink: string;
 };
 
-export function AppSidebar({ data, collapsible, ...props }: IProps) {
+export function AppSidebar({ data, collapsible, initialLink, ...props }: IProps) {
   return (
     <Sidebar collapsible={collapsible} {...props}>
       <SidebarHeader>
@@ -42,7 +43,7 @@ export function AppSidebar({ data, collapsible, ...props }: IProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data} />
+        <NavMain initialLink={initialLink} items={data} />
       </SidebarContent>
     </Sidebar>
   );

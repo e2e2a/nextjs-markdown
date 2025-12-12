@@ -2,17 +2,17 @@
 import { DataTable } from '@/components/data-table';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset } from '@/components/ui/sidebar';
-import { useWorkspaceProjects } from '@/hooks/workspace/useQuery';
 import { notFound, useParams } from 'next/navigation';
 import { columns } from './columns';
 import { IProject } from '@/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useGetProjectsByWorkspaceId } from '@/hooks/project/useProjectQuery';
 
 export function WorkspaceProjectsClient() {
   const params = useParams();
   const workspaceId = params.id as string;
-  const { data, error } = useWorkspaceProjects(workspaceId);
+  const { data, error } = useGetProjectsByWorkspaceId(workspaceId);
   if (error) return notFound();
 
   return (
@@ -26,7 +26,7 @@ export function WorkspaceProjectsClient() {
           </Link>
         </div>
         <div className="w-full">
-          <DataTable columns={columns} data={(data?.member?.projects || []) as IProject[]} />
+          <DataTable columns={columns} data={(data || []) as IProject[]} />
         </div>
       </div>
     </SidebarInset>

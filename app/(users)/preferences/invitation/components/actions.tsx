@@ -28,7 +28,7 @@ export function Actions({ item }: IProps) {
 
   const handleAccept = useCallback(() => {
     setLoading(true);
-    mutation.accept.mutate(item.workspaceId._id as string, {
+    mutation.accept.mutate(item._id as string, {
       onSuccess: () => {
         makeToastSucess('Invitation accepted successfully.');
         setIsOpen(false);
@@ -46,7 +46,7 @@ export function Actions({ item }: IProps) {
 
   const handleDecline = useCallback(() => {
     setLoading(true);
-    mutation.decline.mutate(item.workspaceId._id as string, {
+    mutation.decline.mutate(item._id as string, {
       onSuccess: () => {
         makeToastSucess('Invitation declined successfully.');
         setIsOpen(false);

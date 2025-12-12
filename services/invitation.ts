@@ -1,6 +1,7 @@
 import { HttpError } from '@/lib/error';
 import { workspaceMemberRepository } from '@/repositories/workspaceMember';
 import mongoose from 'mongoose';
+
 export const invitationServices = {
   getUserInvitations: async (data: { email: string }) => {
     const workspaces = await workspaceMemberRepository.findByEmailAndStatus(
@@ -10,24 +11,21 @@ export const invitationServices = {
     return workspaces;
   },
 
-  accept: async (data: { userId: string; email: string; workspaceId: string }) => {
-    if (!mongoose.Types.ObjectId.isValid(data.workspaceId))
+  accept: async (data: { email: string; _id: string }) => {
+    if (!mongoose.Types.ObjectId.isValid(data._id))
       throw new HttpError('Invalid workspace ID.', 400);
 
-    const { userId, ...remainingData } = data;
-    const res = await workspaceMemberRepository.updateByWorspaceIdAndEmail(remainingData, {
+    const res = await workspaceMemberRepository.updateByIdAndEmail(data, {
       status: 'accepted',
-      userId,
     });
     if (!res) throw new HttpError('No workspace member to be updated.', 404);
     return;
   },
 
-  decline: async (data: { workspaceId: string; email: string }) => {
-    if (!mongoose.Types.ObjectId.isValid(data.workspaceId))
+  decline: async (data: { _id: string; email: string }) => {
+    if (!mongoose.Types.ObjectId.isValid(data._id))
       throw new HttpError('Invalid workspace ID.', 400);
-    console.log('run');
-    const res = await workspaceMemberRepository.deleteByWorkspaceIdAndEmail(data);
+    const res = await workspaceMemberRepository.deleteByIdAndEmail(data);
     if (!res) throw new HttpError('No workspace member to be deleted.', 404);
   },
 };

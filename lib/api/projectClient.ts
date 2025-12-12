@@ -1,46 +1,59 @@
-import { CreateProjectDTO, UpdateProjectDTO } from '@/types';
-
-const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/project`;
+const BASE_URL_PROJECTS = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
+const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 
 export const projectClient = {
-  async createProject(data: CreateProjectDTO) {
-    const res = await fetch(BASE_URL, {
+  async createProject(data: {
+    title: string;
+    workspaceId: string;
+    members: {
+      role: 'owner' | 'editor' | 'viewer';
+      email: string;
+    }[];
+  }) {
+    const res = await fetch(`${BASE_URL_PROJECTS}/projects`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || '');
+
     return json;
   },
 
-  async findProject(id: string, cookieHeader?: string) {
-    const res = await fetch(BASE_URL + `/${id}`, {
-      headers: {
-        Cookie: cookieHeader || '',
-      },
-      cache: 'no-store',
-    });
-    const json = await res.json();
-    if (!res.ok) return null;
-    return json;
+  async getProjectsByWorkspace(workspaceId: string) {
+    const res = await fetch(`${BASE_URL_PROJECTS}/me?wid=${workspaceId}`);
+    if (!res.ok) throw new Error('Failed to fetch workspace');
+    return res.json();
   },
 
-  async getProjectsByUserId(userId?: string) {
-    const res = await fetch(BASE_URL + `?userId=${userId}`);
-    const json = await res.json();
-    if (!res.ok) throw new Error('Failed to fetch projects');
-    return json;
-  },
+  // async findProject(id: string, cookieHeader?: string) {
+  //   const res = await fetch(BASE_URL_PROJECTS + `/${id}`, {
+  //     headers: {
+  //       Cookie: cookieHeader || '',
+  //     },
+  //     cache: 'no-store',
+  //   });
+  //   const json = await res.json();
+  //   if (!res.ok) return null;
+  //   return json;
+  // },
 
-  async updateProject(data: { _id: string } & UpdateProjectDTO) {
-    const res = await fetch(`${BASE_URL}/${data._id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.message || '');
-    return json;
-  },
+  // async getProjectsByUserId(userId?: string) {
+  //   const res = await fetch(BASE_URL_PROJECTS + `?userId=${userId}`);
+  //   const json = await res.json();
+  //   if (!res.ok) throw new Error('Failed to fetch projects');
+  //   return json;
+  // },
+
+  // async updateProject(data: { _id: string } & UpdateProjectDTO) {
+  //   const res = await fetch(`${BASE_URL_PROJECTS}/${data._id}`, {
+  //     method: 'PATCH',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(data),
+  //   });
+  //   const json = await res.json();
+  //   if (!res.ok) throw new Error(json.message || '');
+  //   return json;
+  // },
 };

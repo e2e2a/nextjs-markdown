@@ -2,7 +2,7 @@ import Project from '@/models/project';
 import { PopulateOptions } from 'mongoose';
 import { IProject, ProjectPushNodeDTO, UpdateProjectDTO } from '@/types';
 import { projectMemberRepository } from './projectMember';
-
+import mongoose from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
 
 export function populateChildren(path: string, depth: number = 3): PopulateOptions {
@@ -16,6 +16,25 @@ export function populateChildren(path: string, depth: number = 3): PopulateOptio
 
 export const projectRepository = {
   findAll: () => Project.find(),
+
+  find: async (workspaceId: string) => {
+    return await Project.aggregate([
+      { $match: { workspaceId: new mongoose.Types.ObjectId(workspaceId) } },
+
+      {
+        $lookup: {
+          from: 'projectmembers',
+          localField: '_id',
+          foreignField: 'projectId',
+          as: 'members',
+        },
+      },
+
+      { $addFields: { memberCount: { $size: '$members' } } },
+
+      { $project: { members: 0 } },
+    ]);
+  },
 
   findProject: (id: string) => Project.findById(id).populate('nodes'),
 

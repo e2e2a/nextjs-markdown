@@ -8,19 +8,3 @@ export function useGetUserWorkspaces(userId: string) {
     enabled: !!userId,
   });
 }
-
-export function useWorkspaceProjects(workspaceId: string) {
-  return useQuery({
-    queryKey: ['workspaceProjects', workspaceId],
-    queryFn: () => workspaceClient.getWorkspaceProjects(workspaceId),
-    enabled: !!workspaceId,
-  });
-}
-
-export function useWorkspaceMembers(workspaceId: string) {
-  return useQuery({
-    queryKey: ['workspaceMembers', workspaceId],
-    queryFn: () => workspaceClient.getWorkspaceMember(workspaceId),
-    enabled: !!workspaceId,
-  });
-}

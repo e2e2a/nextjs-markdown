@@ -38,7 +38,6 @@ export const workspaceService = {
     },
     user: User
   ) => {
-    console.log('run', data);
     const { workspaceId, title } = data;
     if (!mongoose.Types.ObjectId.isValid(workspaceId))
       throw new HttpError('Invalid workspace ID.', 400);
@@ -66,17 +65,6 @@ export const workspaceService = {
       { workspaceId: true }
     );
     return workspaces;
-  },
-
-  getUserWorkspaceProjects: async (workspaceId: string, email: string) => {
-    const membership = await workspaceMemberRepository.findOneMembership({
-      workspaceId,
-      email,
-    });
-
-    if (!membership) throw new HttpError('You are not a member of this workspace.', 403);
-
-    return membership;
   },
 
   leave: async (data: { workspaceId: string; userId: string }) => {

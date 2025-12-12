@@ -6,15 +6,9 @@ import {
   getFindMembersInitialMatchStage,
   getFindMembersLookupStages,
 } from '@/aggregation/workspacemember/findMembers';
-import {
-  getOneMembershipFinalCleanupStages,
-  getInitialStages,
-  getMemberProjectsLookupStage,
-  getOwnerProjectsLookupStage,
-} from '@/aggregation/workspacemember/findOneMembership';
 import { addLookup } from '@/lib/helpers/aggregationHelpers';
 import WorkspaceMember from '@/models/workspaceMember';
-import { PipelineStage, Types } from 'mongoose';
+import { PipelineStage } from 'mongoose';
 
 export interface IPopulateWorkspaceMember {
   userId?: boolean;
@@ -39,6 +33,9 @@ export const workspaceMemberRepository = {
     status: 'pending' | 'accepted';
     workspaceId: string;
   }) => await new WorkspaceMember(data).save(),
+
+  findOne: async (data: { workspaceId: string; email: string }) =>
+    await WorkspaceMember.findOne(data),
 
   findMembers: async (data: { workspaceId: string; email: string }) => {
     const { workspaceId, email } = data;
@@ -88,39 +85,14 @@ export const workspaceMemberRepository = {
       .then(docs => docs.map(doc => doc.email));
   },
 
-  findOneMembership: async (data: { workspaceId: string; email: string }) => {
-    const { workspaceId, email } = data;
-    const workspaceObjectId = new Types.ObjectId(workspaceId);
-
-    const initialStages = getInitialStages(workspaceObjectId, email);
-    const projectLookups = [
-      getMemberProjectsLookupStage(), // For members
-      getOwnerProjectsLookupStage(), // For owners
-    ];
-
-    // Final Projection and Cleanup
-    const finalStages = getOneMembershipFinalCleanupStages();
-
-    // Assemble the complete pipeline
-    const pipeline: PipelineStage[] = [
-      ...initialStages,
-      ...projectLookups,
-      ...finalStages,
-      { $limit: 1 },
-    ];
-
-    const result = await WorkspaceMember.aggregate(pipeline);
-    return result[0] || null;
-  },
-
   deleteByWorkspaceIdAndUserId: (data: { workspaceId: string; userId: string }) =>
     WorkspaceMember.findOneAndDelete(data),
 
-  deleteByWorkspaceIdAndEmail: (data: { workspaceId: string; email: string }) =>
+  deleteByIdAndEmail: (data: { _id: string; email: string }) =>
     WorkspaceMember.findOneAndDelete(data),
 
-  updateByWorspaceIdAndEmail: (
-    data: { email: string; workspaceId: string },
-    updateData: { status?: string; role?: string; userId?: string }
+  updateByIdAndEmail: (
+    data: { email: string; _id: string },
+    updateData: { status?: string; role?: string }
   ) => WorkspaceMember.findOneAndUpdate(data, updateData),
 };

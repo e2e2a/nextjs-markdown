@@ -19,10 +19,4 @@ export const userClient = {
     if (!res.ok) throw new Error(json.message || '');
     return json;
   },
-
-  async getUserInvitations() {
-    const res = await fetch(`${BASE_URL}/me/invitations`);
-    if (!res.ok) throw new Error('Failed to fetch project');
-    return res.json();
-  },
 };

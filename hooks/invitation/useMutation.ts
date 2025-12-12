@@ -5,7 +5,7 @@ export function useInvitationMutations() {
   const queryClient = useQueryClient();
 
   const accept = useMutation({
-    mutationFn: (workspaceId: string) => invitationClient.accept(workspaceId),
+    mutationFn: (id: string) => invitationClient.accept(id),
     onSuccess: data => {
       if (data && data.userId) {
         queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });
@@ -15,7 +15,7 @@ export function useInvitationMutations() {
     },
   });
   const decline = useMutation({
-    mutationFn: (workspaceId: string) => invitationClient.decline(workspaceId),
+    mutationFn: (id: string) => invitationClient.decline(id),
     onSuccess: data => {
       if (data && data.userId) {
         queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });

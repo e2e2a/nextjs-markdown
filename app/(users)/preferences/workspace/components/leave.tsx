@@ -14,7 +14,7 @@ import { IUserWorkspaces } from '@/types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { makeToastError } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
-import { useWorkspaceMutations } from '@/hooks/workspace/useMutation';
+import { useWorkspaceMemberMutations } from '@/hooks/workspasceMember/useMutation';
 
 interface IProps {
   item: IUserWorkspaces;
@@ -25,7 +25,7 @@ export function Leave({ item }: IProps) {
   const [loading, setLoading] = useState(false);
   const [disabled] = useState(item.role === 'owner' && item.ownerCount === 1);
 
-  const mutation = useWorkspaceMutations();
+  const mutation = useWorkspaceMemberMutations();
 
   const leaveWorkspace = useCallback(() => {
     setLoading(true);

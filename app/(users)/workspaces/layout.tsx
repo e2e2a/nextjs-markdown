@@ -7,7 +7,7 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarWrapper data={sidebarData} type={'workspace'}>
+    <SidebarWrapper data={sidebarData} type={'workspaces'}>
       {children}
     </SidebarWrapper>
   );

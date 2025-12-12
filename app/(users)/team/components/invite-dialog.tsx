@@ -29,7 +29,7 @@ import { makeToastError, makeToastSucess } from '@/lib/toast';
 import { projectIdSchema } from '@/lib/validators/projectId';
 import { useProjectsByUserIdQuery } from '@/hooks/project/useProjectQuery';
 import { useSession } from 'next-auth/react';
-import { useMemberMutations } from '@/hooks/member/useMemberMutations';
+import { useMemberMutations } from '@/hooks/member/useMutations';
 
 const formSchema = z.object({}).merge(emailSchema).merge(projectIdSchema);
 

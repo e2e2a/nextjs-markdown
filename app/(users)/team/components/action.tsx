@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { RotateCw, UserMinus, UserX } from 'lucide-react';
 import { MembersInvited } from '@/types';
 import { useCallback } from 'react';
-import { useMemberMutations } from '@/hooks/member/useMemberMutations';
+import { useMemberMutations } from '@/hooks/member/useMutations';
 import { makeToastError } from '@/lib/toast';
 import Tooltips from '@/components/tooltips';
 

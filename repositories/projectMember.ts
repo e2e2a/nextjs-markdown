@@ -1,4 +1,5 @@
 import ProjectMember from '@/models/projectMember';
+import mongoose from 'mongoose';
 
 export const projectMemberRepository = {
   create: async (data: {
@@ -25,5 +26,45 @@ export const projectMemberRepository = {
     })
       .lean()
       .then(docs => docs.map(doc => doc.email));
+  },
+
+  findProjectsByMember: async (data: { workspaceId: string; email: string }) => {
+    const { workspaceId, email } = data;
+    return ProjectMember.aggregate([
+      { $match: { workspaceId: new mongoose.Types.ObjectId(workspaceId), email } },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'projectId',
+          foreignField: '_id',
+          as: 'project',
+        },
+      },
+      { $unwind: '$project' },
+      {
+        $lookup: {
+          from: 'projectmembers',
+          let: { pid: '$projectId' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$projectId', '$$pid'] } } },
+            { $count: 'memberCount' },
+          ],
+          as: 'memberData',
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: [
+              '$project',
+              {
+                role: '$role',
+                memberCount: { $ifNull: [{ $first: '$memberData.memberCount' }, 0] },
+              },
+            ],
+          },
+        },
+      },
+    ]);
   },
 };

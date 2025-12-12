@@ -11,8 +11,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { makeToastError, makeToastSucess } from '@/lib/toast';
-import { useMemberMutations } from '@/hooks/member/useMemberMutations';
-import { useMembersByProjectIdQuery } from '@/hooks/member/useMemberQuery';
+import { useMemberMutations } from '@/hooks/member/useMutations';
+import { useMembersByProjectIdQuery } from '@/hooks/member/useQueries';
 
 interface IProps {
   project: IProject;

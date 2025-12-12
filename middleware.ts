@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/invite') ||
     pathname.startsWith('/project') ||
     pathname.startsWith('/preferences/') ||
-    pathname.startsWith('/workspace') ||
+    pathname.startsWith('/workspaces') ||
     pathname.startsWith('/trash')
   ) {
     const token = await getToken({ req: request, secret: SECRET });

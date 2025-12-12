@@ -4,7 +4,7 @@ import { ButtonGroup } from '@/components/ui/button-group';
 import { Eye, LogOut, MailCheck, MailX } from 'lucide-react';
 import { MembersInvited } from '@/types';
 import { useCallback } from 'react';
-import { useMemberMutations } from '@/hooks/member/useMemberMutations';
+import { useMemberMutations } from '@/hooks/member/useMutations';
 import { makeToastError } from '@/lib/toast';
 import Tooltips from '@/components/tooltips';
 import Link from 'next/link';

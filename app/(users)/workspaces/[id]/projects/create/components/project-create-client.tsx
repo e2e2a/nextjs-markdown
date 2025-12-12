@@ -17,8 +17,8 @@ import { MemberRole } from './member-role';
 import { useSession } from 'next-auth/react';
 import { redirect, useParams, useRouter } from 'next/navigation';
 import { workspaceSchema } from '@/lib/validators/workspace';
-import { useWorkspaceMutations } from '@/hooks/workspace/useMutation';
 import { makeToastError } from '@/lib/toast';
+import { useProjectMutations } from '@/hooks/project/useProjectMutations';
 
 export const WorkspaceCreateClient = () => {
   const { data: session, status } = useSession();
@@ -29,7 +29,7 @@ export const WorkspaceCreateClient = () => {
   const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>(
     []
   );
-  const mutation = useWorkspaceMutations();
+  const mutation = useProjectMutations();
   const router = useRouter();
   const form1 = useForm({
     resolver: zodResolver(workspaceSchema),

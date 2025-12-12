@@ -4,7 +4,7 @@ import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useSession } from 'next-auth/react';
 import { MembersInvited } from '@/types';
-import { useMembersByOwnerQuery } from '@/hooks/member/useMemberQuery';
+import { useMembersByOwnerQuery } from '@/hooks/member/useQueries';
 import { DataTable } from './data-table';
 import { columns } from './columns';
 import { sidebarData } from '@/data/sidebar/users';

@@ -4,7 +4,7 @@ import { DataTable } from './data-table';
 import { columns } from './columns';
 import { MembersInvited } from '@/types';
 import { useSession } from 'next-auth/react';
-import { useMembersByEmailQuery } from '@/hooks/member/useMemberQuery';
+import { useMembersByEmailQuery } from '@/hooks/member/useQueries';
 
 export function InvitationTabs() {
   const { data: session, status } = useSession();

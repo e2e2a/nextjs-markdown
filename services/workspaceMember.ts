@@ -33,4 +33,10 @@ export const workspaceMemberService = {
     const emails = members.map(m => m.email);
     return await workspaceMemberRepository.findExistingEmails(members[0].workspaceId, emails);
   },
+
+  getMembership: async (data: { workspaceId: string; email: string }) => {
+    const membership = await workspaceMemberRepository.findOne(data);
+    if (!membership) throw new HttpError('Not a workspace member', 403);
+    return membership;
+  },
 };

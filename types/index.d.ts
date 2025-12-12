@@ -50,7 +50,8 @@ export type IProject = {
   workspaceId: string;
   userId: string;
   title: string;
-  nodes: INode[];
+  role?: 'owner' | 'editor' | 'viewer';
+  nodes?: INode[];
   members?: string[];
   archived: IArchived;
 };

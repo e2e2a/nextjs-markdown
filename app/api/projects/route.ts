@@ -30,25 +30,21 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
     const body = await req.json();
     await connectDb();
-
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
-    body.userId = session.user._id;
 
-    const project = await projectService.createProject(body);
+    await projectService.create(session.user, {
+      members: body.members,
+      workspaceId: id,
+      title: body.title,
+    });
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Project created successfully',
-        data: { userId: project.userId, project: project },
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, userId: session.user._id });
   } catch (err) {
     return handleError(err);
   }

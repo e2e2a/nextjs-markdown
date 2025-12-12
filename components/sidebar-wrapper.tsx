@@ -8,7 +8,7 @@ import { useParams } from 'next/navigation';
 type IProps = {
   data: INavItem[];
   children: React.ReactNode;
-  type: 'workspace' | 'preferences';
+  type: 'workspaces' | 'preferences';
 };
 
 export function SidebarWrapper({ data, children, type }: IProps) {
@@ -17,11 +17,11 @@ export function SidebarWrapper({ data, children, type }: IProps) {
   const id = params?.id as string;
   let initialLink = '';
   switch (type) {
-    case 'workspace':
-      initialLink = `/workspace/${id}/`;
+    case 'workspaces':
+      initialLink = `/workspaces/${id}/`;
       break;
     case 'preferences':
-      initialLink = '/preferences';
+      initialLink = '';
       break;
     default:
       initialLink = '';

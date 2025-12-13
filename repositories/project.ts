@@ -1,6 +1,6 @@
 import Project from '@/models/project';
 import { PopulateOptions } from 'mongoose';
-import { IProject, ProjectPushNodeDTO, UpdateProjectDTO } from '@/types';
+import { IProject, ProjectPushNodeDTO } from '@/types';
 import { projectMemberRepository } from './projectMember';
 import mongoose from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
@@ -84,8 +84,8 @@ export const projectRepository = {
       .exec();
   },
 
-  updateProjectById: (id: string, data: UpdateProjectDTO) => {
-    return Project.findByIdAndUpdate(id, data, { new: true, runValidators: true })
+  updateProjectTitle: (id: string, title: string) => {
+    return Project.findByIdAndUpdate(id, { $set: { title } }, { new: true, runValidators: true })
       .lean<IProject>()
       .exec();
   },
@@ -114,9 +114,7 @@ export const projectRepository = {
       .exec();
   },
 
-  deleteOne(userId: string, _id: string) {
-    Project.deleteOne({ userId, _id }).exec();
-  },
+  deleteOne: (_id: string) => Project.findOneAndDelete({ _id }).exec(),
 
   findArchivedProjectsByUserId(userId: string) {
     return Project.find({ userId, 'archived.isArchived': true })

@@ -71,8 +71,8 @@ export const WorkspaceCreateClient = () => {
         workspaceId,
         members,
       };
-      console.log('payload', payload);
-      mutation.createProject.mutate(payload, {
+
+      mutation.create.mutate(payload, {
         onSuccess: data => {
           return router.push(`/workspace/${data.workspaceId}/projects`);
         },

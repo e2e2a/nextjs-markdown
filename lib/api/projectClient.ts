@@ -1,8 +1,8 @@
 const BASE_URL_PROJECTS = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
-const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
+// const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 
 export const projectClient = {
-  async createProject(data: {
+  async create(data: {
     title: string;
     workspaceId: string;
     members: {
@@ -10,10 +10,32 @@ export const projectClient = {
       email: string;
     }[];
   }) {
-    const res = await fetch(`${BASE_URL_PROJECTS}/projects`, {
+    const res = await fetch(`${BASE_URL_PROJECTS}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+
+    return json;
+  },
+
+  async update(data: { pid: string; title: string }) {
+    const res = await fetch(`${BASE_URL_PROJECTS}/${data.pid}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: data.title }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+
+    return json;
+  },
+
+  async delete(data: { pid: string }) {
+    const res = await fetch(`${BASE_URL_PROJECTS}/${data.pid}`, {
+      method: 'DELETE',
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || '');

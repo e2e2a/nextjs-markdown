@@ -49,4 +49,10 @@ export const projectMemberService = {
       emails
     );
   },
+
+  getMembership: async (data: { projectId: string; email: string }) => {
+    const membership = await projectMemberRepository.findOne(data);
+    if (!membership) throw new HttpError('Not a project member', 403);
+    return membership;
+  },
 };

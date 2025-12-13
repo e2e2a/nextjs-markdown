@@ -7,10 +7,10 @@ export interface IProject extends Document {
   createdBy: mongoose.Schema.Types.ObjectId;
 
   archived: {
-    isArchived: boolean;
-    archivedAt?: Date;
-    archivedBy?: mongoose.Schema.Types.ObjectId;
-  };
+    by: string;
+    at: Date;
+    reason: mongoose.Schema.Types.ObjectId;
+  } | null;
 }
 
 const projectSchema = new Schema<IProject>(
@@ -21,9 +21,8 @@ const projectSchema = new Schema<IProject>(
 
     // nodes: [{ type: Schema.Types.ObjectId, ref: 'Node' }],
     archived: {
-      isArchived: { type: Boolean, default: false },
-      archivedAt: Date,
-      archivedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      by: { type: Schema.Types.ObjectId, ref: 'User' },
+      at: Date,
     },
   },
   {

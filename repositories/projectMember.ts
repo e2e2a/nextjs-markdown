@@ -67,4 +67,6 @@ export const projectMemberRepository = {
       },
     ]);
   },
+
+  findOne: async (data: { projectId: string; email: string }) => await ProjectMember.findOne(data),
 };

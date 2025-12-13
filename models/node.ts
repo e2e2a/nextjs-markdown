@@ -9,10 +9,10 @@ export interface INode extends Document {
   title?: string;
   content: string;
   archived: {
-    isArchived: boolean;
-    archivedAt?: Date;
-    archivedBy?: mongoose.Schema.Types.ObjectId;
-  };
+    by: string;
+    at: Date;
+    reason: mongoose.Schema.Types.ObjectId;
+  } | null;
 }
 
 const nodeSchema = new Schema<INode>(
@@ -25,9 +25,8 @@ const nodeSchema = new Schema<INode>(
     title: { type: String },
     content: { type: String },
     archived: {
-      isArchived: { type: Boolean, default: false },
-      archivedAt: Date,
-      archivedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      by: { type: Schema.Types.ObjectId, ref: 'User' },
+      at: Date,
     },
   },
   {

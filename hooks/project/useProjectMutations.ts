@@ -4,7 +4,7 @@ import { projectClient } from '@/lib/api/projectClient';
 export function useProjectMutations() {
   const queryClient = useQueryClient();
 
-  const createProject = useMutation({
+  const create = useMutation({
     mutationFn: (data: {
       title: string;
       workspaceId: string;
@@ -12,12 +12,31 @@ export function useProjectMutations() {
         role: 'owner' | 'editor' | 'viewer';
         email: string;
       }[];
-    }) => projectClient.createProject(data),
+    }) => projectClient.create(data),
     onSuccess: data => {
-      if (data && data.userId)
-        queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });
+      if (data && data.workspaceId)
+        queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
       return;
     },
   });
-  return { createProject };
+
+  const update = useMutation({
+    mutationFn: (data: { pid: string; title: string }) => projectClient.update(data),
+    onSuccess: data => {
+      if (data && data.workspaceId)
+        queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
+      return;
+    },
+  });
+
+  const handleDelete = useMutation({
+    mutationFn: (data: { pid: string }) => projectClient.delete(data),
+    onSuccess: data => {
+      if (data && data.workspaceId)
+        queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
+      return;
+    },
+  });
+
+  return { create, update, handleDelete };
 }

@@ -56,7 +56,7 @@ export const columns: ColumnDef<IUserWorkspaces>[] = [
       const value = row.getValue('Workspace Name');
       return (
         <Link
-          href={`/workspace/${workspace._id}/projects`}
+          href={`/workspaces/${workspace._id}/projects`}
           className="text-blue-500 hover:underline"
         >
           {value as string}

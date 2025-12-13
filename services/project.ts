@@ -2,7 +2,7 @@ import { HttpError } from '@/lib/error';
 import { memberRepository } from '@/repositories/member';
 import { nodeRepository } from '@/repositories/node';
 import { projectRepository } from '@/repositories/project';
-import { INode, IProject, ProjectPushNodeDTO } from '@/types';
+import { INode, ProjectPushNodeDTO } from '@/types';
 import { Session, User } from 'next-auth';
 import { projectMemberService } from './projectMember';
 import { projectMemberRepository } from '@/repositories/projectMember';
@@ -85,6 +85,32 @@ export const projectService = {
     });
   },
 
+  updateProjectTitle: async (projectId: string, title: string, user: User) => {
+    if (!mongoose.Types.ObjectId.isValid(projectId))
+      throw new HttpError('Invalid project ID.', 400);
+    await projectMemberService.getMembership({ projectId, email: user.email });
+
+    const res = projectSchema.safeParse({ title });
+    if (!res.success) throw new HttpError('Invalid fields.', 400);
+
+    const project = await projectRepository.updateProjectTitle(projectId, title);
+    if (!project) throw new HttpError('No project to be updated.', 404);
+
+    return project;
+  },
+
+  deleteProject: async (projectId: string, user: User) => {
+    if (!mongoose.Types.ObjectId.isValid(projectId))
+      throw new HttpError('Invalid project ID.', 400);
+
+    await projectMemberService.getMembership({ projectId, email: user.email });
+
+    const project = await projectRepository.deleteOne(projectId);
+    if (!project) throw new HttpError('No project to be deleted.', 404);
+
+    return project;
+  },
+
   findProject: async (session: Session, id: string) => {
     const project = await projectRepository.findProject(id);
     if (!project) return null;
@@ -141,17 +167,6 @@ export const projectService = {
   },
 
   findProjectsByUserId: async (userId: string) => projectRepository.findProjectsByUserId(userId),
-
-  updateProjectById: async (id: string, data: Partial<IProject>) => {
-    // if (data.title) {
-    //   await checkExistence({
-    //     userId: data.userId!,
-    //     title: data.title || '',
-    //   });
-    // }
-    if (data.archived) return projectRepository.archiveById(id, data);
-    return projectRepository.updateProjectById(id, data);
-  },
 
   pullNode: async (dataToFind: { _id: string; userId: string }, data: { nodes: string[] }) => {
     return projectRepository.pullNode(dataToFind, data);

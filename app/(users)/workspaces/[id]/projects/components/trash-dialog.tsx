@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -26,6 +25,9 @@ import {
   Form,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { makeToastError, makeToastSucess } from '@/lib/toast';
+import { useProjectMutations } from '@/hooks/project/useProjectMutations';
 
 interface IProps {
   isOpen: boolean;
@@ -35,17 +37,38 @@ interface IProps {
   item: IProject;
 }
 export default function TrashDialog({ isOpen, setIsOpen, loading, item }: IProps) {
-  const form = useForm<z.infer<typeof projectSchema>>({
-    resolver: zodResolver(projectSchema),
+  const refinedSchema = projectSchema.refine(
+    data => {
+      if (!data.title) return false;
+      return data.title.toLowerCase() === item.title;
+    },
+    {
+      message: 'Please type the correct project name.',
+      path: ['title'],
+    }
+  );
+  const mutation = useProjectMutations();
+  const form = useForm<z.infer<typeof refinedSchema>>({
+    resolver: zodResolver(refinedSchema),
     defaultValues: {
       title: '',
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof projectSchema>) => {
-    const { title } = values;
-    console.log('title', title);
-    // setLoading(true);
+  const onSubmit = async () => {
+    mutation.handleDelete.mutate(
+      { pid: item._id },
+      {
+        onSuccess: () => {
+          makeToastSucess('Project Name has been updated.');
+          return;
+        },
+        onError: err => {
+          makeToastError(err.message);
+          return;
+        },
+      }
+    );
   };
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -71,57 +94,61 @@ export default function TrashDialog({ isOpen, setIsOpen, loading, item }: IProps
           You are about to delete the project. All the data inside of the project will be lost.
         </TooltipContent>
       </Tooltip>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <AlertDialogContent
-            className=""
-            onClick={e => e.preventDefault()}
-            onContextMenu={e => e.preventDefault()}
-          >
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl sm:text-2xl font-bold text-start flex items-center gap-x-1">
-                <TriangleAlert className="text-red-500 h-9 w-9" /> Are you sure you want to delete
-                this project?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                All users will lose access to project{' '}
-                <span className="font-bold">{item.title}</span> and all backup snapshots for this
-                project will be removed.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <span>Are you sure you want to proceed?</span>
-            <FieldGroup>
-              <Field>
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type {item.title} to confirm your action</FormLabel>
-                      <FormControl>
-                        <Input type="title" placeholder={item.title} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </Field>
-            </FieldGroup>
-            <AlertDialogFooter>
-              <AlertDialogCancel type="button" className="cursor-pointer">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-red-500 hover:bg-red-500/90 cursor-pointer"
-                disabled={loading}
-                // onClick={() => handleDecline()}
-              >
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </form>
-      </Form>
+      <AlertDialogContent className="flex flex-row gap-x-1">
+        <div className=" ">
+          <div className="bg-red-200 rounded-full p-1 flex items-center justify-center h-8 w-8">
+            <TriangleAlert className="text-red-600 h-5 w-5" />
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <AlertDialogHeader className="gap-y-3">
+            <AlertDialogTitle className="sm:text-xl text-start font-bold">
+              Are you sure you want to delete this project?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-black text-start">
+              This action cannot be undone. This will permanently delete the project{' '}
+              <span className="font-bold">{item.title}</span>, including all associated tasks,
+              files, and data. All team members will immediately lose access.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="gap-y-3 flex flex-col mt-2">
+              <span className="my-3">Are you sure you wish to proceed?</span>
+              <FieldGroup>
+                <Field>
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold">
+                          Type &quot;{item.title}&quot; to confirm your action
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="title" {...field} autoFocus />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </Field>
+              </FieldGroup>
+              <AlertDialogFooter className="mt-5">
+                <AlertDialogCancel type="button" className="cursor-pointer">
+                  Cancel
+                </AlertDialogCancel>
+                <Button
+                  className="bg-red-500 hover:bg-red-500/90 cursor-pointer"
+                  disabled={loading}
+                  type="submit"
+                >
+                  Continue
+                </Button>
+              </AlertDialogFooter>
+            </form>
+          </Form>
+        </div>
+      </AlertDialogContent>
     </AlertDialog>
   );
 }

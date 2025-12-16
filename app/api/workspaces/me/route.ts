@@ -13,7 +13,7 @@ export async function GET() {
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 
     const workspaces = await workspaceService.getUserWorkspaces(session.user.email);
-    return NextResponse.json(workspaces);
+    return NextResponse.json(workspaces, { status: 200 });
   } catch (err) {
     return handleError(err);
   }

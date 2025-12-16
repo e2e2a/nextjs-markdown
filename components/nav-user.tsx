@@ -21,7 +21,7 @@ export function NavUser() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="h-8 w-8 grayscale">
-          <AvatarFallback className="rounded-full bg-primary text-secondary uppercase">
+          <AvatarFallback className="rounded-full bg-primary text-accent-foreground uppercase">
             {user.username.trim()[0]}
           </AvatarFallback>
         </Avatar>

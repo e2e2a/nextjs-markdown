@@ -44,7 +44,7 @@ export const authCallbacks = {
     session.user.email_verified = authUser.email_verified;
     session.user.isOnboard = authUser.isOnboard;
 
-    token.try = 'seomthing';
+    // token.try = 'seomthing';
 
     return session;
   },
@@ -56,7 +56,6 @@ export const authCallbacks = {
     profile?: Profile;
   }) {
     const { token, user } = params;
-
     if (user) {
       /**
        * This will run once if there is a sucessful signIn mutation

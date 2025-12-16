@@ -8,7 +8,7 @@ import { projectMemberService } from './projectMember';
 import { projectMemberRepository } from '@/repositories/projectMember';
 import mongoose from 'mongoose';
 import { projectSchema } from '@/lib/validators/project';
-import { workspaceMemberService } from './workspaceMember';
+import { workspaceMemberServices } from './workspaceMember';
 
 const sortNodes = (nodes: INode[]) => {
   return [...nodes].sort((a, b) => {
@@ -28,7 +28,7 @@ export const projectService = {
     }
   ) => {
     const { workspaceId, title } = data;
-    await workspaceMemberService.getMembership({ workspaceId, email: user.email });
+    await workspaceMemberServices.getMembership({ workspaceId, email: user.email });
     if (!mongoose.Types.ObjectId.isValid(workspaceId))
       throw new HttpError('Invalid workspace ID.', 400);
 
@@ -76,7 +76,7 @@ export const projectService = {
   },
 
   async getMyWorkspaceProjects(workspaceId: string, email: string) {
-    const membership = await workspaceMemberService.getMembership({ workspaceId, email });
+    const membership = await workspaceMemberServices.getMembership({ workspaceId, email });
     if (membership.role === 'owner') return await projectRepository.find(workspaceId);
 
     return await projectMemberRepository.findProjectsByMember({

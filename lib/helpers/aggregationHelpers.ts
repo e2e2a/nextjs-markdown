@@ -12,7 +12,8 @@ export const addLookup = (
   pipeline: PipelineStage[],
   localField: string,
   foreignField: string,
-  from: string
+  from: string,
+  isArray: boolean
 ) => {
   pipeline.push({
     $lookup: {
@@ -22,7 +23,8 @@ export const addLookup = (
       as: localField,
     },
   });
-  pipeline.push({
-    $unwind: { path: `$${localField}`, preserveNullAndEmptyArrays: true },
-  });
+  if (!isArray)
+    pipeline.push({
+      $unwind: { path: `$${localField}`, preserveNullAndEmptyArrays: true },
+    });
 };

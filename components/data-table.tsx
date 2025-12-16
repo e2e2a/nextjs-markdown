@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/table';
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import PaginationDropdown from '@/components/paginationDropdown';
 import FilterBy from './filter-by';
 
@@ -37,7 +36,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
-
+  const [editingMemberId, setEditingMemberId] = React.useState<string | null>(null);
   const table = useReactTable({
     data,
     columns,
@@ -50,6 +49,10 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
+    meta: {
+      editingMemberId,
+      setEditingMemberId,
+    },
     state: {
       sorting,
       columnFilters,
@@ -62,13 +65,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
 
   return (
     <div className="w-full space-y-5 overflow-hidden!">
-      <div className="flex items-center justify-between pt-4">
-        {/* <Input
-          placeholder="Filter titles..."
-          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
-          onChange={event => table.getColumn('email')?.setFilterValue(event.target.value)}
-          className="max-w-sm"
-        /> */}
+      <div className="flex items-center justify-between pt-4 w-full px-1">
         <FilterBy table={table} />
         <PaginationDropdown pagination={pagination} setPagination={setPagination} />
       </div>
@@ -122,12 +119,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                   {row.getVisibleCells().map(cell => {
                     const cellValue = cell.getValue<string | number | undefined>();
                     return (
-                      <TableCell
-                        key={cell.id}
-                        title={(cellValue as string) || ''}
-                        className=""
-                        // className={cn(row.index === 5 ? 'max-w-2.5' : '', 'truncate')}
-                      >
+                      <TableCell key={cell.id} title={(cellValue as string) || ''}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     );

@@ -17,6 +17,7 @@ export interface IUser extends Document {
   phoneNumber?: string;
   given_name: string;
   family_name: string;
+  last_login: Date;
 }
 
 const userSchema = new Schema<IUser>(
@@ -37,6 +38,8 @@ const userSchema = new Schema<IUser>(
     phoneNumber: { type: String, default: null },
     given_name: { type: String },
     family_name: { type: String },
+
+    last_login: { type: Date, default: Date.now },
   },
   {
     versionKey: false,

@@ -21,7 +21,8 @@ const PaginationDropdown = ({ pagination, setPagination }: IProps) => {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="w-10">
           <div className="flex items-center gap-0.5">
-            {pagination.pageSize} <Triangle className="h-2.5! w-2.5! rotate-180 fill-black" />
+            {pagination.pageSize}{' '}
+            <Triangle className="h-2.5! w-2.5! rotate-180 fill-primary stroke-0" />
           </div>
         </Button>
       </DropdownMenuTrigger>

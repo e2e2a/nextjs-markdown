@@ -43,7 +43,7 @@ export const columns: ColumnDef<IUserWorkspaces>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-0!"
+          className="px-0! hover:bg-transparent!"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Workspace Name

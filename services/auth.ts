@@ -88,10 +88,7 @@ export const authServices = {
 
     const verify = await compareText(data.code, tokenDoc.code);
     if (!verify) throw new HttpError('Code does not matched.', 403);
-    const user = await userRepository.updateUserBy(
-      { email: tokenDoc.email },
-      { email_verified: true }
-    );
+    const user = await userRepository.updateUserByEmail(tokenDoc.email, { email_verified: true });
     if (!user) throw new HttpError('No user Found.', 404);
 
     await tokenRepository.deleteToken(tokenDoc._id);

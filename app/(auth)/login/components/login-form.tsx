@@ -120,7 +120,12 @@ export function LoginForm({ className, ...props }: IProps) {
                     )}
                   />
                   <div className="w-full text-center">
-                    <Button type="submit" disabled={loading} className="w-full cursor-pointer">
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      variant={'default'}
+                      className="w-full cursor-pointer"
+                    >
                       Login
                     </Button>
                   </div>

@@ -8,38 +8,44 @@ import {
 import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EditProjectAction } from './edit-project-action';
+import { useWorkspaceMember } from '@/context/WorkspaceMember';
 
 interface IProps {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
-  loading: boolean;
-
   item: IProject;
 }
 
-const DropdownActions = ({ isOpen, setIsOpen, loading, item }: IProps) => {
+const DropdownActions = ({ item }: IProps) => {
+  const { membership } = useWorkspaceMember();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <div className="bg-secondary w-full items-center border border-primary/20 flex size-4 px-2 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-primary font-normal rounded-xl hover:text-none cursor-pointer">
+        <div className="bg-secondary w-full items-center border border-primary/20 flex size-4 px-2 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-primary font-normal rounded-lg hover:text-none cursor-pointer">
           <Ellipsis className="h-4 w-4" />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end" className="w-40">
-        <Button variant={'ghost'} className="w-full justify-start px-2 font-normal cursor-pointer">
-          Copy Project ID
-        </Button>
-        {/* <Button variant={'ghost'} className="w-full justify-start px-2 font-normal cursor-pointer">
-          Edit Project Name
-        </Button> */}
-        <EditProjectAction item={item} />
-        <Button variant={'ghost'} className="w-full justify-start px-2 font-normal cursor-pointer">
-          Move Project
-        </Button>
+        {membership.role !== 'viewer' && (
+          <>
+            <Button
+              variant={'ghost'}
+              className="w-full justify-start px-2 font-normal cursor-pointer"
+            >
+              Copy Project ID
+            </Button>
+            <EditProjectAction item={item} />
+            <Button
+              variant={'ghost'}
+              className="w-full justify-start px-2 font-normal cursor-pointer"
+            >
+              Move Project
+            </Button>
+          </>
+        )}
+
         <DropdownMenuSeparator />
         <Button
           variant={'ghost'}
-          className="w-full text-red-500 hover:text-none justify-start px-2 font-normal cursor-pointer"
+          className="w-full text-red-700 hover:text-none justify-start px-2 font-normal cursor-pointer"
         >
           Leave Project
         </Button>

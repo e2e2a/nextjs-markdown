@@ -7,5 +7,9 @@ type Props = {
 };
 
 export default function SessionProviderWrapper({ children }: Props) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider refetchInterval={10 * 60} refetchOnWindowFocus={true}>
+      {children}
+    </SessionProvider>
+  );
 }

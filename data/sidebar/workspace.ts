@@ -9,11 +9,7 @@ export const sidebarData = [
       },
       {
         title: 'Users',
-        url: '#',
-      },
-      {
-        title: 'Teams',
-        url: '#',
+        url: '/access/users',
       },
     ],
   },

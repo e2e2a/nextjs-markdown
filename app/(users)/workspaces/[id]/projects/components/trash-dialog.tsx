@@ -28,15 +28,19 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { makeToastError, makeToastSucess } from '@/lib/toast';
 import { useProjectMutations } from '@/hooks/project/useProjectMutations';
+import { useWorkspaceMember } from '@/context/WorkspaceMember';
+import { useState } from 'react';
 
 interface IProps {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
-  loading: boolean;
-
   item: IProject;
 }
-export default function TrashDialog({ isOpen, setIsOpen, loading, item }: IProps) {
+
+export default function TrashDialog({ item }: IProps) {
+  const { membership } = useWorkspaceMember();
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [canTrash] = useState(membership.role !== 'viewer');
+
   const refinedSchema = projectSchema.refine(
     data => {
       if (!data.title) return false;
@@ -56,16 +60,21 @@ export default function TrashDialog({ isOpen, setIsOpen, loading, item }: IProps
   });
 
   const onSubmit = async () => {
+    setLoading(true);
     mutation.handleDelete.mutate(
       { pid: item._id },
       {
         onSuccess: () => {
           makeToastSucess('Project Name has been updated.');
+          setIsOpen(false);
           return;
         },
         onError: err => {
           makeToastError(err.message);
           return;
+        },
+        onSettled: () => {
+          setLoading(false);
         },
       }
     );
@@ -75,29 +84,29 @@ export default function TrashDialog({ isOpen, setIsOpen, loading, item }: IProps
       <Tooltip>
         <AlertDialogTrigger
           className={'w-auto'}
-          disabled={item.role === 'viewer'}
+          disabled={!canTrash}
           onClick={() => setIsOpen(true)}
         >
           <TooltipTrigger asChild className="cursor-not-allowed h-auto w-auto">
             <span tabIndex={0} className="h-auto w-auto">
               <div
                 className={`${
-                  item.role && item.role === 'viewer' && 'opacity-50 cursor-not-allowed'
-                } bg-secondary w-full items-center border border-primary/20 flex size-4 px-2 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-primary font-normal rounded-xl hover:text-none cursor-pointer`}
+                  !canTrash && 'opacity-50 cursor-not-allowed'
+                } bg-secondary w-full items-center border border-primary/20 flex size-4 px-2 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-primary font-normal rounded-lg hover:text-none cursor-pointer`}
               >
                 <Trash className="h-4 w-4" />
               </div>
             </span>
           </TooltipTrigger>
         </AlertDialogTrigger>
-        <TooltipContent className="max-w-[200px]" side="top">
+        <TooltipContent className="max-w-[200px] rounded-lg" side="top">
           You are about to delete the project. All the data inside of the project will be lost.
         </TooltipContent>
       </Tooltip>
       <AlertDialogContent className="flex flex-row gap-x-1">
         <div className=" ">
           <div className="bg-red-200 rounded-full p-1 flex items-center justify-center h-8 w-8">
-            <TriangleAlert className="text-red-600 h-5 w-5" />
+            <TriangleAlert className="text-red-700 h-5 w-5" />
           </div>
         </div>
         <div className="flex flex-col">

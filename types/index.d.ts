@@ -13,6 +13,8 @@ export type IUser = {
   phoneNumber?: string;
   given_name: string;
   family_name: string;
+
+  last_login: Date | null;
 };
 
 export type CreateNodeDTO = {
@@ -107,6 +109,18 @@ export type InviteMembersDTO = {
   _id?: string;
   projectId: string;
   email: string;
+};
+
+export type IWorkspaceMember = {
+  _id: string;
+  role: 'owner' | 'editor' | 'viewer';
+  user: {
+    _id: string;
+    email: string;
+    family_name: string;
+    given_name: string;
+  };
+  status: 'pending' | 'accepted';
 };
 
 export type IWorkspace = {
@@ -205,3 +219,8 @@ export interface INavItem {
 export interface INav {
   section: INavItem[];
 }
+
+export type TableMeta = {
+  editingMemberId: string | null;
+  setEditingMemberId: React.Dispatch<React.SetStateAction<string | null>>;
+};

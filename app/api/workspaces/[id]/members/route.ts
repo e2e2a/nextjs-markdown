@@ -4,7 +4,7 @@ import { handleError } from '@/lib/handleError';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { workspaceService } from '@/services/workspace';
+import { workspaceMemberServices } from '@/services/workspaceMember';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -13,12 +13,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 
-    const workspaces = await workspaceService.getWorkspaceMembers({
+    const workspaces = await workspaceMemberServices.getMemberships({
       workspaceId: id,
       email: session.user.email,
     });
 
-    return NextResponse.json(workspaces);
+    return NextResponse.json(workspaces, { status: 200 });
   } catch (err) {
     return handleError(err);
   }

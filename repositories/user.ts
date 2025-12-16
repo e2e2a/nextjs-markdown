@@ -13,8 +13,11 @@ export const userRepository = {
 
   create: (data: { password: string } & Partial<IUser>) => new User(data).save(),
 
-  updateUserBy: async (data: Partial<IUser>, dataToUpdate: Partial<{ password: string } & IUser>) =>
-    User.findOneAndUpdate(data, dataToUpdate, updateOptions).exec(),
+  updateUserById: async (uid: string, dataToUpdate: Partial<{ password: string } & IUser>) =>
+    User.findByIdAndUpdate(uid, dataToUpdate, updateOptions).exec(),
+
+  updateUserByEmail: async (email: string, dataToUpdate: Partial<{ password: string } & IUser>) =>
+    User.findOneAndUpdate({ email }, dataToUpdate, updateOptions).exec(),
 
   findUserByEmail: async (email: string, excludePassword: boolean) => {
     let query = User.findOne({ email });

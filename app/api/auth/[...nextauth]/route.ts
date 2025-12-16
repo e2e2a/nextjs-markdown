@@ -1,13 +1,14 @@
 import NextAuth, { SessionStrategy, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
-import { MongoDBAdapter } from '@auth/mongodb-adapter';
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '@/lib/db/adapter';
 import { authCallbacks } from '@/lib/nextauth/callbacks';
 import { userRepository } from '@/repositories/user';
 import connectDb from '@/lib/db/connection';
-// import { AdapterUser } from 'next-auth/adapters';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { AdapterUser } from 'next-auth/adapters';
+import { NullableJWT } from '@/types/next-auth';
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -75,14 +76,18 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: authCallbacks,
   events: {
-    // async createUser({ user }: { user: AdapterUser }) {
-    async createUser() {
-      // await connectDb();
-      // const authUser = await userRepository.findUser(user.id!);
-      // if (authUser)
-      //   await profileRepository.updateByProviderAccountId(authUser?.sub as string, {
-      //     userId: authUser._id!.toString(),
-      //   });
+    async signIn({ user }: { user: AdapterUser }) {
+      if (user) {
+        await connectDb();
+        await userRepository.updateUserById(user.id!, { last_login: new Date() });
+      }
+    },
+
+    async signOut({ token }: { token: NullableJWT }) {
+      if (token) {
+        await connectDb();
+        await userRepository.updateUserById(token._id, { last_login: null });
+      }
     },
   },
 };

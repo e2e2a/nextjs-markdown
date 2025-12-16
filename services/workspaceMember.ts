@@ -2,7 +2,7 @@ import { HttpError } from '@/lib/error';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
 import { workspaceMemberRepository } from '@/repositories/workspaceMember';
 
-export const workspaceMemberService = {
+export const workspaceMemberServices = {
   create: async (
     members: {
       role: 'owner' | 'editor' | 'viewer';
@@ -14,7 +14,7 @@ export const workspaceMemberService = {
     const res = MembersSchema.safeParse(members);
 
     if (!res.success) throw new HttpError('Invalid member fields.', 400);
-    const existing = await workspaceMemberService.checkWorkspaceMemberExistence(members);
+    const existing = await workspaceMemberServices.checkWorkspaceMemberExistence(members);
 
     if (members.length > 0) {
       let nonExisting = members;
@@ -36,6 +36,18 @@ export const workspaceMemberService = {
 
   getMembership: async (data: { workspaceId: string; email: string }) => {
     const membership = await workspaceMemberRepository.findOne(data);
+    if (!membership) throw new HttpError('Not a workspace member', 403);
+    return membership;
+  },
+
+  getMemberships: async (data: { workspaceId: string; email: string }) => {
+    await workspaceMemberServices.getMembership(data);
+    const workspaces = await workspaceMemberRepository.findMembers(data);
+    return workspaces;
+  },
+
+  getMembershipWithWorkspace: async (data: { workspaceId: string; email: string }) => {
+    const membership = await workspaceMemberRepository.getMembershipWithWorkspace(data);
     if (!membership) throw new HttpError('Not a workspace member', 403);
     return membership;
   },

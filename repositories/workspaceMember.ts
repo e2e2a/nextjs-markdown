@@ -2,13 +2,10 @@ import {
   getByEmailAndStatusFinalCleanupStages,
   getOwnerCountStages,
 } from '@/aggregation/workspacemember/findByEmailAndStatus';
-import {
-  getFindMembersInitialMatchStage,
-  getFindMembersLookupStages,
-} from '@/aggregation/workspacemember/findMembers';
 import { addLookup } from '@/lib/helpers/aggregationHelpers';
 import WorkspaceMember from '@/models/workspaceMember';
 import { PipelineStage } from 'mongoose';
+import mongoose from 'mongoose';
 
 export interface IPopulateWorkspaceMember {
   userId?: boolean;
@@ -38,13 +35,50 @@ export const workspaceMemberRepository = {
     await WorkspaceMember.findOne(data),
 
   findMembers: async (data: { workspaceId: string; email: string }) => {
-    const { workspaceId, email } = data;
-    const initialStages = getFindMembersInitialMatchStage(workspaceId, email);
-    const lookupAndCleanupStages = getFindMembersLookupStages();
-    const pipeline: PipelineStage[] = [...initialStages, ...lookupAndCleanupStages, { $limit: 1 }];
-
+    const pipeline: PipelineStage[] = [];
+    pipeline.push({ $match: { workspaceId: new mongoose.Types.ObjectId(data.workspaceId) } });
+    addLookup(pipeline, 'email', 'email', 'users', false);
+    pipeline.push({
+      $lookup: {
+        from: 'projectmembers',
+        let: {
+          memberEmail: '$email.email',
+          workspaceId: '$workspaceId',
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$email', '$$memberEmail'] },
+                  { $eq: ['$workspaceId', '$$workspaceId'] },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'projects',
+      },
+    });
+    pipeline.push({
+      $project: {
+        workspaceId: 1,
+        role: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        projects: { $size: '$projects' },
+        user: {
+          _id: '$email._id',
+          family_name: '$email.family_name',
+          given_name: '$email.given_name',
+          email: '$email.email',
+          last_login: '$email.last_login',
+        },
+      },
+    });
     const result = await WorkspaceMember.aggregate(pipeline);
-    return result[0] || null;
+    return result || [];
   },
 
   findByEmailAndStatus: async (
@@ -53,9 +87,9 @@ export const workspaceMemberRepository = {
   ) => {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: data });
-    if (populate.workspaceId) addLookup(pipeline, 'workspaceId', '_id', 'workspaces');
-    if (populate.userId) addLookup(pipeline, 'email', 'email', 'users');
-    if (populate.invitedBy) addLookup(pipeline, 'invitedBy', 'email', 'users');
+    if (populate.workspaceId) addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);
+    if (populate.userId) addLookup(pipeline, 'email', 'email', 'users', false);
+    if (populate.invitedBy) addLookup(pipeline, 'invitedBy', 'email', 'users', false);
 
     pipeline.push(...getOwnerCountStages());
 
@@ -95,4 +129,30 @@ export const workspaceMemberRepository = {
     data: { email: string; _id: string },
     updateData: { status?: string; role?: string }
   ) => WorkspaceMember.findOneAndUpdate(data, updateData),
+
+  getMembershipWithWorkspace: async (data: { workspaceId: string; email: string }) => {
+    const { workspaceId, email } = data;
+    const pipeline: PipelineStage[] = [];
+    pipeline.push({ $match: { email, workspaceId: new mongoose.Types.ObjectId(workspaceId) } });
+    addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);
+    pipeline.push({
+      $unwind: { path: `$workspaceId`, preserveNullAndEmptyArrays: true },
+    });
+    pipeline.push({
+      $project: {
+        _id: 0,
+        membership: {
+          _id: '$_id',
+          email: '$email',
+          role: '$role',
+          status: '$status',
+          createdAt: '$createdAt',
+          updatedAt: '$updatedAt',
+        },
+        workspace: '$workspaceId',
+      },
+    });
+    const result = await WorkspaceMember.aggregate(pipeline);
+    return result[0] || null;
+  },
 };

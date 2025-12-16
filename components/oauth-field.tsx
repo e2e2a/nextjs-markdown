@@ -12,7 +12,7 @@ interface IProps {
 
 const OauthField = ({ callbackUrl, loading, setLoading }: IProps) => {
   return (
-    <Field>
+    <Field className="grid grid-cols-2 w-full">
       <Button variant="outline" type="button" disabled={true} className="cursor-pointer">
         <Github className="h-6 w-6 stroke-3" />
         Login with Github

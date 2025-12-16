@@ -70,7 +70,7 @@ export function Actions({ item }: IProps) {
           type="button"
           variant={'ghost'}
           onClick={handleAccept}
-          className="hover:text-none  bg-secondary font-medium border border-primary/20 rounded-xl cursor-pointer"
+          className="hover:text-none bg-secondary font-medium border border-primary/20 rounded-lg cursor-pointer"
         >
           ACCEPT
         </Button>
@@ -84,7 +84,7 @@ export function Actions({ item }: IProps) {
           >
             <TooltipTrigger asChild className="cursor-not-allowed h-auto w-auto">
               <span tabIndex={0} className="h-auto w-auto">
-                <div className="bg-red-500 w-full items-center flex size-4 px-3 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-secondary font-medium hover:bg-red-600 rounded-xl hover:text-none cursor-pointer">
+                <div className="bg-red-700 w-full items-center flex size-4 px-3 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-accent-foreground font-medium hover:bg-red-600 rounded-lg hover:text-none cursor-pointer">
                   DECLINE
                 </div>
               </span>

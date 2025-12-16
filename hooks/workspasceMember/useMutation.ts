@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { workspaceClient } from '@/lib/api/workspaceClient';
+import { workspaceMemberClient } from '@/lib/api/workspaceMemberClient';
 
 export function useWorkspaceMemberMutations() {
   const queryClient = useQueryClient();
 
   const leave = useMutation({
-    mutationFn: (workspaceId: string) => workspaceClient.leave(workspaceId),
+    mutationFn: (workspaceId: string) => workspaceMemberClient.leave(workspaceId),
     onSuccess: data => {
       if (data && data.userId) {
         queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });

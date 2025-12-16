@@ -42,7 +42,7 @@ export function AppSidebarSection({ item, initialLink }: IProps) {
           <SidebarMenuSub>
             {item.items?.map((subItem, idx) => (
               <SidebarMenuSubItem key={idx}>
-                <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
+                <SidebarMenuSubButton asChild isActive={pathname.endsWith(subItem.url)}>
                   <Link href={`${initialLink}${subItem.url}`}>
                     <span>{subItem.title}</span>
                   </Link>

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const project = await projectService.getMyWorkspaceProjects(wid, session.user.email);
     if (!project) throw new HttpError('No Project Found.', 404);
     console.log('project', project);
-    return NextResponse.json(project);
+    return NextResponse.json(project, { status: 200 });
   } catch (err) {
     return handleError(err);
   }

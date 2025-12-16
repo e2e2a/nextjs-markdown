@@ -15,14 +15,11 @@ export const userServices = {
     if (!result1.success || !result2.success || !result3.success)
       throw new HttpError('Invalid fields.', 400);
 
-    const user = userRepository.updateUserBy(
-      { _id: authUser._id },
-      {
-        ...result1.data,
-        ...result2.data,
-        isOnboard: true,
-      }
-    );
+    const user = userRepository.updateUserById(authUser._id!, {
+      ...result1.data,
+      ...result2.data,
+      isOnboard: true,
+    });
 
     if (!user) throw new HttpError('No user found.', 404);
     const workspace = await workspaceRepository.create(

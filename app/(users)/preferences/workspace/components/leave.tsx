@@ -63,7 +63,7 @@ export function Leave({ item }: IProps) {
                     variant={'outline'}
                     type="button"
                     disabled={true}
-                    className="hover:text-none bg-secondary font-bold border border-primary/20 rounded-xl"
+                    className="hover:text-none bg-secondary font-bold border border-primary/20 rounded-lg"
                   >
                     LEAVE
                   </Button>
@@ -79,7 +79,7 @@ export function Leave({ item }: IProps) {
                 size={'sm'}
                 type="button"
                 disabled={loading}
-                className="bg-red-500 text-secondary font-bold hover:bg-red-600 rounded-xl hover:text-none cursor-pointer"
+                className="bg-red-700 text-secondary font-bold hover:bg-red-600 rounded-xl hover:text-none cursor-pointer"
               >
                 LEAVE
               </Button>

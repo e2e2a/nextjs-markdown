@@ -49,12 +49,13 @@ export const workspaceMemberRepository = {
   findMembers: async (data: { workspaceId: string; email: string }) => {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: { workspaceId: new mongoose.Types.ObjectId(data.workspaceId) } });
+    pipeline.push({ $set: { originalEmail: '$email' } });
     addLookup(pipeline, 'email', 'email', 'users', false);
     pipeline.push({
       $lookup: {
         from: 'projectmembers',
         let: {
-          memberEmail: '$email.email',
+          memberEmail: '$originalEmail',
           workspaceId: '$workspaceId',
         },
         pipeline: [
@@ -79,17 +80,27 @@ export const workspaceMemberRepository = {
         status: 1,
         createdAt: 1,
         updatedAt: 1,
+        email: '$originalEmail',
         projects: { $size: '$projects' },
         user: {
-          _id: '$email._id',
-          family_name: '$email.family_name',
-          given_name: '$email.given_name',
-          email: '$email.email',
-          last_login: '$email.last_login',
+          $cond: {
+            // Check if the lookup actually found a document by looking for the ID
+            if: { $ifNull: ['$email._id', false] },
+            then: {
+              _id: '$email._id',
+              family_name: '$email.family_name',
+              given_name: '$email.given_name',
+              email: '$email.email',
+              last_login: '$email.last_login',
+            },
+            // If no ID exists, return null so it is falsy in JavaScript
+            else: null,
+          },
         },
       },
     });
     const result = await WorkspaceMember.aggregate(pipeline);
+    console.log('result', result);
     return result || [];
   },
 

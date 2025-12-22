@@ -86,7 +86,12 @@ export function RegisterForm({ className, ...props }: IProps) {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="johndoe@domain.com" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="johndoe@domain.com"
+                            {...field}
+                            disabled={loading}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -100,7 +105,7 @@ export function RegisterForm({ className, ...props }: IProps) {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <PasswordInputField {...field} />
+                          <PasswordInputField disabled={loading} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -114,7 +119,7 @@ export function RegisterForm({ className, ...props }: IProps) {
                       <FormItem>
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
-                          <PasswordInputField {...field} />
+                          <PasswordInputField disabled={loading} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

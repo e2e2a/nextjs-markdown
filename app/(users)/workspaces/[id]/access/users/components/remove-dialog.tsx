@@ -87,7 +87,7 @@ export default function RemoveDialog({ item, workspaceId }: IProps) {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-start">
               This action cannot be undone. This will permanently delete the project{' '}
-              <span className="font-bold">{item.user.email}</span>, including all associated tasks,
+              <span className="font-bold">{item.email}</span>, including all associated tasks,
               files, and data. All team members will immediately lose access.
             </AlertDialogDescription>
           </AlertDialogHeader>

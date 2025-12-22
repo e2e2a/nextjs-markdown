@@ -114,9 +114,9 @@ export type InviteMembersDTO = {
 export type IWorkspaceMember = {
   _id: string;
   role: 'owner' | 'editor' | 'viewer';
+  email: string;
   user: {
     _id: string;
-    email: string;
     family_name: string;
     given_name: string;
   };

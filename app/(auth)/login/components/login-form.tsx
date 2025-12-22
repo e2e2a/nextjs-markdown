@@ -99,7 +99,12 @@ export function LoginForm({ className, ...props }: IProps) {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="johndoe@domain.com" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="johndoe@domain.com"
+                            {...field}
+                            disabled={loading}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -113,7 +118,12 @@ export function LoginForm({ className, ...props }: IProps) {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="******" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="******"
+                            {...field}
+                            disabled={loading}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

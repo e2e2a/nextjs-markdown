@@ -33,7 +33,7 @@ export const invitationServices = {
     const res = MembersSchema.safeParse(members);
     if (!res.success) throw new HttpError('Invalid member fields.', 400);
 
-    if (members.length > 0) throw new HttpError('No Member to be invited.', 400);
+    if (members.length <= 0) throw new HttpError('No Members to be invited.', 400);
 
     const membership = await workspaceMemberServices.getMembership({
       workspaceId,

@@ -13,9 +13,14 @@ import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries
 export function WorkspaceProjectsClient() {
   const params = useParams();
   const workspaceId = params.id as string;
-  const { data: membership, error: mError } = useGetMyWorkspaceMembership(workspaceId);
-  const { data, error } = useGetProjectsByWorkspaceId(workspaceId);
-  if (error || mError) return notFound();
+  const {
+    data: membership,
+    isLoading: mLoading,
+    error: mError,
+  } = useGetMyWorkspaceMembership(workspaceId);
+  const { data, isLoading: pLoading, error } = useGetProjectsByWorkspaceId(workspaceId);
+  if (pLoading || mLoading) return;
+  if (!membership || error || mError) return notFound();
 
   return (
     <SidebarInset className="flex flex-col h-screen w-full! overflow-hidden">

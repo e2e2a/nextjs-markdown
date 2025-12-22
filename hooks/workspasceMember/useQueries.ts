@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 export function useGetMembersInWorkspace(workspaceId: string) {
   return useQuery({
-    queryKey: ['workspaceMembers', workspaceId],
+    queryKey: ['workspaceMeasdmbers', workspaceId],
     queryFn: () => workspaceMemberClient.getMembersInWorkspace(workspaceId),
     enabled: !!workspaceId,
   });

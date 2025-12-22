@@ -16,17 +16,20 @@ export function Actions({ item, table }: IProps) {
   const params = useParams();
   const workspaceId = params.id as string;
   return (
-    <div className="inline-flex flex-row gap-x-1.5 items-center justify-center ">
-      <Button
-        size={'sm'}
-        variant={'outline'}
-        className="action-button items-center border-0 flex w-8.5!"
-        onClick={() => {
-          setEditingMemberId(item._id);
-        }}
-      >
-        <Pencil />
-      </Button>
+    <div className="inline-flex flex-row gap-x-1.5 items-center justify-center">
+      {item.user && (
+        <Button
+          size={'sm'}
+          variant={'outline'}
+          className="action-button items-center border-0 flex w-8.5!"
+          onClick={() => {
+            setEditingMemberId(item._id);
+          }}
+        >
+          <Pencil />
+        </Button>
+      )}
+
       <RemoveDialog item={item} workspaceId={workspaceId} />
     </div>
   );

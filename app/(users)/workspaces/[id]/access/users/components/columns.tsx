@@ -71,7 +71,7 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
     size: 10,
     minSize: 10,
     maxSize: 40,
-    accessorKey: 'user.email',
+    accessorKey: 'email',
     header: ({ column }) => {
       return (
         <Button
@@ -128,7 +128,7 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
   },
   {
     accessorKey: 'createdAt',
-    id: 'createdAt',
+    id: 'invitedAt',
     enableHiding: true,
     header: ({ column }) => {
       return (
@@ -137,13 +137,13 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
           className="px-0!"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          createdAt
+          invitedAt
           <ArrowUpDown />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const dateString = row.getValue('createdAt');
+      const dateString = row.getValue('invitedAt');
       const date = new Date(dateString as Date);
       const formatted = dateFormatted(date);
 

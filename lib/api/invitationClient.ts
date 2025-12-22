@@ -7,6 +7,21 @@ export const invitationClient = {
     return res.json();
   },
 
+  async create(data: {
+    workspaceId: string;
+    members: {
+      role: 'owner' | 'editor' | 'viewer';
+      email: string;
+    }[];
+  }) {
+    const res = await fetch(`${BASE_URL_INVITATIONS}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(res.statusText || '');
+    return res.json();
+  },
+
   async accept(id: string) {
     const res = await fetch(`${BASE_URL_INVITATIONS}/${id}`, { method: 'PATCH' });
     if (!res.ok) throw new Error(res.statusText || '');

@@ -15,11 +15,15 @@ import { cn } from '@/lib/utils';
 export function AccessUsersClient() {
   const params = useParams();
   const workspaceId = params.id as string;
-  const { data: membership, error: mError } = useGetMyWorkspaceMembership(workspaceId);
-  const { data, isLoading, error } = useGetMembersInWorkspace(workspaceId);
-  if (isLoading) return;
-  if (error || mError) return notFound();
-  console.log('membership', membership);
+  const {
+    data: membership,
+    isLoading: mLoading,
+    error: mError,
+  } = useGetMyWorkspaceMembership(workspaceId);
+  const { data, isLoading: pLoading, error } = useGetMembersInWorkspace(workspaceId);
+  if (pLoading || mLoading) return;
+  if (!membership || error || mError) return notFound();
+  console.log('data', data);
   return (
     <SidebarInset className="flex flex-col h-full w-full">
       <main className="px-3 py-4 w-full flex-1 overflow-y-auto">

@@ -14,11 +14,10 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { MemberRole } from './member-role';
 import { useSession } from 'next-auth/react';
 import { notFound, redirect, useParams, useRouter } from 'next/navigation';
-import { workspaceSchema } from '@/lib/validators/workspace';
 import { makeToastError } from '@/lib/toast';
-import { useProjectMutations } from '@/hooks/project/useProjectMutations';
 import Link from 'next/link';
 import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
+import { useInvitationMutations } from '@/hooks/invitation/useMutation';
 
 export const InviteUserClient = () => {
   const { data: session, status } = useSession();
@@ -29,14 +28,8 @@ export const InviteUserClient = () => {
   const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>(
     []
   );
-  const mutation = useProjectMutations();
+  const mutation = useInvitationMutations();
   const router = useRouter();
-  const form1 = useForm({
-    resolver: zodResolver(workspaceSchema),
-    defaultValues: {
-      title: '',
-    },
-  });
 
   const form2 = useForm({
     resolver: zodResolver(emailSchema),
@@ -58,16 +51,16 @@ export const InviteUserClient = () => {
   };
 
   const handleSubmit = async () => {
+    if (members.length <= 0) return makeToastError('No members to be invited.');
     setLoading(true);
     const payload = {
-      ...form1.getValues(),
       workspaceId,
       members,
     };
 
     mutation.create.mutate(payload, {
-      onSuccess: data => {
-        return router.push(`/workspace/${data.workspaceId}/projects`);
+      onSuccess: () => {
+        return router.push(`/workspaces/${workspaceId}/access/users`);
       },
       onError: err => {
         return makeToastError(err.message);
@@ -80,7 +73,7 @@ export const InviteUserClient = () => {
 
   if (status === 'loading') return;
   if (isLoading) return;
-  if (mError) return notFound();
+  if (!membership || mError) return notFound();
 
   return (
     <SidebarInset className="flex flex-col items-center h-full w-full overflow-y-auto">
@@ -169,7 +162,7 @@ export const InviteUserClient = () => {
                     onClick={() => {
                       redirect(`/workspaces/${workspaceId}/access/users`);
                     }}
-                    className="text-end bg-secondary border-primary/70 text-primary-foreground cursor-pointer"
+                    className="text-end bg-secondary text-foreground cursor-pointer"
                   >
                     Cancel
                   </Button>

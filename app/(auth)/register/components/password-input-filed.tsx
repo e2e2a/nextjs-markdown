@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 type IProps = {
   value: string | undefined;
   onChange: (value: string) => void;
+  disabled: boolean;
 };
 
-export function PasswordInputField({ value, onChange }: IProps) {
+export function PasswordInputField({ value, onChange, disabled }: IProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -19,6 +20,7 @@ export function PasswordInputField({ value, onChange }: IProps) {
         placeholder="******"
         className="pr-10"
         onChange={e => onChange(e.target.value)}
+        disabled={disabled}
       />
       <button
         type="button"

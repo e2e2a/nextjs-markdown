@@ -22,7 +22,7 @@ export default function Providers({ children }: IProps) {
         },
       })
   );
-
+  console.log('queryClient', queryClient);
   return (
     <QueryClientProvider client={queryClient}>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}

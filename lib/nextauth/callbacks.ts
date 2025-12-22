@@ -66,7 +66,7 @@ export const authCallbacks = {
       token.role = user.role as 'user' | 'admin';
       token.isOnboard = user.isOnboard;
     }
-    console.log('asd', token);
+    // console.log('asd', token);
     return token;
   },
 };

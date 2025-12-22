@@ -58,7 +58,7 @@ export default function Page() {
                 key={idx}
                 className="flex flex-col md:flex-row items-start gap-4 p-6 rounded-2xl bg-linear-to-r from-slate-100 to-slate-200 shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
               >
-                <div className="shrink-0 p-3 bg-blue-600/90 rounded-xl">
+                <div className="shrink-0 p-3 bg-blue-600/90 rounded-md">
                   <feature.icon className="h-7 w-7 text-white" />
                 </div>
                 <div className="text-left">

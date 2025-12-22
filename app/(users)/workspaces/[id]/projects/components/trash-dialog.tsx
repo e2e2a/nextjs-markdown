@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { IProject } from '@/types';
-import { Trash, TriangleAlert } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { Field, FieldGroup } from '@/components/ui/field';
 import { projectSchema } from '@/lib/validators/project';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,15 +28,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { makeToastError, makeToastSucess } from '@/lib/toast';
 import { useProjectMutations } from '@/hooks/project/useProjectMutations';
-import { useWorkspaceMember } from '@/context/WorkspaceMember';
 import { useState } from 'react';
+import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
 
 interface IProps {
   item: IProject;
+  workspaceId: string;
 }
 
-export default function TrashDialog({ item }: IProps) {
-  const { membership } = useWorkspaceMember();
+export default function TrashDialog({ item, workspaceId }: IProps) {
+  const { data: membership } = useGetMyWorkspaceMembership(workspaceId);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [canTrash] = useState(membership.role !== 'viewer');
@@ -92,29 +93,24 @@ export default function TrashDialog({ item }: IProps) {
               <div
                 className={`${
                   !canTrash && 'opacity-50 cursor-not-allowed'
-                } bg-secondary w-full items-center border border-primary/20 flex size-4 px-2 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-primary font-normal rounded-lg hover:text-none cursor-pointer`}
+                } action-button w-full items-center flex size-4 px-2 gap-1.5 h-8`}
               >
                 <Trash className="h-4 w-4" />
               </div>
             </span>
           </TooltipTrigger>
         </AlertDialogTrigger>
-        <TooltipContent className="max-w-[200px] rounded-lg" side="top">
+        <TooltipContent className="max-w-[200px] rounded-md" side="top">
           You are about to delete the project. All the data inside of the project will be lost.
         </TooltipContent>
       </Tooltip>
-      <AlertDialogContent className="flex flex-row gap-x-1">
-        <div className=" ">
-          <div className="bg-red-200 rounded-full p-1 flex items-center justify-center h-8 w-8">
-            <TriangleAlert className="text-red-700 h-5 w-5" />
-          </div>
-        </div>
-        <div className="flex flex-col">
+      <AlertDialogContent className="h-auto max-h-[85vh]">
+        <div className="flex flex-col overflow-y-auto max-h-[75vh]">
           <AlertDialogHeader className="gap-y-3">
-            <AlertDialogTitle className="sm:text-xl text-start font-bold">
-              Are you sure you want to delete this project?
+            <AlertDialogTitle className="text-xl sm:text-2xl font-bold text-start">
+              Delete Project
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-black text-start">
+            <AlertDialogDescription className="text-accent-foreground text-start">
               This action cannot be undone. This will permanently delete the project{' '}
               <span className="font-bold">{item.title}</span>, including all associated tasks,
               files, and data. All team members will immediately lose access.
@@ -129,7 +125,7 @@ export default function TrashDialog({ item }: IProps) {
                     control={form.control}
                     name="title"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="gap-y-4">
                         <FormLabel className="font-bold">
                           Type &quot;{item.title}&quot; to confirm your action
                         </FormLabel>

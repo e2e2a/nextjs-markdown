@@ -79,7 +79,7 @@ export default function EnterprisePage() {
                 key={idx}
                 className="flex flex-col items-start p-6 rounded-2xl shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
               >
-                <div className="mb-4 p-3 bg-blue-600/90 rounded-xl">
+                <div className="mb-4 p-3 bg-blue-600/90 rounded-md">
                   <feature.icon className="h-7 w-7 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{feature.title}</h3>

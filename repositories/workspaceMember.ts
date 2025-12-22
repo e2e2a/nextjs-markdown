@@ -26,13 +26,25 @@ export const workspaceMemberRepository = {
   create: async (data: {
     role: 'owner' | 'editor' | 'viewer';
     email: string;
-    // userId: string;
     status: 'pending' | 'accepted';
     workspaceId: string;
   }) => await new WorkspaceMember(data).save(),
 
-  findOne: async (data: { workspaceId: string; email: string }) =>
-    await WorkspaceMember.findOne(data),
+  findOne: async (data: { workspaceId: string; email: string }) => {
+    const pipeline: PipelineStage[] = [];
+
+    pipeline.push({
+      $match: {
+        workspaceId: new mongoose.Types.ObjectId(data.workspaceId),
+        email: data.email,
+      },
+    });
+    addLookup(pipeline, 'email', 'email', 'users', false);
+    pipeline.push({ $limit: 1 });
+
+    const [result] = await WorkspaceMember.aggregate(pipeline);
+    return result ?? null;
+  },
 
   findMembers: async (data: { workspaceId: string; email: string }) => {
     const pipeline: PipelineStage[] = [];
@@ -129,30 +141,4 @@ export const workspaceMemberRepository = {
     data: { email: string; _id: string },
     updateData: { status?: string; role?: string }
   ) => WorkspaceMember.findOneAndUpdate(data, updateData),
-
-  getMembershipWithWorkspace: async (data: { workspaceId: string; email: string }) => {
-    const { workspaceId, email } = data;
-    const pipeline: PipelineStage[] = [];
-    pipeline.push({ $match: { email, workspaceId: new mongoose.Types.ObjectId(workspaceId) } });
-    addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);
-    pipeline.push({
-      $unwind: { path: `$workspaceId`, preserveNullAndEmptyArrays: true },
-    });
-    pipeline.push({
-      $project: {
-        _id: 0,
-        membership: {
-          _id: '$_id',
-          email: '$email',
-          role: '$role',
-          status: '$status',
-          createdAt: '$createdAt',
-          updatedAt: '$updatedAt',
-        },
-        workspace: '$workspaceId',
-      },
-    });
-    const result = await WorkspaceMember.aggregate(pipeline);
-    return result[0] || null;
-  },
 };

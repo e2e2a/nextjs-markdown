@@ -4,6 +4,8 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { INavItem } from '@/types';
 import { useParams } from 'next/navigation';
+import { PreferencesHeader } from './headers/preferences';
+import { WorkspacesHeader } from './headers/workspaces';
 
 type IProps = {
   data: INavItem[];
@@ -18,7 +20,7 @@ export function SidebarWrapper({ data, children, type }: IProps) {
   let initialLink = '';
   switch (type) {
     case 'workspaces':
-      initialLink = `/workspaces/${id}/`;
+      initialLink = `/workspaces/${id}`;
       break;
     case 'preferences':
       initialLink = '';
@@ -42,13 +44,20 @@ export function SidebarWrapper({ data, children, type }: IProps) {
     <SidebarProvider
       style={
         {
-          '--sidebar-width': 'calc(var(--spacing) * 72)',
-          '--header-height': 'calc(var(--spacing) * 12)',
+          '--sidebar-width': 'calc(var(--spacing) * 60)',
+          '--header-height': 'calc(var(--spacing) * 0)',
         } as React.CSSProperties
       }
+      className="h-screen flex-1 flex flex-col"
+      defaultOpen={false}
     >
-      <AppSidebar data={data} initialLink={initialLink} collapsible="icon" variant="sidebar" />
-      {children}
+      {type === 'preferences' && <PreferencesHeader />}
+      {type === 'workspaces' && <WorkspacesHeader />}
+
+      <div className="flex flex-1 overflow-hidden">
+        <AppSidebar data={data} initialLink={initialLink} collapsible="icon" variant="sidebar" />
+        {children}
+      </div>
     </SidebarProvider>
   );
 }

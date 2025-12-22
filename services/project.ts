@@ -9,6 +9,7 @@ import { projectMemberRepository } from '@/repositories/projectMember';
 import mongoose from 'mongoose';
 import { projectSchema } from '@/lib/validators/project';
 import { workspaceMemberServices } from './workspaceMember';
+import { MembersSchema } from '@/lib/validators/workspaceMember';
 
 const sortNodes = (nodes: INode[]) => {
   return [...nodes].sort((a, b) => {
@@ -27,13 +28,14 @@ export const projectService = {
       members: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
     }
   ) => {
-    const { workspaceId, title } = data;
+    const { workspaceId, title, members } = data;
     await workspaceMemberServices.getMembership({ workspaceId, email: user.email });
-    if (!mongoose.Types.ObjectId.isValid(workspaceId))
-      throw new HttpError('Invalid workspace ID.', 400);
 
     const res = projectSchema.safeParse({ title });
     if (!res.success) throw new HttpError('Invalid fields.', 400);
+
+    const resM = MembersSchema.safeParse(members);
+    if (!resM.success) throw new HttpError('Invalid member fields.', 400);
 
     await projectService.checkTitleExist(workspaceId, title);
     const newProject = await projectRepository.create({
@@ -43,7 +45,15 @@ export const projectService = {
     });
     if (!newProject) throw new HttpError('Semething went wrong.', 500);
 
-    await projectService.createMemberInNewProject(user, data, newProject._id);
+    if (resM.data.length > 0) {
+      const membersDataToCreate = resM.data.map(member => ({
+        ...member,
+        projectId: newProject._id.toString(),
+        workspaceId,
+      }));
+      const newMembers = await projectMemberService.create(user, membersDataToCreate);
+      if (!newMembers) throw new HttpError('Semething went wrong.', 500);
+    }
 
     return newProject;
   },
@@ -52,27 +62,6 @@ export const projectService = {
     const existingProjectTitle = await projectRepository.findProjectByTitle(workspaceId, title);
     if (existingProjectTitle) throw new HttpError('Project title already exists.', 409);
     return;
-  },
-
-  createMemberInNewProject: async (
-    user: User,
-    data: {
-      workspaceId: string;
-      members: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
-    },
-    projectId: string
-  ) => {
-    const { workspaceId, members } = data;
-    if (members.length > 0) {
-      const membersDataToCreate = members.map(member => ({
-        ...member,
-        projectId,
-        workspaceId,
-      }));
-      const newMembers = await projectMemberService.create(user, membersDataToCreate);
-      if (!newMembers) throw new HttpError('Semething went wrong.', 500);
-    }
-    return true;
   },
 
   async getMyWorkspaceProjects(workspaceId: string, email: string) {

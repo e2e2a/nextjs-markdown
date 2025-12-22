@@ -8,18 +8,19 @@ import {
 import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EditProjectAction } from './edit-project-action';
-import { useWorkspaceMember } from '@/context/WorkspaceMember';
+import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
 
 interface IProps {
   item: IProject;
+  workspaceId: string;
 }
 
-const DropdownActions = ({ item }: IProps) => {
-  const { membership } = useWorkspaceMember();
+const DropdownActions = ({ item, workspaceId }: IProps) => {
+  const { data: membership } = useGetMyWorkspaceMembership(workspaceId);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <div className="bg-secondary w-full items-center border border-primary/20 flex size-4 px-2 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-primary font-normal rounded-lg hover:text-none cursor-pointer">
+        <div className="action-button w-full items-center flex size-4 px-2 gap-1.5 h-8">
           <Ellipsis className="h-4 w-4" />
         </div>
       </DropdownMenuTrigger>
@@ -45,7 +46,7 @@ const DropdownActions = ({ item }: IProps) => {
         <DropdownMenuSeparator />
         <Button
           variant={'ghost'}
-          className="w-full text-red-700 hover:text-none justify-start px-2 font-normal cursor-pointer"
+          className="w-full text-red-600 hover:text-red-500 justify-start px-2 font-normal cursor-pointer"
         >
           Leave Project
         </Button>

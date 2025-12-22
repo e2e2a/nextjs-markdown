@@ -1,5 +1,4 @@
 import { HttpError } from '@/lib/error';
-import { MembersSchema } from '@/lib/validators/workspaceMember';
 import { projectMemberRepository } from '@/repositories/projectMember';
 import { workspaceMemberServices } from './workspaceMember';
 import { workspaceMemberRepository } from '@/repositories/workspaceMember';
@@ -15,9 +14,6 @@ export const projectMemberService = {
       projectId: string;
     }[]
   ) => {
-    const res = MembersSchema.safeParse(members);
-    if (!res.success) throw new HttpError('Invalid member fields.', 400);
-
     if (members.length > 0) {
       // Workspace members
       const existingW = await workspaceMemberServices.checkWorkspaceMemberExistence(members);

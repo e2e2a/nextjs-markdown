@@ -72,7 +72,7 @@ export function OnboardForms() {
             name: `${payload.step1.given_name} ${payload.step1.family_name}`,
             isOnboard: true,
           });
-          if (data.workspaceId) setLink(`/workspace/${data.workspaceId}/projects`);
+          if (data.workspaceId) setLink(`/workspaces/${data.workspaceId}/projects`);
           setStep(4);
           return;
         },
@@ -244,7 +244,7 @@ export function OnboardForms() {
                 <p className="text-muted-foreground max-w-md mx-auto">
                   Your onboarding is complete. You can now start collaborating on markdown files.
                 </p>
-                <Link href={link || '/workspace'} className="">
+                <Link href={link || '/workspaces'} className="">
                   <Button variant={'default'} className="cursor-pointer">
                     Go to Workspaces
                   </Button>

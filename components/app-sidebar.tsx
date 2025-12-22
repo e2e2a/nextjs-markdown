@@ -4,15 +4,13 @@ import { NavMain } from '@/components/nav-main';
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
+  SidebarFooter,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
-import Image from 'next/image';
-import Link from 'next/link';
 import { INavItem } from '@/types';
-import { BRAND_NAME } from '@/data/brand';
+import { PanelLeftIcon } from 'lucide-react';
 
 type IProps = React.ComponentProps<typeof Sidebar> & {
   data: INavItem[];
@@ -21,30 +19,32 @@ type IProps = React.ComponentProps<typeof Sidebar> & {
 };
 
 export function AppSidebar({ data, collapsible, initialLink, ...props }: IProps) {
+  const { setOpen, open } = useSidebar();
+  const [expanded, setExpanded] = React.useState(false);
+
   return (
-    <Sidebar collapsible={collapsible} {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-0.5!">
-              <Link href="/">
-                <Image
-                  alt="Project Logo"
-                  src={'/images/logo.png'}
-                  width={50}
-                  height={50}
-                  priority
-                  className="size-7! rounded-sm"
-                />
-                <span className="text-base font-semibold">{BRAND_NAME}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
+    <Sidebar
+      collapsible={collapsible}
+      {...props}
+      onMouseEnter={() => {
+        setExpanded(open);
+        setOpen(true);
+      }}
+      onMouseLeave={() => {
+        if (!expanded) setOpen(false);
+      }}
+      className="sticky! h-full! duration-100!"
+    >
       <SidebarContent>
         <NavMain initialLink={initialLink} items={data} />
       </SidebarContent>
+      <SidebarFooter className="sm:flex hidden">
+        <SidebarMenuItem className="data-[slot=sidebar-menu-button]:p-0.5!">
+          <SidebarMenuButton asChild className="w-auto" onClick={() => setExpanded(!expanded)}>
+            <PanelLeftIcon />
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarFooter>
     </Sidebar>
   );
 }

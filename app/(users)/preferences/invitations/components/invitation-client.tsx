@@ -1,5 +1,4 @@
 'use client';
-import { SiteHeader } from '@/components/site-header';
 import { SidebarInset } from '@/components/ui/sidebar';
 import { DataTable } from '@/components/data-table';
 import { columns } from './columns';
@@ -26,7 +25,7 @@ export const InvitationClient = () => {
 
   return (
     <SidebarInset className="flex flex-col h-screen w-full overflow-hidden">
-      <SiteHeader title={'Invitations'} />
+      {/* <SiteHeader title={'Invitations'} /> */}
       <div className="px-3 py-4 w-full flex-1 overflow-y-auto">
         <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Invitations</h1>
         <div className={cn('overflow-x-auto')}>

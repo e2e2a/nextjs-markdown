@@ -14,15 +14,16 @@ import { Trash, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { makeToastError, makeToastSucess } from '@/lib/toast';
 import { useProjectMutations } from '@/hooks/project/useProjectMutations';
-import { useWorkspaceMember } from '@/context/WorkspaceMember';
 import { useState } from 'react';
+import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
 
 interface IProps {
   item: IWorkspaceMember;
+  workspaceId: string;
 }
 
-export default function RemoveDialog({ item }: IProps) {
-  const { membership } = useWorkspaceMember();
+export default function RemoveDialog({ item, workspaceId }: IProps) {
+  const { data: membership } = useGetMyWorkspaceMembership(workspaceId);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [canRemove] = useState(membership.role !== 'viewer');
@@ -57,12 +58,12 @@ export default function RemoveDialog({ item }: IProps) {
           disabled={!canRemove}
           onClick={() => setIsOpen(true)}
         >
-          <TooltipTrigger asChild className="cursor-not-allowed h-auto w-auto">
+          <TooltipTrigger asChild className="h-auto w-auto">
             <span tabIndex={0} className="h-auto w-auto">
               <div
                 className={`${
                   !canRemove && 'opacity-50 cursor-not-allowed'
-                } bg-secondary w-full items-center border border-primary/20 flex size-4 px-2 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-primary font-normal rounded-xl hover:text-none cursor-pointer`}
+                } action-button w-full items-center flex size-4 px-2 gap-1.5 h-8`}
               >
                 <Trash className="h-4 w-4" />
               </div>
@@ -73,7 +74,7 @@ export default function RemoveDialog({ item }: IProps) {
           You are about to delete the project. All the data inside of the project will be lost.
         </TooltipContent>
       </Tooltip>
-      <AlertDialogContent className="flex sm:flex-row gap-x-1 flex-col rounded-lg">
+      <AlertDialogContent className="flex sm:flex-row gap-x-1 flex-col rounded-md">
         <div className="place-items-center sm:place-items-start">
           <div className="bg-red-200 rounded-full p-1 flex items-center justify-center h-8 w-8">
             <TriangleAlert className="text-red-600 h-5 w-5" />
@@ -84,7 +85,7 @@ export default function RemoveDialog({ item }: IProps) {
             <AlertDialogTitle className="sm:text-xl text-start font-bold">
               Are you sure you want to delete this project?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-black text-start">
+            <AlertDialogDescription className="text-start">
               This action cannot be undone. This will permanently delete the project{' '}
               <span className="font-bold">{item.user.email}</span>, including all associated tasks,
               files, and data. All team members will immediately lose access.

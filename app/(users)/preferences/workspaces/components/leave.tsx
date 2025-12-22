@@ -63,7 +63,7 @@ export function Leave({ item }: IProps) {
                     variant={'outline'}
                     type="button"
                     disabled={true}
-                    className="hover:text-none bg-secondary font-bold border border-primary/20 rounded-lg"
+                    className="bg-accent hover:text-none"
                   >
                     LEAVE
                   </Button>
@@ -78,8 +78,9 @@ export function Leave({ item }: IProps) {
               <Button
                 size={'sm'}
                 type="button"
+                variant={'outline'}
                 disabled={loading}
-                className="bg-red-700 text-secondary font-bold hover:bg-red-600 rounded-xl hover:text-none cursor-pointer"
+                className="action-button hover:text-none"
               >
                 LEAVE
               </Button>
@@ -98,7 +99,8 @@ export function Leave({ item }: IProps) {
             Leave Workspace
           </AlertDialogTitle>
           <AlertDialogDescription>
-            By leaving <span className="font-bold">{item.workspaceId.title}</span>
+            By leaving{' '}
+            <span className="font-bold text-accent-foreground">{item.workspaceId.title}</span>
             , you will lose access to all projects in that workspace.
             <br />
             <br />
@@ -110,7 +112,7 @@ export function Leave({ item }: IProps) {
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-500 hover:bg-red-500/90 cursor-pointer"
+            className="bg-destructive text-destructive-foreground cursor-pointer"
             disabled={disabled || loading}
             onClick={leaveWorkspace}
           >

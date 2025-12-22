@@ -32,7 +32,7 @@ export function AppSidebarSection({ item, initialLink }: IProps) {
     <Collapsible key={item.title} asChild defaultOpen={true} className="group/collapsible">
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={item.title.toUpperCase()} className="uppercase font-bold">
+          <SidebarMenuButton tooltip={item.title.toUpperCase()} className="uppercase font-semibold">
             {IconComponent && <IconComponent />}
             <span>{item.title}</span>
             <Triangle className="ml-auto h-2 w-2! fill-primary transition-transform duration-200 rotate-180 group-data-[state=open]/collapsible:rotate-0" />
@@ -43,7 +43,7 @@ export function AppSidebarSection({ item, initialLink }: IProps) {
             {item.items?.map((subItem, idx) => (
               <SidebarMenuSubItem key={idx}>
                 <SidebarMenuSubButton asChild isActive={pathname.endsWith(subItem.url)}>
-                  <Link href={`${initialLink}${subItem.url}`}>
+                  <Link href={`${initialLink}${subItem.url}`} className="font-normal">
                     <span>{subItem.title}</span>
                   </Link>
                 </SidebarMenuSubButton>

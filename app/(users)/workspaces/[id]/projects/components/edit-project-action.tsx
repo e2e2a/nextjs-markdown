@@ -56,7 +56,7 @@ export function EditProjectAction({ item }: IProps) {
           Edit Project Name
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px] top-[5%] translate-y-0 rounded-lg">
+      <DialogContent className="sm:max-w-[525px] top-[5%] translate-y-0 rounded-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>

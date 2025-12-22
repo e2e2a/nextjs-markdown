@@ -53,7 +53,7 @@ export function CardOptions({ project, setUpdate, setValue, handleUpdate }: IPro
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <div
-            className="cursor-pointer flex justify-between p-2 text-sm focus:bg-neutral-100 hover:bg-neutral-100 rounded-lg"
+            className="cursor-pointer flex justify-between p-2 text-sm focus:bg-neutral-100 hover:bg-neutral-100 rounded-md"
             onClick={() => {
               setOpen(false);
               setUpdate({ _id: project._id, oldTitle: project.title, isUpdating: true });

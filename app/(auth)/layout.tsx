@@ -22,7 +22,7 @@ export default async function Layout({
     if (session.user.isOnboard) {
       if (session.user.role === 'admin') return redirect('/admin');
       if (lastPath) return redirect(lastPath);
-      return redirect('/preferences/workspace');
+      return redirect('/preferences/workspaces');
     } else {
       return redirect('/onboard');
     }

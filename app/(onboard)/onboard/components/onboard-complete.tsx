@@ -16,7 +16,7 @@ export function OnboardComplete() {
 
   return (
     <div className="w-full flex justify-center">
-      <Card className="w-full max-w-2xl p-4 rounded-xl shadow-lg">
+      <Card className="w-full max-w-2xl p-4 rounded-md shadow-lg">
         <CardContent className="py-3">
           <AnimatePresence mode="wait">
             <motion.div
@@ -30,7 +30,7 @@ export function OnboardComplete() {
               <p className="text-muted-foreground max-w-md mx-auto">
                 Your onboarding is complete. You can now start collaborating on markdown files.
               </p>
-              <Link href={'/workspace'} className="">
+              <Link href={'/workspaces'} className="">
                 <Button variant={'default'} className="cursor-pointer">
                   Go to Workspaces
                 </Button>

@@ -2,7 +2,7 @@
 const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 
 export const workspaceMemberClient = {
-  async getMemberWithWorkspace(workspaceId: string) {
+  async getMyWorkspaceMembership(workspaceId: string) {
     const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/members/me`);
     if (!res.ok) throw new Error('Failed to fetch workspace');
     if (res.status !== 200) throw new Error('Opps Error Occured.');

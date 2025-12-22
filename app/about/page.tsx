@@ -141,7 +141,7 @@ export default function AboutPage() {
               horizon, if you believe in what we’re building, stay tuned or reach out to
               collaborate.
             </p>
-            <div className="inline-block px-6 py-3 rounded-xl bg-slate-200 text-slate-600 font-semibold">
+            <div className="inline-block px-6 py-3 rounded-md bg-slate-200 text-slate-600 font-semibold">
               🚀 Coming Soon
             </div>
           </div>

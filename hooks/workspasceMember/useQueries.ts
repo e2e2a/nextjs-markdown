@@ -9,10 +9,10 @@ export function useGetMembersInWorkspace(workspaceId: string) {
   });
 }
 
-export function useGetMemberWithWorkspace(workspaceId: string) {
+export function useGetMyWorkspaceMembership(workspaceId: string) {
   return useQuery({
     queryKey: ['workspaceMember', workspaceId],
-    queryFn: () => workspaceMemberClient.getMemberWithWorkspace(workspaceId),
+    queryFn: () => workspaceMemberClient.getMyWorkspaceMembership(workspaceId),
     enabled: !!workspaceId,
   });
 }

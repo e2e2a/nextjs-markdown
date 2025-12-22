@@ -1,5 +1,4 @@
 'use client';
-import { SiteHeader } from '@/components/site-header';
 import { SidebarInset } from '@/components/ui/sidebar';
 import { DataTable } from '@/components/data-table';
 import { columns } from './columns';
@@ -22,19 +21,18 @@ export const WorkspaceClient = () => {
   if (status === 'loading' || isLoading) return;
 
   return (
-    <SidebarInset className="flex flex-col h-screen w-full">
-      <SiteHeader title={'Workspaces'} />
-      <div className="px-3 py-4 w-full flex-1 overflow-y-auto">
+    <SidebarInset className="flex flex-col h-full w-full">
+      <main className="px-3 py-4 w-full flex-1 overflow-y-auto">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Workspaces</h1>
-          <Link href={'/preferences/workspace/create'}>
+          <Link href={'/preferences/workspaces/create'}>
             <Button className="cursor-pointer">Create New Workspace</Button>
           </Link>
         </div>
         <div className="">
           <DataTable columns={columns} data={(workspaces || []) as IUserWorkspaces[]} />
         </div>
-      </div>
+      </main>
     </SidebarInset>
   );
 };

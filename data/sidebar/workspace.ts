@@ -4,7 +4,7 @@ export const sidebarData = [
     icon: 'UserLock',
     items: [
       {
-        title: 'All Projects',
+        title: 'Projects',
         url: '/projects',
       },
       {

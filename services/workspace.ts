@@ -5,20 +5,23 @@ import { workspaceMemberServices } from './workspaceMember';
 import { User } from 'next-auth';
 import { workspaceMemberRepository } from '@/repositories/workspaceMember';
 import mongoose from 'mongoose';
+import { MembersSchema } from '@/lib/validators/workspaceMember';
 
 export const workspaceService = {
   create: async (user: User, workspace: IWorkspace, members: IWorkspaceMemberCreateDTO[]) => {
+    const res = MembersSchema.safeParse(members);
+    if (!res.success) throw new HttpError('Invalid member fields.', 400);
+
     const newWorkspace = await workspaceRepository.create(workspace, user);
     if (!newWorkspace) throw new HttpError('Semething went wrong.', 500);
 
-    if (members.length > 0) {
-      const membersDataToCreate = members.map(member => ({
+    if (res.data.length > 0) {
+      const membersDataToCreate = res.data.map(member => ({
         ...member,
         invitedBy: user._id!.toString(),
         workspaceId: newWorkspace._id!.toString(),
       }));
-      const newMembers = await workspaceMemberServices.create(membersDataToCreate);
-      if (!newMembers) throw new HttpError('Something went wrong.', 500);
+      await workspaceMemberServices.create(membersDataToCreate);
     }
 
     return newWorkspace;

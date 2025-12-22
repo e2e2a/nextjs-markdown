@@ -1,6 +1,6 @@
 import { HttpError } from '@/lib/error';
-import { MembersSchema } from '@/lib/validators/workspaceMember';
 import { workspaceMemberRepository } from '@/repositories/workspaceMember';
+import mongoose from 'mongoose';
 
 export const workspaceMemberServices = {
   create: async (
@@ -11,16 +11,12 @@ export const workspaceMemberServices = {
       workspaceId: string;
     }[]
   ) => {
-    const res = MembersSchema.safeParse(members);
-
-    if (!res.success) throw new HttpError('Invalid member fields.', 400);
     const existing = await workspaceMemberServices.checkWorkspaceMemberExistence(members);
 
-    if (members.length > 0) {
-      let nonExisting = members;
-      if (existing.length > 0) nonExisting = members.filter(e => !existing.includes(e));
-      if (nonExisting.length > 0) await workspaceMemberRepository.createMany(nonExisting);
-    }
+    let nonExisting = members;
+    if (existing.length > 0) nonExisting = members.filter(e => !existing.includes(e));
+    if (nonExisting.length > 0) await workspaceMemberRepository.createMany(nonExisting);
+
     return true;
   },
 
@@ -35,6 +31,8 @@ export const workspaceMemberServices = {
   },
 
   getMembership: async (data: { workspaceId: string; email: string }) => {
+    if (!mongoose.Types.ObjectId.isValid(data.workspaceId))
+      throw new HttpError('Invalid workspace ID.', 400);
     const membership = await workspaceMemberRepository.findOne(data);
     if (!membership) throw new HttpError('Not a workspace member', 403);
     return membership;
@@ -44,11 +42,5 @@ export const workspaceMemberServices = {
     await workspaceMemberServices.getMembership(data);
     const workspaces = await workspaceMemberRepository.findMembers(data);
     return workspaces;
-  },
-
-  getMembershipWithWorkspace: async (data: { workspaceId: string; email: string }) => {
-    const membership = await workspaceMemberRepository.getMembershipWithWorkspace(data);
-    if (!membership) throw new HttpError('Not a workspace member', 403);
-    return membership;
   },
 };

@@ -63,14 +63,14 @@ export function Actions({ item }: IProps) {
   }, [item, mutation]);
 
   return (
-    <div className="inline-flex flex-row gap-x-2 items-center justify-center ">
+    <div className="inline-flex flex-row gap-x-2 items-center justify-center">
       <div className="text-center">
         <Button
           size={'sm'}
           type="button"
-          variant={'ghost'}
+          variant={'secondary'}
           onClick={handleAccept}
-          className="hover:text-none bg-secondary font-medium border border-primary/20 rounded-lg cursor-pointer"
+          className="action-button"
         >
           ACCEPT
         </Button>
@@ -82,9 +82,9 @@ export function Actions({ item }: IProps) {
             disabled={loading}
             onClick={() => setIsOpen(true)}
           >
-            <TooltipTrigger asChild className="cursor-not-allowed h-auto w-auto">
-              <span tabIndex={0} className="h-auto w-auto">
-                <div className="bg-red-700 w-full items-center flex size-4 px-3 gap-1.5 whitespace-nowrap shrink-0 text-sm h-8 text-accent-foreground font-medium hover:bg-red-600 rounded-lg hover:text-none cursor-pointer">
+            <TooltipTrigger asChild>
+              <span tabIndex={0}>
+                <div className="w-full items-center flex size-4 px-3 gap-1.5 h-8 action-button">
                   DECLINE
                 </div>
               </span>
@@ -103,7 +103,7 @@ export function Actions({ item }: IProps) {
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl sm:text-2xl font-bold text-start">
-              Leave Workspace
+              Decline Invitation
             </AlertDialogTitle>
             <AlertDialogDescription>
               You are about to decline the invitation to{' '}
@@ -119,7 +119,7 @@ export function Actions({ item }: IProps) {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-500 hover:bg-red-500/90 cursor-pointer"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
               disabled={loading}
               onClick={() => handleDecline()}
             >

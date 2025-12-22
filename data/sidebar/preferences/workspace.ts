@@ -19,11 +19,11 @@ export const sidebarData = [
     items: [
       {
         title: 'Invitations',
-        url: '/preferences/invitation',
+        url: '/preferences/invitations',
       },
       {
         title: 'Workspaces',
-        url: '/preferences/workspace',
+        url: '/preferences/workspaces',
       },
       {
         title: 'User Preferences',

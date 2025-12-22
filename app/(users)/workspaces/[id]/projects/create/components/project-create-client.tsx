@@ -1,8 +1,7 @@
 'use client';
-import { SiteHeader } from '@/components/site-header';
 import { SidebarInset } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { ChevronRight, SendHorizontal } from 'lucide-react';
+import { SendHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
@@ -15,15 +14,17 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { MemberRole } from './member-role';
 import { useSession } from 'next-auth/react';
-import { redirect, useParams, useRouter } from 'next/navigation';
+import { notFound, redirect, useParams, useRouter } from 'next/navigation';
 import { workspaceSchema } from '@/lib/validators/workspace';
 import { makeToastError } from '@/lib/toast';
 import { useProjectMutations } from '@/hooks/project/useProjectMutations';
+import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
 
 export const WorkspaceCreateClient = () => {
   const { data: session, status } = useSession();
   const params = useParams();
   const workspaceId = params.id as string;
+  const { data: membership, isLoading, error: mError } = useGetMyWorkspaceMembership(workspaceId);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>(
@@ -87,21 +88,31 @@ export const WorkspaceCreateClient = () => {
   };
 
   if (status === 'loading') return;
-
+  if (isLoading) return;
+  if (mError) return notFound();
   return (
-    <SidebarInset className="flex flex-col h-screen w-full">
-      <SiteHeader title={'Create Project'} />
-      <div className="px-3 py-4 w-full flex-1 overflow-y-auto">
+    <SidebarInset className="flex flex-col items-center h-full w-full overflow-y-auto">
+      <div className="px-3 py-4 w-full flex-1 max-w-2xl">
         <div className="">
           <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Create Project</h1>
         </div>
         <div className="flex flex-col gap-y-2 max-w-2xl mt-5">
-          <div className="flex items-center text-[12px] font-bold max-w-lg">
-            <div className="bg-primary text-white px-2 py-1">Name</div>
-            <span className="text-gray-500 font-extrabold text-[12px]">
-              <ChevronRight />
-            </span>
-            <div className={cn('bg-secondary text-gray-700 px-4 py-1')}>Members and security</div>
+          <div className="flex">
+            <div className="flex rounded text-sm font-bold border border-primary/90 bg-secondary brightness-110 overflow-hidden">
+              <div className="relative flex items-center px-6 py-2.5 text-secondary-foreground z-10">
+                <span>Name</span>
+                <div className="absolute right-0 top-1/2 w-8 h-8 bg-muted border-t border-r border-slate-500 transform translate-x-1/2 -translate-y-1/2 rotate-45 z-10"></div>
+              </div>
+
+              <div
+                className={cn(
+                  'relative flex items-center px-5 py-2.5 z-0 pl-8',
+                  step === 2 ? 'text-secondary-foreground' : 'text-secondary-foreground/50'
+                )}
+              >
+                <span>Members and security</span>
+              </div>
+            </div>
           </div>
           <div className="">
             {step === 1 && (
@@ -118,15 +129,26 @@ export const WorkspaceCreateClient = () => {
               >
                 <div className=" gap-4">
                   <div>
-                    <Label className="text-lg font-semibold">Name Your Organization</Label>
-                    <span className="">
+                    <Label className="text-lg font-semibold">Name Your Project</Label>
+                    <span className="text-sm text-muted-foreground">
                       Project names have to be unique within the workspace (and other restrictions).
                     </span>
                     <Input {...form1.register('title')} />
                     <p className="text-red-500 text-sm">{form1.formState.errors.title?.message}</p>
                   </div>
                 </div>
-                <div className="text-end">
+                <div className="text-end space-x-2">
+                  <Button
+                    type="button"
+                    variant={'outline'}
+                    disabled={loading}
+                    onClick={() => {
+                      redirect(`/workspaces/${workspaceId}/projects`);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    Cancel
+                  </Button>
                   <Button type="submit" className="text-end cursor-pointer">
                     Next
                   </Button>
@@ -214,7 +236,7 @@ export const WorkspaceCreateClient = () => {
                     variant={'outline'}
                     disabled={loading}
                     onClick={() => setStep(1)}
-                    className="text-end bg-secondary border-primary/70 text-primary cursor-pointer"
+                    className="cursor-pointer"
                   >
                     Back
                   </Button>
@@ -224,9 +246,9 @@ export const WorkspaceCreateClient = () => {
                       variant={'outline'}
                       disabled={loading}
                       onClick={() => {
-                        redirect('/preferences/workspace');
+                        redirect(`/workspaces/${workspaceId}/projects`);
                       }}
-                      className="text-end bg-secondary border-primary/70 text-primary cursor-pointer"
+                      className="cursor-pointer"
                     >
                       Cancel
                     </Button>

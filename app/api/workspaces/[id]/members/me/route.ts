@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 
-    const workspaces = await workspaceMemberServices.getMembershipWithWorkspace({
+    const workspaces = await workspaceMemberServices.getMembership({
       workspaceId: id,
       email: session.user.email,
     });

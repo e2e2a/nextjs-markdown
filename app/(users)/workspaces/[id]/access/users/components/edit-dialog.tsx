@@ -26,12 +26,12 @@ export function EditDialog({ item }: IProps) {
           <Button
             variant="outline"
             size={'sm'}
-            className="bg-secondary items-center border border-primary/20 flex w-8.5! whitespace-nowrap shrink-0 text-sm text-primary font-normal rounded-xl hover:text-none cursor-pointer"
+            className="bg-secondary items-center border border-primary/20 flex w-8.5! whitespace-nowrap shrink-0 text-sm text-primary font-normal rounded-md hover:text-none cursor-pointer"
           >
             <Pencil />
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[525px] top-[5%] translate-y-0 rounded-lg">
+        <DialogContent className="sm:max-w-[525px] top-[5%] translate-y-0 rounded-md">
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>

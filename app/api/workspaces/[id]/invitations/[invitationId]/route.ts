@@ -3,18 +3,21 @@ import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { invitationServices } from '@/services/invitation';
+import { invitationServices } from '@/modules/workspaces/invitations/invitation.service';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<{ invtationId: string }> }
+) {
   try {
-    const { id } = await context.params;
+    const { invtationId } = await context.params;
     await connectDb();
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 
     await invitationServices.accept({
-      _id: id,
+      _id: invtationId,
       email: session.user.email,
     });
 
@@ -24,15 +27,18 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ invtationId: string }> }
+) {
   try {
-    const { id } = await context.params;
+    const { invtationId } = await context.params;
     await connectDb();
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 
     await invitationServices.decline({
-      _id: id,
+      _id: invtationId,
       email: session.user.email,
     });
 

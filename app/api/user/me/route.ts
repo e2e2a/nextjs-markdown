@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
-import { userRepository } from '@/repositories/user';
+import { userRepository } from '@/modules/users/user.repository';
 
 export async function GET() {
   try {

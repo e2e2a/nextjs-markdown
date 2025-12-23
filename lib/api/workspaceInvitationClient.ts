@@ -1,5 +1,6 @@
 const BASE_URL_INVITATIONS = `${process.env.NEXT_PUBLIC_BASE_URL}/api/invitations`;
 const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
+
 export const invitationClient = {
   async getPending() {
     const res = await fetch(`${BASE_URL_WORKSPACES}/me`);

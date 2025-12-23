@@ -3,7 +3,7 @@ import { memberRepository } from '@/repositories/member';
 import { InviteMembersDTO, MembersInvited } from '@/types';
 import { Session } from 'next-auth';
 import mongoose from 'mongoose';
-import { projectRepository } from '@/repositories/project';
+import { projectRepository } from '@/modules/projects/project.repository';
 
 export const memberService = {
   create: async (session: Session, data: InviteMembersDTO) => {

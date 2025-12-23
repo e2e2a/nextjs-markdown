@@ -1,6 +1,6 @@
-import Workspace from '@/models/workspace';
+import Workspace from '@/modules/workspaces/workspace.model';
 import { IWorkspace } from '@/types';
-import { workspaceMemberRepository } from './workspaceMember';
+import { workspaceMemberRepository } from './members/member.repository';
 import { User } from 'next-auth';
 
 export const workspaceRepository = {

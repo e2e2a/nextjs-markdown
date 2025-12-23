@@ -1,7 +1,7 @@
-import Project from '@/models/project';
+import Project from '@/modules/projects/project.model';
 import { PopulateOptions } from 'mongoose';
 import { IProject, ProjectPushNodeDTO } from '@/types';
-import { projectMemberRepository } from './projectMember';
+import { projectMemberRepository } from '../../repositories/projectMember';
 import mongoose from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
 

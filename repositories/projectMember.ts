@@ -1,4 +1,4 @@
-import ProjectMember from '@/models/projectMember';
+import ProjectMember from '@/modules/projects/member/member.model';
 import mongoose from 'mongoose';
 
 export const projectMemberRepository = {

@@ -1,7 +1,7 @@
 import { HttpError } from '@/lib/error';
 import { memberRepository } from '@/repositories/member';
 import { nodeRepository } from '@/repositories/node';
-import { projectRepository } from '@/repositories/project';
+import { projectRepository } from '@/modules/projects/project.repository';
 import { CreateProjectDTO, INode, IProject, ProjectPushNodeDTO } from '@/types';
 import { Session } from 'next-auth';
 

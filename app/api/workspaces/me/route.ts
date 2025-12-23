@@ -4,7 +4,7 @@ import { handleError } from '@/lib/handleError';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { workspaceService } from '@/services/workspace';
+import { workspaceService } from '@/modules/workspaces/workspace.service';
 
 export async function GET() {
   try {

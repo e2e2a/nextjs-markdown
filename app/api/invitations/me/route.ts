@@ -3,7 +3,7 @@ import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
-import { invitationServices } from '@/services/invitation';
+import { invitationServices } from '@/modules/workspaces/invitations/invitation.service';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function GET() {

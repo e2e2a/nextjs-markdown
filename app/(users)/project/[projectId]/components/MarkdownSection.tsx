@@ -15,7 +15,7 @@ import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { UseMutationResult } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { timeAgo } from '@/lib/timeAgo';
+import { timeAgo } from '@/utils/timeAgo';
 
 interface MarkdownSectionProps {
   node: INode;

@@ -1,14 +1,14 @@
 import { HttpError } from '@/lib/error';
 import { memberRepository } from '@/repositories/member';
 import { nodeRepository } from '@/repositories/node';
-import { projectRepository } from '@/repositories/project';
+import { projectRepository } from '@/modules/projects/project.repository';
 import { INode, ProjectPushNodeDTO } from '@/types';
 import { Session, User } from 'next-auth';
-import { projectMemberService } from './projectMember';
+import { projectMemberService } from './member/member.service';
 import { projectMemberRepository } from '@/repositories/projectMember';
 import mongoose from 'mongoose';
 import { projectSchema } from '@/lib/validators/project';
-import { workspaceMemberServices } from './workspaceMember';
+import { workspaceMemberServices } from '../workspaces/members/member.service';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
 
 const sortNodes = (nodes: INode[]) => {

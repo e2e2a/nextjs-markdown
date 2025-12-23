@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../../../auth/[...nextauth]/route';
 import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
-import { workspaceService } from '@/services/workspace';
-import { workspaceMemberServices } from '@/services/workspaceMember';
+import { workspaceService } from '@/modules/workspaces/workspace.service';
+import { workspaceMemberServices } from '@/modules/workspaces/members/member.service';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {

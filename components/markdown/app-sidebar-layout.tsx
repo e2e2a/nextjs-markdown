@@ -8,7 +8,7 @@ import { AppSidebarHeader } from './app-sidebar-header';
 import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { AppSidebar } from './app-sidebar';
-import { IProject } from '@/models/project';
+import { IProject } from '@/modules/projects/project.model';
 
 export default function AppSidebarLayout({
   children,

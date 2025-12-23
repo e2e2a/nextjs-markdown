@@ -3,7 +3,7 @@ import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { workspaceService } from '@/services/workspace';
+import { workspaceService } from '@/modules/workspaces/workspace.service';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function POST(request: NextRequest) {

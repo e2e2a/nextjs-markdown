@@ -2,13 +2,13 @@ import { compareText, hashText } from '@/lib/bcrypt';
 import { HttpError } from '@/lib/error';
 import { loginSchema } from '@/lib/validators/login';
 import { validateRegisterSchema } from '@/lib/validators/register';
-import { userRepository } from '@/repositories/user';
+import { userRepository } from '@/modules/users/user.repository';
 import { AuthUser } from '@/types';
-import { tokenService } from './token';
+import { tokenService } from '../modules/tokens/token.service';
 import nodemailer from 'nodemailer';
 import { verificationTemplate } from '@/components/email-template/verification-code';
 import { rateLimitService } from './rateLimit';
-import { tokenRepository } from '@/repositories/token';
+import { tokenRepository } from '@/modules/tokens/token.repository';
 
 const sendEmail = async (
   email: string,

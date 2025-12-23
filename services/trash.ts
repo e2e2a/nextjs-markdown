@@ -1,8 +1,8 @@
 import { HttpError } from '@/lib/error';
 import { nodeRepository } from '@/repositories/node';
-import { projectRepository } from '@/repositories/project';
+import { projectRepository } from '@/modules/projects/project.repository';
 import { ArchivedItem, INode, IProject } from '@/types';
-import { checkExistence, projectService } from './project';
+import { checkExistence, projectService } from '../modules/projects/project.service';
 import { BSON } from 'mongodb';
 import { checkNodeExistence } from './node';
 import { memberRepository } from '@/repositories/member';

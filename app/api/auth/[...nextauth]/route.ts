@@ -4,7 +4,7 @@ import GitHubProvider from 'next-auth/providers/github';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '@/lib/db/adapter';
 import { authCallbacks } from '@/lib/nextauth/callbacks';
-import { userRepository } from '@/repositories/user';
+import { userRepository } from '@/modules/users/user.repository';
 import connectDb from '@/lib/db/connection';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { AdapterUser } from 'next-auth/adapters';

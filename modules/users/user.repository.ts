@@ -1,4 +1,4 @@
-import User from '@/models/user';
+import User from '@/modules/users/user.model';
 import { IUser } from '@/types';
 const updateOptions = { new: true, runValidators: true };
 

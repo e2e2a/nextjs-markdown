@@ -1,7 +1,7 @@
 import { Account, Profile, User } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 import connectDb from '../db/connection';
-import { userRepository } from '@/repositories/user';
+import { userRepository } from '@/modules/users/user.repository';
 import { AdapterUser } from 'next-auth/adapters';
 import { NullableJWT, NullableSession } from '@/types/next-auth';
 

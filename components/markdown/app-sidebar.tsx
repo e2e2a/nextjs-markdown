@@ -8,7 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { IProject } from '@/models/project';
+import { IProject } from '@/modules/projects/project.model';
 import { CopyMinus, FilePlus2, FolderPlus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SidebarContextMenu } from './sidebar-context-menu';

@@ -1,7 +1,7 @@
 import connectDb from '@/lib/db/connection';
 import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
-import { tokenService } from '@/services/token';
+import { tokenService } from '@/modules/tokens/token.service';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(req: NextRequest) {

@@ -1,10 +1,10 @@
 import { HttpError } from '@/lib/error';
-import { userRepository } from '@/repositories/user';
+import { userRepository } from '@/modules/users/user.repository';
 import { IOnboard } from '@/types';
 import { Step1Schema, Step2Schema } from '@/lib/validators/onboard';
-import { workspaceRepository } from '@/repositories/workspace';
+import { workspaceRepository } from '@/modules/workspaces/workspace.repository';
 import { workspaceSchema } from '@/lib/validators/workspace';
-import { workspaceMemberRepository } from '@/repositories/workspaceMember';
+import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import { User } from 'next-auth';
 
 export const userServices = {

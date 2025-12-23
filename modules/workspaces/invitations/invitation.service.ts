@@ -1,10 +1,10 @@
 import { HttpError } from '@/lib/error';
-import { workspaceMemberRepository } from '@/repositories/workspaceMember';
+import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import mongoose from 'mongoose';
-import { workspaceMemberServices } from './workspaceMember';
+import { workspaceMemberServices } from '../members/member.service';
 import { User } from 'next-auth';
 import { IWorkspaceMemberCreateDTO } from '@/types';
-import { projectMemberService } from './projectMember';
+import { projectMemberService } from '../../projects/member/member.service';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
 
 export const invitationServices = {

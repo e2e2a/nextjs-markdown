@@ -3,7 +3,7 @@ import {
   getOwnerCountStages,
 } from '@/aggregation/workspacemember/findByEmailAndStatus';
 import { addLookup } from '@/lib/helpers/aggregationHelpers';
-import WorkspaceMember from '@/models/workspaceMember';
+import WorkspaceMember from '@/modules/workspaces/members/member.model';
 import { PipelineStage } from 'mongoose';
 import mongoose from 'mongoose';
 

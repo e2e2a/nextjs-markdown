@@ -1,5 +1,5 @@
 import { HttpError } from '@/lib/error';
-import { workspaceMemberRepository } from '@/repositories/workspaceMember';
+import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import mongoose from 'mongoose';
 
 export const workspaceMemberServices = {

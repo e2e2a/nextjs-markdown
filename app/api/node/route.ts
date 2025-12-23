@@ -2,7 +2,7 @@ import connectDb from '@/lib/db/connection';
 import { HttpError } from '@/lib/error';
 import { handleError } from '@/lib/handleError';
 import { nodeService } from '@/services/node';
-import { projectService } from '@/services/project';
+import { projectService } from '@/modules/projects/project.service';
 import { ProjectPushNodeDTO } from '@/types';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';

@@ -1,4 +1,4 @@
-import Token from '@/models/token';
+import Token from '@/modules/tokens/token.model';
 import { IToken } from '@/types';
 const updateOptions = { new: true, runValidators: true };
 

@@ -1,7 +1,7 @@
-import { tokenRepository } from '@/repositories/token';
-import { generateRandomString } from '@/lib/generateRandomString';
+import { tokenRepository } from '@/modules/tokens/token.repository';
+import { generateRandomString } from '@/utils/generateRandomString';
 import jwt from 'jsonwebtoken';
-import { rateLimitService } from './rateLimit';
+import { rateLimitService } from '../../services/rateLimit';
 import { HttpError } from '@/lib/error';
 import { hashText } from '@/lib/bcrypt';
 

@@ -1,9 +1,9 @@
 import { HttpError } from '@/lib/error';
-import { workspaceRepository } from '@/repositories/workspace';
+import { workspaceRepository } from '@/modules/workspaces/workspace.repository';
 import { IWorkspace, IWorkspaceMemberCreateDTO } from '@/types';
-import { workspaceMemberServices } from './workspaceMember';
+import { workspaceMemberServices } from './members/member.service';
 import { User } from 'next-auth';
-import { workspaceMemberRepository } from '@/repositories/workspaceMember';
+import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import mongoose from 'mongoose';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
 

@@ -1,13 +1,13 @@
 import mongoose, { Mongoose } from 'mongoose';
 import '@/models/node';
-import '@/models/project';
+import '@/modules/projects/project.model';
 import '@/models/account';
-import '@/models/user';
+import '@/modules/users/user.model';
 import '@/models/rateLimit';
 import '@/models/member';
-import '@/models/workspace';
-import '@/models/workspaceMember';
-import '@/models/token';
+import '@/modules/workspaces/workspace.model';
+import '@/modules/workspaces/member/member.model';
+import '@/modules/tokens/token.model';
 
 const MONGODB_URI = process.env.MONGO_URI;
 

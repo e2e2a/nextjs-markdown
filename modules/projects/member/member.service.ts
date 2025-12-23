@@ -1,7 +1,7 @@
 import { HttpError } from '@/lib/error';
 import { projectMemberRepository } from '@/repositories/projectMember';
-import { workspaceMemberServices } from './workspaceMember';
-import { workspaceMemberRepository } from '@/repositories/workspaceMember';
+import { workspaceMemberServices } from '../../workspaces/members/member.service';
+import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import { User } from 'next-auth';
 
 export const projectMemberService = {

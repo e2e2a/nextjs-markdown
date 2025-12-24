@@ -1,5 +1,5 @@
 import { compareText, hashText } from '@/lib/bcrypt';
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { loginSchema } from '@/lib/validators/login';
 import { validateRegisterSchema } from '@/lib/validators/register';
 import { userRepository } from '@/modules/users/user.repository';
@@ -7,7 +7,7 @@ import { AuthUser } from '@/types';
 import { tokenService } from '../modules/tokens/token.service';
 import nodemailer from 'nodemailer';
 import { verificationTemplate } from '@/components/email-template/verification-code';
-import { rateLimitService } from './rateLimit';
+import { rateLimitService } from '../modules/rateLimits/rateLimit.service';
 import { tokenRepository } from '@/modules/tokens/token.repository';
 
 const sendEmail = async (
@@ -36,29 +36,30 @@ const sendEmail = async (
 export const authServices = {
   login: async (data: { email: string; password: string }) => {
     const result = loginSchema.safeParse(data);
-    if (!result.success) throw new HttpError('Invalid fields.', 400);
+    if (!result.success) throw new HttpError('BAD_INPUT', 'Invalid fields');
 
     await rateLimitService.checkLimit('login', data.email);
 
     const user = await userRepository.findUserByEmail(result.data.email, false);
-    if (!user) throw new HttpError('Email has not been yet registered.', 409);
-    if (!user.password) throw new HttpError('Account is linked to another provider.', 409);
-    if (!user.email_verified) throw new HttpError('Email is not verified.', 400);
+    if (!user) throw new HttpError('CONFLICT', 'Email has not been yet registered');
+    if (!user.password) throw new HttpError('CONFLICT', 'Account is linked to another provider');
+    if (!user.email_verified) throw new HttpError('BAD_INPUT', 'Email is not verified');
 
     const verify = await compareText(result.data.password, user.password);
-    if (!verify) throw new HttpError('Invalid Credentials.', 409);
+    if (!verify) throw new HttpError('BAD_INPUT', 'Invalid Credentials');
 
     return user;
   },
 
   register: async (data: AuthUser) => {
     const result = validateRegisterSchema.safeParse(data);
-    if (!result.success) throw new HttpError('Invalid fields.', 400);
+    if (!result.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
     let user = null;
     user = await userRepository.findUserByEmail(result.data.email, false);
     const hashedPassword = await hashText(result.data.password);
     if (user) {
-      if (user.email_verified) throw new HttpError('Email already exists in this level.', 409);
+      if (user.email_verified)
+        throw new HttpError('CONFLICT', 'Email already exists in this level');
       user.password = hashedPassword;
       await user.save();
     } else {
@@ -67,12 +68,10 @@ export const authServices = {
         password: hashedPassword,
       });
     }
-    if (!user) throw new HttpError('Something went wrong.', 500);
 
     await rateLimitService.checkLimit('register', data.email); // set rateLimit for register
 
     const token = await tokenService.generateToken(user.email, 'EmailVerification');
-    if (!token) throw new HttpError('Something went wrong.', 500);
 
     sendEmail(user.email, 'Verification Code', token.type, token.code);
     return { email: data.email, token: token.token };
@@ -80,16 +79,16 @@ export const authServices = {
 
   verifyEmailByCodeAndToken: async (data: { code: string; token: string }) => {
     const tokenDoc = await tokenRepository.getToken({ token: data.token });
-    if (!tokenDoc) throw new HttpError('Invalid or expired token.', 404);
+    if (!tokenDoc) throw new HttpError('NOT_FOUND', 'Invalid or expired token.');
 
-    if (tokenDoc.expires < new Date()) throw new HttpError('Token has expired.', 410);
+    if (tokenDoc.expires < new Date()) throw new HttpError('GONE', 'Token has expired.');
     const limit = await rateLimitService.checkLimit('verify', tokenDoc.email);
-    if (tokenDoc.expiresCode < new Date()) throw new HttpError('Code has expired.', 410);
+    if (tokenDoc.expiresCode < new Date()) throw new HttpError('GONE', 'Code has expired.');
 
     const verify = await compareText(data.code, tokenDoc.code);
-    if (!verify) throw new HttpError('Code does not matched.', 403);
+    if (!verify) throw new HttpError('FORBIDDEN', 'Code does not matched.');
     const user = await userRepository.updateUserByEmail(tokenDoc.email, { email_verified: true });
-    if (!user) throw new HttpError('No user Found.', 404);
+    if (!user) throw new HttpError('NOT_FOUND', 'No user Found.');
 
     await tokenRepository.deleteToken(tokenDoc._id);
     return { email: user.email, retries: limit?.retryCount };

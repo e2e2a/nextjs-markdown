@@ -74,7 +74,7 @@ export function VerifyForm({ tokenValue, expiresCode, className, ...props }: IPr
             email: data.email,
             redirect: false,
           });
-          redirect('/project');
+          redirect('/preferences/workspaces');
         },
         onError: err => {
           form.setError('code', {}, { shouldFocus: true });

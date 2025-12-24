@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { nodeRepository } from '@/repositories/node';
 import { projectRepository } from '@/modules/projects/project.repository';
 import { ArchivedItem, INode, IProject } from '@/types';
@@ -81,11 +81,11 @@ export const trashService = {
     }
     if (data.type === 'folder' || data.type === 'file') {
       const project = await projectRepository.findProject(data.projectId || '');
-      if (!project) throw new HttpError('The node has no project.', 404);
+      if (!project) throw new HttpError('NOT_FOUND', 'The node has no project.');
       if (project.archived?.isArchived)
-        throw new HttpError(`Project ${project.title} should be restore.`, 400);
+        throw new HttpError('BAD_INPUT', `Project ${project.title} should be restore.`);
       const node = await nodeRepository.retrieveById(data._id);
-      if (!node) throw new HttpError('Node was not found.', 404);
+      if (!node) throw new HttpError('NOT_FOUND', 'Node was not found.');
       await checkNodeExistence({
         projectId: data.projectId || '',
         parentId: node.parentId!,
@@ -94,11 +94,11 @@ export const trashService = {
       });
       return node;
     }
-    throw new HttpError('No item to retrieve.', 404);
+    throw new HttpError('NOT_FOUND', 'No item to retrieve.');
   },
 
   async deletePermanently(userId: string, data: ArchivedItem[]) {
-    if (data.length === 0) throw new HttpError('No item to delete.', 404);
+    if (data.length === 0) throw new HttpError('NOT_FOUND', 'No item to delete.');
 
     const nodeIds = data.filter(n => n.type !== 'project').map(n => n._id);
     if (nodeIds.length > 0) {

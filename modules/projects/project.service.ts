@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { memberRepository } from '@/repositories/member';
 import { nodeRepository } from '@/repositories/node';
 import { projectRepository } from '@/modules/projects/project.repository';
@@ -32,10 +32,10 @@ export const projectService = {
     await workspaceMemberServices.getMembership({ workspaceId, email: user.email });
 
     const res = projectSchema.safeParse({ title });
-    if (!res.success) throw new HttpError('Invalid fields.', 400);
+    if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
 
     const resM = MembersSchema.safeParse(members);
-    if (!resM.success) throw new HttpError('Invalid member fields.', 400);
+    if (!resM.success) throw new HttpError('BAD_INPUT', 'Invalid member fields.');
 
     await projectService.checkTitleExist(workspaceId, title);
     const newProject = await projectRepository.create({
@@ -43,7 +43,6 @@ export const projectService = {
       title,
       createdBy: user._id!.toString(),
     });
-    if (!newProject) throw new HttpError('Semething went wrong.', 500);
 
     if (resM.data.length > 0) {
       const membersDataToCreate = resM.data.map(member => ({
@@ -51,8 +50,7 @@ export const projectService = {
         projectId: newProject._id.toString(),
         workspaceId,
       }));
-      const newMembers = await projectMemberService.create(user, membersDataToCreate);
-      if (!newMembers) throw new HttpError('Semething went wrong.', 500);
+      await projectMemberService.create(user, membersDataToCreate);
     }
 
     return newProject;
@@ -60,7 +58,7 @@ export const projectService = {
 
   checkTitleExist: async (workspaceId: string, title: string) => {
     const existingProjectTitle = await projectRepository.findProjectByTitle(workspaceId, title);
-    if (existingProjectTitle) throw new HttpError('Project title already exists.', 409);
+    if (existingProjectTitle) throw new HttpError('CONFLICT', 'Project title already exists.');
     return;
   },
 
@@ -76,26 +74,26 @@ export const projectService = {
 
   updateProjectTitle: async (projectId: string, title: string, user: User) => {
     if (!mongoose.Types.ObjectId.isValid(projectId))
-      throw new HttpError('Invalid project ID.', 400);
+      throw new HttpError('BAD_INPUT', 'Invalid project ID.');
     await projectMemberService.getMembership({ projectId, email: user.email });
 
     const res = projectSchema.safeParse({ title });
-    if (!res.success) throw new HttpError('Invalid fields.', 400);
+    if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
 
     const project = await projectRepository.updateProjectTitle(projectId, title);
-    if (!project) throw new HttpError('No project to be updated.', 404);
+    if (!project) throw new HttpError('NOT_FOUND', 'No project to be updated.');
 
     return project;
   },
 
   deleteProject: async (projectId: string, user: User) => {
     if (!mongoose.Types.ObjectId.isValid(projectId))
-      throw new HttpError('Invalid project ID.', 400);
+      throw new HttpError('BAD_INPUT', 'Invalid project ID.');
 
     await projectMemberService.getMembership({ projectId, email: user.email });
 
     const project = await projectRepository.deleteOne(projectId);
-    if (!project) throw new HttpError('No project to be deleted.', 404);
+    if (!project) throw new HttpError('NOT_FOUND', 'No project to be deleted.');
 
     return project;
   },
@@ -109,7 +107,7 @@ export const projectService = {
         email: session.user.email,
         status: 'accepted',
       });
-      if (!member) throw new HttpError(`Forbidden.`, 403);
+      if (!member) throw new HttpError('FORBIDDEN', `Forbidden.`);
     }
     if (project.archived?.isArchived) return null;
 

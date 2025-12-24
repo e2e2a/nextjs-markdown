@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { memberRepository } from '@/repositories/member';
 import { InviteMembersDTO, MembersInvited } from '@/types';
 import { Session } from 'next-auth';

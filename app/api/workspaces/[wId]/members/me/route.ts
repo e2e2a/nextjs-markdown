@@ -2,20 +2,20 @@ import connectDb from '@/lib/db/connection';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../../../auth/[...nextauth]/route';
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { handleError } from '@/lib/handleError';
 import { workspaceService } from '@/modules/workspaces/workspace.service';
 import { workspaceMemberServices } from '@/modules/workspaces/members/member.service';
 
-export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ wId: string }> }) {
   try {
     await connectDb();
-    const { id } = await context.params;
+    const { wId } = await context.params;
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 
     const workspaces = await workspaceMemberServices.getMembership({
-      workspaceId: id,
+      workspaceId: wId,
       email: session.user.email,
     });
 

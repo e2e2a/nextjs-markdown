@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import mongoose from 'mongoose';
 import { workspaceMemberServices } from '../members/member.service';
@@ -31,9 +31,9 @@ export const invitationServices = {
     const { workspaceId, projectId, members } = data;
 
     const res = MembersSchema.safeParse(members);
-    if (!res.success) throw new HttpError('Invalid member fields.', 400);
+    if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid member fields.');
 
-    if (members.length <= 0) throw new HttpError('No Members to be invited.', 400);
+    if (members.length <= 0) throw new HttpError('BAD_INPUT', 'No Members to be invited.');
 
     const membership = await workspaceMemberServices.getMembership({
       workspaceId,
@@ -42,22 +42,22 @@ export const invitationServices = {
 
     const roles = ['editor', 'owner'];
     if (!roles.includes(membership.role))
-      throw new HttpError('You do not have permission to invite members.', 403);
+      throw new HttpError('FORBIDDEN', 'You do not have permission to invite members.');
 
     const initialMembersData = members.map(member => ({ ...member, workspaceId }));
     if (!projectId) {
       const workspaceMembers = initialMembersData.map(m => ({ ...m, invitedBy: user.email }));
-      await workspaceMemberServices.create(workspaceMembers);
+      await workspaceMemberServices.store(workspaceMembers);
     } else {
       if (!mongoose.Types.ObjectId.isValid(projectId))
-        throw new HttpError('Invalid project ID.', 400);
+        throw new HttpError('BAD_INPUT', 'Invalid project ID.');
       const workspaceMembers = initialMembersData.map(m => ({ ...m, projectId }));
       await projectMemberService.create(user, workspaceMembers);
     }
     return true;
   },
 
-  getUserInvitations: async (data: { email: string }) => {
+  getPendingInvitations: async (data: { email: string }) => {
     const workspaces = await workspaceMemberRepository.findByEmailAndStatus(
       { email: data.email, status: 'pending' },
       { workspaceId: true, invitedBy: true }
@@ -67,19 +67,19 @@ export const invitationServices = {
 
   accept: async (data: { email: string; _id: string }) => {
     if (!mongoose.Types.ObjectId.isValid(data._id))
-      throw new HttpError('Invalid workspace ID.', 400);
+      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
 
     const res = await workspaceMemberRepository.updateByIdAndEmail(data, {
       status: 'accepted',
     });
-    if (!res) throw new HttpError('No workspace member to be updated.', 404);
+    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be updated.');
     return;
   },
 
   decline: async (data: { _id: string; email: string }) => {
     if (!mongoose.Types.ObjectId.isValid(data._id))
-      throw new HttpError('Invalid workspace ID.', 400);
+      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
     const res = await workspaceMemberRepository.deleteByIdAndEmail(data);
-    if (!res) throw new HttpError('No workspace member to be deleted.', 404);
+    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted.');
   },
 };

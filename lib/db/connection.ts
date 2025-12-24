@@ -6,7 +6,7 @@ import '@/modules/users/user.model';
 import '@/models/rateLimit';
 import '@/models/member';
 import '@/modules/workspaces/workspace.model';
-import '@/modules/workspaces/member/member.model';
+import '@/modules/workspaces/members/member.model';
 import '@/modules/tokens/token.model';
 
 const MONGODB_URI = process.env.MONGO_URI;

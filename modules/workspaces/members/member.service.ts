@@ -1,9 +1,9 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import mongoose from 'mongoose';
 
 export const workspaceMemberServices = {
-  create: async (
+  store: async (
     members: {
       role: 'owner' | 'editor' | 'viewer';
       email: string;
@@ -32,9 +32,9 @@ export const workspaceMemberServices = {
 
   getMembership: async (data: { workspaceId: string; email: string }) => {
     if (!mongoose.Types.ObjectId.isValid(data.workspaceId))
-      throw new HttpError('Invalid workspace ID.', 400);
+      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
     const membership = await workspaceMemberRepository.findOne(data);
-    if (!membership) throw new HttpError('Not a workspace member', 403);
+    if (!membership) throw new HttpError('FORBIDDEN', 'Not a workspace member');
     return membership;
   },
 

@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { projectMemberRepository } from '@/repositories/projectMember';
 import { workspaceMemberServices } from '../../workspaces/members/member.service';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';

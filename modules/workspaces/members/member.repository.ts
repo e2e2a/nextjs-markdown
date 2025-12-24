@@ -30,6 +30,9 @@ export const workspaceMemberRepository = {
     workspaceId: string;
   }) => await new WorkspaceMember(data).save(),
 
+  addOwner: async (data: { email: string; workspaceId: string }) =>
+    await new WorkspaceMember({ ...data, role: 'owner', status: 'accepted' }).save(),
+
   findOne: async (data: { workspaceId: string; email: string }) => {
     const pipeline: PipelineStage[] = [];
 

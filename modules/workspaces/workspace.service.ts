@@ -1,27 +1,26 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { workspaceRepository } from '@/modules/workspaces/workspace.repository';
 import { IWorkspace, IWorkspaceMemberCreateDTO } from '@/types';
 import { workspaceMemberServices } from './members/member.service';
 import { User } from 'next-auth';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import mongoose from 'mongoose';
-import { MembersSchema } from '@/lib/validators/workspaceMember';
 
 export const workspaceService = {
-  create: async (user: User, workspace: IWorkspace, members: IWorkspaceMemberCreateDTO[]) => {
-    const res = MembersSchema.safeParse(members);
-    if (!res.success) throw new HttpError('Invalid member fields.', 400);
+  initializeWorkspace: async (
+    user: User,
+    workspace: IWorkspace,
+    members: IWorkspaceMemberCreateDTO[]
+  ) => {
+    const newWorkspace = await workspaceRepository.store(workspace);
 
-    const newWorkspace = await workspaceRepository.create(workspace, user);
-    if (!newWorkspace) throw new HttpError('Semething went wrong.', 500);
-
-    if (res.data.length > 0) {
-      const membersDataToCreate = res.data.map(member => ({
+    if (members.length > 0) {
+      const membersDataToCreate = members.map(member => ({
         ...member,
         invitedBy: user._id!.toString(),
         workspaceId: newWorkspace._id!.toString(),
       }));
-      await workspaceMemberServices.create(membersDataToCreate);
+      await workspaceMemberServices.store(membersDataToCreate);
     }
 
     return newWorkspace;
@@ -37,9 +36,9 @@ export const workspaceService = {
 
   leave: async (data: { workspaceId: string; userId: string }) => {
     if (!mongoose.Types.ObjectId.isValid(data.workspaceId))
-      throw new HttpError('Invalid workspace ID.', 400);
+      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
 
     const res = await workspaceMemberRepository.deleteByWorkspaceIdAndUserId(data);
-    if (!res) throw new HttpError('No workspace member to be deleted.', 404);
+    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted.');
   },
 };

@@ -2,7 +2,7 @@ import connectDb from '@/lib/db/connection';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { handleError } from '@/lib/handleError';
 import { userRepository } from '@/modules/users/user.repository';
 

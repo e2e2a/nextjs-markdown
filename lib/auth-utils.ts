@@ -1,13 +1,13 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { HttpError } from './error';
+import { HttpError } from '../utils/errors';
 
 /**
  * Basic Guard: Just ensures the user is logged in.
  */
 export async function ensureAuthenticated() {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user) throw new HttpError('Unauthorized', 401);
+  if (!session || !session.user) throw new HttpError('UNAUTHORIZED', 'Unauthorized');
   return session;
 }
 
@@ -20,7 +20,7 @@ export async function ensureHasRole(requiredRole: 'ADMIN' | 'USER') {
 
   // Assuming your session includes the role from the JWT/Database
   if (session.user.role !== requiredRole) {
-    throw new HttpError('Forbidden: Insufficient permissions', 403);
+    throw new HttpError('FORBIDDEN', 'Forbidden: Insufficient permissions');
   }
 
   return session;

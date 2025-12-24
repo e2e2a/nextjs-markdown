@@ -1,6 +1,6 @@
-import { HttpError } from '@/lib/error';
-import { memberRepository } from './members/member.repository';
+import { HttpError } from '@/utils/errors';
 import { resolveWorkspacePermissions, WorkspacePermissions } from '@/lib/permissions';
+import { memberRepository } from '@/repositories/member';
 
 export interface WorkspaceContext {
   isMember: boolean;
@@ -39,10 +39,7 @@ export async function getWorkspaceContext(wid: string, uid: string): Promise<Wor
  */
 export async function ensureWorkspaceMember(wid: string, uid: string) {
   const context = await getWorkspaceContext(wid, uid);
-
-  if (!context.isMember) {
-    throw new HttpError('You are not a member of this workspace', 403);
-  }
+  if (!context.isMember) throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
 
   return context;
 }

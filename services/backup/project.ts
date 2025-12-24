@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { memberRepository } from '@/repositories/member';
 import { nodeRepository } from '@/repositories/node';
 import { projectRepository } from '@/modules/projects/project.repository';

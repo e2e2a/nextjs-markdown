@@ -1,5 +1,5 @@
-import connectDb from '@/lib/db/connection';
-import { HttpError } from '@/lib/error';
+// import connectDb from '@/lib/db/connection';
+import { HttpError } from '@/utils/errors';
 import { handleError } from '@/lib/handleError';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
@@ -8,7 +8,7 @@ import { workspaceService } from '@/modules/workspaces/workspace.service';
 
 export async function GET() {
   try {
-    await connectDb();
+    // await connectDb();
     const session = await getServerSession(authOptions);
     if (!session || !session.user) throw new HttpError('Unauthorized', 401);
 

@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/error';
+import { HttpError } from '@/utils/errors';
 import { nodeRepository } from '@/repositories/node';
 import { CreateNodeDTO, INode } from '@/types';
 

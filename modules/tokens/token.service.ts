@@ -1,8 +1,8 @@
 import { tokenRepository } from '@/modules/tokens/token.repository';
 import { generateRandomString } from '@/utils/generateRandomString';
 import jwt from 'jsonwebtoken';
-import { rateLimitService } from '../../services/rateLimit';
-import { HttpError } from '@/lib/error';
+import { rateLimitService } from '../rateLimits/rateLimit.service';
+import { HttpError } from '@/utils/errors';
 import { hashText } from '@/lib/bcrypt';
 
 export const tokenService = {

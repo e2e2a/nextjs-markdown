@@ -3,7 +3,7 @@ import '@/models/node';
 import '@/modules/projects/project.model';
 import '@/models/account';
 import '@/modules/users/user.model';
-import '@/models/rateLimit';
+import '@/modules/rateLimits/rateLimit.model';
 import '@/models/member';
 import '@/modules/workspaces/workspace.model';
 import '@/modules/workspaces/members/member.model';

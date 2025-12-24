@@ -1,4 +1,4 @@
-import { RateLimit } from '@/models/rateLimit';
+import { RateLimit } from '@/modules/rateLimits/rateLimit.model';
 import { CreateIRateLimitDTO, IRateLimit } from '@/types';
 
 export const rateLimitRepository = {

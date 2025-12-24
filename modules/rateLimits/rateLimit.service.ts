@@ -1,6 +1,6 @@
 import { HttpError } from '@/utils/errors';
 import { getHeaders } from '@/lib/getHeaders';
-import { rateLimitRepository } from '@/repositories/rateLimit';
+import { rateLimitRepository } from '@/modules/rateLimits/rateLimit.repository';
 import { CreateIRateLimitDTO, IRateLimit, IRateLimitType } from '@/types';
 
 export const rateLimitService = {

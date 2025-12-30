@@ -1,8 +1,8 @@
 import { HttpError } from '@/utils/errors';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
-import mongoose from 'mongoose';
+import { ensureWorkspaceMember } from '../workspace.context';
 
-export const workspaceMemberServices = {
+export const workspaceMemberService = {
   store: async (
     members: {
       role: 'owner' | 'editor' | 'viewer';
@@ -11,13 +11,17 @@ export const workspaceMemberServices = {
       workspaceId: string;
     }[]
   ) => {
-    const existing = await workspaceMemberServices.checkWorkspaceMemberExistence(members);
+    const existing = await workspaceMemberService.checkWorkspaceMemberExistence(members);
 
     let nonExisting = members;
     if (existing.length > 0) nonExisting = members.filter(e => !existing.includes(e));
     if (nonExisting.length > 0) await workspaceMemberRepository.createMany(nonExisting);
 
     return true;
+  },
+
+  initializeOwnership: async (data: { email: string; workspaceId: string }) => {
+    return await workspaceMemberRepository.create({ ...data, role: 'owner', status: 'accepted' });
   },
 
   checkWorkspaceMemberExistence: async (
@@ -30,17 +34,50 @@ export const workspaceMemberServices = {
     return await workspaceMemberRepository.findExistingEmails(members[0].workspaceId, emails);
   },
 
-  getMembership: async (data: { workspaceId: string; email: string }) => {
-    if (!mongoose.Types.ObjectId.isValid(data.workspaceId))
-      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
-    const membership = await workspaceMemberRepository.findOne(data);
-    if (!membership) throw new HttpError('FORBIDDEN', 'Not a workspace member');
-    return membership;
+  getMemberships: (data: { workspaceId: string; email: string }) =>
+    workspaceMemberRepository.findMembers(data),
+
+  leave: async (data: { workspaceId: string; email: string }) => {
+    const context = await ensureWorkspaceMember(data.workspaceId, data.email);
+    if (!context.canLeave)
+      throw new HttpError('FORBIDDEN', 'Cannot leave the workspace while you are the only owner');
+    /**
+     * @todo
+     * 1. Notify admins user leaving in the workspace
+     *
+     */
+    const res = await workspaceMemberRepository.deleteByWorkspaceIdAndEmail(data);
+    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted');
+    return res;
   },
 
-  getMemberships: async (data: { workspaceId: string; email: string }) => {
-    await workspaceMemberServices.getMembership(data);
-    const workspaces = await workspaceMemberRepository.findMembers(data);
-    return workspaces;
+  update: async (mid: string, data: { workspaceId: string; email: string; role: string }) => {
+    const context = await ensureWorkspaceMember(data.workspaceId, data.email);
+    if (!context.permissions.canEdit) throw new HttpError('FORBIDDEN');
+    /**
+     * @todo
+     * 1. Notify admins user updating member roles
+     *
+     */
+    const res = await workspaceMemberRepository.updateById(mid, { role: data.role });
+    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted');
+    return res;
+  },
+
+  delete: async (mid: string, data: { workspaceId: string; email: string }) => {
+    const context = await ensureWorkspaceMember(data.workspaceId, data.email);
+    if (!context.permissions.canDeleteMember) throw new HttpError('FORBIDDEN');
+
+    const res = await workspaceMemberRepository.findById(mid);
+    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted');
+    if (res.role === 'owner' && context.ownerCount <= 1)
+      throw new HttpError('FORBIDDEN', 'Ownership of workspace should remain atleast 1');
+    /**
+     * @todo
+     * 1. Notify admins user deleting member
+     *
+     */
+    await workspaceMemberRepository.deleteById(mid);
+    return res;
   },
 };

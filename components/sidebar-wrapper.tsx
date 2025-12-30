@@ -56,7 +56,7 @@ export function SidebarWrapper({ data, children, type }: IProps) {
 
       <div className="flex flex-1 overflow-hidden">
         <AppSidebar data={data} initialLink={initialLink} collapsible="icon" variant="sidebar" />
-        {children}
+        <div className="overflow-hidden w-full">{children}</div>
       </div>
     </SidebarProvider>
   );

@@ -1,174 +1,136 @@
-# 📝 SOP: Creating an API (Route → Controller → Service → Repository)
+# Technical Specification: Collaborative Knowledge Graph API
+
+This README serves as the definitive API blueprint for the Project. It defines the contract between the Next.js App Router handlers and the underlying Service/Repository layers.
 
 ---
 
-## 1️⃣ When you create an API
+## 0. Global Authentication Context (Next-Auth)
 
-**Definition:**
-
-> Creating one API means you are implementing **one endpoint** (e.g., `GET /api/workspaces/:workspaceId/members/me`).
-> For that API, you typically implement **all four layers**, even if “controller” can be merged into the route handler in Next.js:
-
-```
-
-Route Handler → Controller → Service → Repository
-
-
-- **Route Handler**: HTTP layer, session, request/response
-- **Controller (optional)**: input validation, maps request → service
-- **Service**: business/domain logic
-- **Repository**: DB queries only
-
-> If your project is small/medium, you can merge **controller into route handler**, but **service and repository must remain separate**.
+- **Session Requirement:** All endpoints (except public landing pages) require a valid session.
+- **Identity:** Access `session.user.id` and `session.user.email` for all permission checks.
+- **Multi-tenancy:** The `workspaceId` must be validated against the `workspaceMembers` table for every request.
 
 ---
 
-## 2️⃣ Step-by-step SOP
+## 1. Resource: Invitations
 
-### Step 1: Define the API Route
-1. Use **pluralized resources** for folders (kebab-case).
-   Example:
+**Scenario:** Handling the lifecycle of a user entering the workspace.
 
-```
+- **GET `/api/invitations`**
 
-GET /api/user/me/workspace-invitations
+  - **Context:** Authenticated; filter by `session.user.email`.
+  - **Controller:** `invitationController.getMyPendingInvitations()`
+  - **Service:** `invitation.listPendingInvitationsForUser(email)`
+  - **Scenario:** User views all pending invites on their global dashboard.
 
-- Folder structure:
+- **POST `/api/workspaces/[id]/invitations`**
 
-/app/api
-└─ user
-└─ me
-└─ workspace-invitations
-└─ route.ts
+  - **Context:** Workspace Admin/Owner only.
+  - **Controller:** `handleInviteAction`
+  - **Service:** `invitation.send()` or `invitation.resend()`
+  - **Scenario:** **Invite:** Create new record. **Resend:** If record exists, update `expiresAt` and trigger a new email.
+
+- **POST `/api/invitations/[id]/accept`**
+
+  - **Context:** User email must match invitation.
+  - **Controller:** `handleAcceptance`
+  - **Service:** `invitation.accept()`
+  - **Repo:** `transaction([createMember, updateInviteStatus])`
+  - **Scenario:** **Accept:** User joins the workspace; record moves to `workspaceMembers`.
+
+- **POST `/api/invitations/[id]/reject`**
+
+  - **Context:** Recipient action.
+  - **Controller:** `handleRejection`
+  - **Service:** `invitation.setStatus('REJECTED')`
+  - **Scenario:** **Reject:** User declines the invite; it is hidden from their list.
+
+- **DELETE `/api/invitations/[id]`**
+  - **Context:** Workspace Admin action.
+  - **Controller:** `handleRevoke`
+  - **Service:** `invitation.delete()`
+  - **Scenario:** **Revoke/Cancel:** Admin retracts an invitation sent in error.
 
 ---
 
-### Step 2: Route Handler
+## 2. Resource: Workspace Memberships
 
-**Responsibilities:**
+**Scenario:** Managing high-level organization access.
 
-- Session/authentication check
-- Call controller/service
-- Map response → HTTP response
-- Handle top-level errors
+- **GET `/api/workspaces/[id]/members/me`**
 
-**Example:**
+  - **Controller:** `handleGetMyMembership`
+  - **Scenario:** Retrieve current user's role (OWNER, ADMIN, MEMBER) for UI permission gating.
 
-```ts
-import { workspaceInvitationsService } from './workspaceInvitationsService';
-import { getServerSession } from 'next-auth';
+- **PATCH `/api/workspaces/[id]/members/[memberId]`**
 
-export async function GET(req: Request) {
-  const session = await getServerSession();
-  if (!session) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  - **Controller:** `handleUpdateMemberRole`
+  - **Scenario:** **Promote/Demote:** Admin changes a member's workspace permissions.
 
-  try {
-    const invitations = await workspaceInvitationsService.getMyInvitations(session.user.id);
-    return new Response(JSON.stringify(invitations), { status: 200 });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 400 });
-  }
-}
-```
+- **DELETE `/api/workspaces/[id]/members/[memberId]`**
+  - **Controller:** `handleMemberRemoval`
+  - **Scenario:** **Leave:** User exits. **Kick:** Admin removes user. **Constraint:** Block if user is the sole OWNER.
 
-Step 3: Controller (optional)
-Responsibilities:
-Validate input (Zod, yup, etc.)
-Map request data → service parameters
-Translate service errors → structured errors
-Example:
-Step 3: Controller (optional)
-Responsibilities:
-Validate input (Zod, yup, etc.)
-Map request data → service parameters
-Translate service errors → structured errors
-Example:
+---
 
-```
-import { z } from 'zod';
-import { workspaceInvitationsService } from './workspaceInvitationsService';
+## 3. Resource: Project Memberships
 
-const getMyInvitationsSchema = z.object({
-  userId: z.string().nonempty(),
-});
+**Scenario:** Granular access to specific "Obsidian-style" vaults.
 
-export async function getMyInvitationsController(input: { userId: string }) {
-  const parsed = getMyInvitationsSchema.parse(input);
-  return workspaceInvitationsService.getMyInvitations(parsed.userId);
-}
+- **GET `/api/projects/[id]/members/me`**
 
-```
+  - **Controller:** `handleGetProjectAccess`
+  - **Scenario:** **Retrieve:** Check if the user has READ or WRITE access to this specific project.
 
-In Next.js, you can skip this if route handler handles validation.
-Step 4: Service
-Responsibilities:
-Business/domain rules only
-Orchestrate multiple repositories if needed
-Throw errors based on domain logic (not input type)
-Example:
+- **POST `/api/projects/[id]/members`**
 
-```javascript
-import { workspaceInvitationsRepository } from './workspaceInvitationsRepository';
+  - **Controller:** `handleProjectAssignment`
+  - **Service:** `projectMember.assign(userId)`
+  - **Scenario:** **Assign:** Workspace Admin adds a workspace member to this specific project.
 
-export const workspaceInvitationsService = {
-  async getMyInvitations(userId: string) {
-    // Business logic: only pending invitations
-    return workspaceInvitationsRepository.findByUserId(userId);
-  },
+- **DELETE `/api/projects/[id]/members/[userId]`**
+  - **Controller:** `handleProjectUnassign`
+  - **Scenario:** **Unassign:** Remove user's ability to see/edit this project without kicking them from the workspace.
 
-  async acceptInvitation(userId: string, invitationId: string) {
-    const invitation = await workspaceInvitationsRepository.findById(invitationId);
-    if (!invitation) throw new Error('Invitation not found');
-    if (invitation.userId !== userId) throw new Error('This invitation is not yours');
-    if (invitation.status !== 'pending') throw new Error('Invitation cannot be accepted');
+---
 
-    invitation.status = 'accepted';
-    await invitation.save();
-    return invitation;
-  },
-};
-```
+## 4. Resource: Nodes (The Hierarchical Core)
 
-Step 5: Repository
+**Scenario:** Managing the VS Code-style file tree and content.
 
-Responsibilities:
+- **GET `/api/projects/[id]/nodes`**
 
-Pure DB operations only (Mongoose)
+  - **Controller:** `handleFetchTree`
+  - **Service:** `node.getHierarchicalTree(projectId)`
+  - **Scenario:** **Load Sidebar:** Returns a nested JSON of folders and files for the project.
 
-No business logic
+- **POST `/api/nodes`**
 
-Simple CRUD
+  - **Controller:** `handleCreateNode`
+  - **Service:** `node.create(projectId, parentId, type: FILE | FOLDER)`
+  - **Scenario:** **New Item:** Adds a file or sub-folder at a specific point in the tree.
 
-Example:
+- **PATCH `/api/nodes/[id]`**
 
-```javascript
-import { WorkspaceInvitation } from '@/models/WorkspaceInvitation';
+  - **Controller:** `handleUpdateNode`
+  - **Service:** `node.patch(data)`
+  - **Scenario:** **Edit:** Save Markdown content. **Rename:** Change title. **Move:** Update `parentId` to move file to a different folder.
 
-export const workspaceInvitationsRepository = {
-  findByUserId(userId: string) {
-    return WorkspaceInvitation.find({ userId, status: 'pending' }).exec();
-  },
+- **DELETE `/api/nodes/[id]`**
+  - **Controller:** `handleDeleteNode`
+  - **Service:** `node.deleteRecursive(nodeId)`
+  - **Scenario:** **Trash:** Deleting a folder recursively removes all nested files/sub-folders.
 
-  findById(invitationId: string) {
-    return WorkspaceInvitation.findById(invitationId).exec();
-  },
-};
-```
+---
 
-✅ Key Guidelines
+## 5. Security Guardrails
 
-Route handler = HTTP layer
-Controller = input validation + mapping (optional)
-Service = business logic + domain rules
-Repository = DB queries only
-Always keep services pure, they should not access Request or session directly.
-Folder/file naming → match API path, resource, and layer type.
+### Project Isolation Logic
 
-6️⃣ Naming conventions
+Every Node request must verify the `projectId`. The Service layer must confirm:
+`session.user.id` is in `projectMembers` **OR** `session.user.id` is `OWNER` of the parent `workspace`.
 
-✅ TL;DR
+### Data Integrity
 
-Creating 1 API = implement all 4 layers in structure (route → controller → service → repository).
-Controller can be merged into route handler if small/simple.
-Service handles all business rules, repository only DB.
-Naming and folder structure should match the API path for clarity.
+- **Soft Deletes:** Use `deletedAt` for Nodes to allow for a "Trash/Restore" feature.
+- **Cascade:** Removing a member from a Workspace must automatically trigger a cleanup of their `projectMembers` records.

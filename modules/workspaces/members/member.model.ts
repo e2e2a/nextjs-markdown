@@ -29,6 +29,13 @@ const workspaceMemberSchema = new Schema<IWorkspaceMemberSchema>(
   }
 );
 
+// 🔒 Data integrity
+workspaceMemberSchema.index({ workspaceId: 1, email: 1 }, { unique: true });
+
+// 🚀 Authorization & lookups
+workspaceMemberSchema.index({ workspaceId: 1, email: 1, role: 1 });
+// workspaceMemberSchema.index({ email: 1, status: 1 });
+
 const WorkspaceMember =
   models.WorkspaceMember || model<IWorkspaceMemberSchema>('WorkspaceMember', workspaceMemberSchema);
 export default WorkspaceMember;

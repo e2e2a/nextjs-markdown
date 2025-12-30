@@ -1,5 +1,4 @@
 'use client';
-
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,7 @@ export const columns: ColumnDef<IUserWorkspaces>[] = [
     size: 10,
     minSize: 10,
     maxSize: 40,
-    accessorKey: 'workspaceId.title',
+    accessorKey: 'workspace.title',
     header: ({ column }) => {
       return (
         <Button
@@ -52,7 +51,7 @@ export const columns: ColumnDef<IUserWorkspaces>[] = [
       );
     },
     cell: ({ row }) => {
-      const workspace = row.original.workspaceId;
+      const workspace = row.original.workspace;
       const value = row.getValue('Workspace Name');
       return (
         <Link

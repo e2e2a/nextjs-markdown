@@ -1,6 +1,6 @@
 import { HttpError } from '@/utils/errors';
 import { projectMemberRepository } from '@/repositories/projectMember';
-import { workspaceMemberServices } from '../../workspaces/members/member.service';
+import { workspaceMemberService } from '../../workspaces/members/member.service';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import { User } from 'next-auth';
 
@@ -16,7 +16,7 @@ export const projectMemberService = {
   ) => {
     if (members.length > 0) {
       // Workspace members
-      const existingW = await workspaceMemberServices.checkWorkspaceMemberExistence(members);
+      const existingW = await workspaceMemberService.checkWorkspaceMemberExistence(members);
       let nonExistingW = members.map(member => ({ ...member, invitedBy: user.email }));
       if (existingW.length > 0) nonExistingW = nonExistingW.filter(e => !existingW.includes(e));
       if (nonExistingW.length > 0) await workspaceMemberRepository.createMany(nonExistingW);

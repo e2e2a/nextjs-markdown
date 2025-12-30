@@ -138,7 +138,7 @@ export interface IWorkspaceMemberCreateDTO {
 
 export type IUserWorkspaces = {
   _id?: string;
-  workspaceId: Partial<IWorkspace>;
+  workspace: Partial<IWorkspace>;
   userId?: Partial<IUser>;
   email: string;
   role: 'owner' | 'editor' | 'viewer';
@@ -148,7 +148,7 @@ export type IUserWorkspaces = {
 
 export type IUserInvitations = {
   _id?: string;
-  workspaceId: Partial<IWorkspace>;
+  workspace: Partial<IWorkspace>;
   invitedBy?: Partial<IUser>;
   email: string;
   role: 'owner' | 'editor' | 'viewer';

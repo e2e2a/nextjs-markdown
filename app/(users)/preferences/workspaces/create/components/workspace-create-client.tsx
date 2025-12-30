@@ -62,6 +62,7 @@ export const WorkspaceCreateClient = () => {
     if (step === 2) {
       setLoading(true);
       const payload = {
+        userId: session?.user._id as string,
         ...form1.getValues(),
         members,
       };

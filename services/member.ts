@@ -15,7 +15,7 @@ export const memberService = {
     });
     if (memberExist) throw new HttpError('Member is already invited.', 409);
     const member = await memberRepository.create(data, session.user._id as string);
-    if (!member) throw new HttpError('Seomthing went wrong', 500);
+
     return member;
   },
 

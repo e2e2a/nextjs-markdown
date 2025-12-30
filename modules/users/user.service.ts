@@ -5,7 +5,7 @@ import { Step1Schema, Step2Schema } from '@/lib/validators/onboard';
 import { workspaceRepository } from '@/modules/workspaces/workspace.repository';
 import { workspaceSchema } from '@/lib/validators/workspace';
 import { User } from 'next-auth';
-import { workspaceMemberRepository } from '../workspaces/members/member.repository';
+import { workspaceMemberService } from '../workspaces/members/member.service';
 
 export const userServices = {
   onboard: async (data: IOnboard, authUser: User) => {
@@ -27,7 +27,7 @@ export const userServices = {
       ownerUserId: authUser._id!.toString(),
     });
 
-    await workspaceMemberRepository.addOwner({
+    await workspaceMemberService.initializeOwnership({
       email: authUser.email,
       workspaceId: workspace._id,
     });

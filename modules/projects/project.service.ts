@@ -8,8 +8,8 @@ import { projectMemberService } from './member/member.service';
 import { projectMemberRepository } from '@/repositories/projectMember';
 import mongoose from 'mongoose';
 import { projectSchema } from '@/lib/validators/project';
-import { workspaceMemberServices } from '../workspaces/members/member.service';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
+import { ensureWorkspaceMember } from '../workspaces/workspace.context';
 
 const sortNodes = (nodes: INode[]) => {
   return [...nodes].sort((a, b) => {
@@ -29,7 +29,7 @@ export const projectService = {
     }
   ) => {
     const { workspaceId, title, members } = data;
-    await workspaceMemberServices.getMembership({ workspaceId, email: user.email });
+    await ensureWorkspaceMember(data.workspaceId, user.email);
 
     const res = projectSchema.safeParse({ title });
     if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
@@ -63,8 +63,8 @@ export const projectService = {
   },
 
   async getMyWorkspaceProjects(workspaceId: string, email: string) {
-    const membership = await workspaceMemberServices.getMembership({ workspaceId, email });
-    if (membership.role === 'owner') return await projectRepository.find(workspaceId);
+    const { role } = await ensureWorkspaceMember(workspaceId, email);
+    if (role === 'owner') return await projectRepository.find(workspaceId);
 
     return await projectMemberRepository.findProjectsByMember({
       workspaceId,
@@ -73,8 +73,6 @@ export const projectService = {
   },
 
   updateProjectTitle: async (projectId: string, title: string, user: User) => {
-    if (!mongoose.Types.ObjectId.isValid(projectId))
-      throw new HttpError('BAD_INPUT', 'Invalid project ID.');
     await projectMemberService.getMembership({ projectId, email: user.email });
 
     const res = projectSchema.safeParse({ title });

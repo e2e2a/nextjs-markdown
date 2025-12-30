@@ -3,7 +3,7 @@ import { SidebarInset } from '@/components/ui/sidebar';
 import { ArrowLeft, SendHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
@@ -18,12 +18,13 @@ import { makeToastError } from '@/lib/toast';
 import Link from 'next/link';
 import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
 import { useInvitationMutations } from '@/hooks/invitation/useMutation';
+import { cn } from '@/lib/utils';
 
 export const InviteUserClient = () => {
   const { data: session, status } = useSession();
   const params = useParams();
   const workspaceId = params.id as string;
-  const { data: membership, isLoading, error: mError } = useGetMyWorkspaceMembership(workspaceId);
+  const { data: mData, isLoading, error: mError } = useGetMyWorkspaceMembership(workspaceId);
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>(
     []
@@ -31,7 +32,7 @@ export const InviteUserClient = () => {
   const mutation = useInvitationMutations();
   const router = useRouter();
 
-  const form2 = useForm({
+  const form = useForm({
     resolver: zodResolver(emailSchema),
     defaultValues: {
       email: '',
@@ -39,15 +40,15 @@ export const InviteUserClient = () => {
   });
 
   const onSubmit = async () => {
-    const valid = await form2.trigger();
+    const valid = await form.trigger();
     if (!valid) return;
-    if (session?.user.email === form2.getValues('email'))
-      return form2.setError('email', { message: `Can't invite yourself.` });
-    const existMember = await members.find(mem => mem.email === form2.getValues('email'));
-    if (existMember) return form2.setError('email', { message: 'This email is already a exist.' });
-    const email = form2.getValues('email');
+    if (session?.user.email === form.getValues('email'))
+      return form.setError('email', { message: `Can't invite yourself.` });
+    const existMember = await members.find(mem => mem.email === form.getValues('email'));
+    if (existMember) return form.setError('email', { message: 'This email is already a exist.' });
+    const email = form.getValues('email');
     setMembers(prev => [...prev, { email, role: 'owner' }]);
-    form2.setValue('email', '');
+    form.setValue('email', '');
   };
 
   const handleSubmit = async () => {
@@ -70,10 +71,13 @@ export const InviteUserClient = () => {
       },
     });
   };
-
+  const email = useWatch({
+    control: form.control,
+    name: 'email',
+  });
   if (status === 'loading') return;
   if (isLoading) return;
-  if (!membership || mError) return notFound();
+  if (!mData.membership || !mData.permissions.canInvite || mError) return notFound();
 
   return (
     <SidebarInset className="flex flex-col items-center h-full w-full overflow-y-auto">
@@ -109,36 +113,38 @@ export const InviteUserClient = () => {
                   </Label>
                   <div className="flex gap-x-1">
                     <Input
-                      {...form2.register('email')}
+                      {...form.register('email')}
                       placeholder="Invite new or existing user via email address..."
                     />
                     <Button
                       type="button"
-                      title="Send Invite"
+                      variant={'outline'}
+                      // title="Send Invite"
                       onClick={onSubmit}
-                      className="bg-secondary hover:bg-primary text-primary hover:text-secondary cursor-pointer"
+                      disabled={!email}
+                      className={cn('text-end bg-secondary text-foreground cursor-pointer')}
                     >
                       <SendHorizontal />
                     </Button>
                   </div>
-                  <p className="text-red-500 text-sm">{form2.formState.errors.email?.message}</p>
+                  <p className="text-red-500 text-sm">{form.formState.errors.email?.message}</p>
                 </div>
                 Give your members access permissions below.
                 <Separator orientation="horizontal" />
                 <div className="flex">
                   <Table>
                     <TableBody>
-                      {members.length > 0 &&
+                      {members.length > 0 ? (
                         members.map((member, idx) => (
                           <TableRow key={idx}>
                             <TableCell>{member.email}</TableCell>
                             <TableCell>
                               <MemberRole setMembers={setMembers} targetMember={member} />
                             </TableCell>
-                            <TableCell className="text-red-500 hover:underline">
+                            <TableCell className="">
                               <button
                                 type="button"
-                                className="cursor-pointer"
+                                className="cursor-pointer hover:underline text-destructive"
                                 disabled={loading}
                                 onClick={() => {
                                   setMembers(prev => prev.filter((_, i) => i !== idx));
@@ -148,7 +154,14 @@ export const InviteUserClient = () => {
                               </button>
                             </TableCell>
                           </TableRow>
-                        ))}
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell className="col-span-3 text-center w-full text-muted-foreground">
+                            No members added yet.
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -166,7 +179,11 @@ export const InviteUserClient = () => {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={loading} className="text-end cursor-pointer">
+                  <Button
+                    type="submit"
+                    disabled={loading || members.length <= 0}
+                    className="text-end cursor-pointer"
+                  >
                     Invite Members
                   </Button>
                 </div>

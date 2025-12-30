@@ -3,18 +3,18 @@ const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 
 export const workspaceClient = {
   async create(data: { title: string; members: IWorkspaceMemberCreateDTO[] }) {
-    const res = await fetch(BASE_URL, {
+    const res = await fetch(`${BASE_URL}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.message || '');
+    if (!res.ok) throw new Error(res.statusText || '');
 
-    return json;
+    return res.json();
   },
+
   async getUserWorkspaces() {
-    const res = await fetch(`${BASE_URL}/me`);
+    const res = await fetch(`${BASE_URL}`);
     if (!res.ok) throw new Error('Failed to fetch workspace');
     return res.json();
   },

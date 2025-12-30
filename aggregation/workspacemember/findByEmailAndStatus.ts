@@ -1,12 +1,12 @@
 import { PipelineStage } from 'mongoose';
 
 // Owner count lookup and field addition
-export const getOwnerCountStages = (): PipelineStage[] => [
+export const getOwnerCountStages = (populatedWorkspace: boolean): PipelineStage[] => [
   // Owner count lookup
   {
     $lookup: {
       from: 'workspacemembers',
-      let: { wid: '$workspaceId._id' },
+      let: { wid: populatedWorkspace ? '$workspaceId._id' : '$workspaceId' },
       pipeline: [
         { $match: { $expr: { $eq: ['$workspaceId', '$$wid'] } } },
         { $match: { role: 'owner', status: 'accepted' } },

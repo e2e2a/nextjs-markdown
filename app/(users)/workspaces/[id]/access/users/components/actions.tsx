@@ -1,5 +1,5 @@
 import { IWorkspaceMember, TableMeta } from '@/types';
-import RemoveDialog from './remove-dialog';
+import TrashDialog from './trash-dialog';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table } from '@tanstack/react-table';
@@ -16,21 +16,25 @@ export function Actions({ item, table }: IProps) {
   const params = useParams();
   const workspaceId = params.id as string;
   return (
-    <div className="inline-flex flex-row gap-x-1.5 items-center justify-center">
-      {item.user && (
-        <Button
-          size={'sm'}
-          variant={'outline'}
-          className="action-button items-center border-0 flex w-8.5!"
-          onClick={() => {
-            setEditingMemberId(item._id);
-          }}
-        >
-          <Pencil />
-        </Button>
-      )}
+    <div className="inline-grid grid-flow-col auto-cols-max gap-x-1.5 items-end justify-end">
+      <div className="w-8.5">
+        {item.status === 'accepted' && (
+          <Button
+            size={'sm'}
+            variant={'outline'}
+            className="action-button items-center border-0 flex w-8.5!"
+            onClick={() => {
+              setEditingMemberId(item._id);
+            }}
+          >
+            <Pencil />
+          </Button>
+        )}
+      </div>
 
-      <RemoveDialog item={item} workspaceId={workspaceId} />
+      <div className="w-8.5">
+        <TrashDialog item={item} workspaceId={workspaceId} />
+      </div>
     </div>
   );
 }

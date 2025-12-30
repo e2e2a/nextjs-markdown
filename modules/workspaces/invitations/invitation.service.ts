@@ -1,11 +1,12 @@
 import { HttpError } from '@/utils/errors';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import mongoose from 'mongoose';
-import { workspaceMemberServices } from '../members/member.service';
+import { workspaceMemberService } from '../members/member.service';
 import { User } from 'next-auth';
 import { IWorkspaceMemberCreateDTO } from '@/types';
 import { projectMemberService } from '../../projects/member/member.service';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
+import { ensureWorkspaceMember } from '../workspace.context';
 
 export const invitationServices = {
   /**
@@ -35,19 +36,14 @@ export const invitationServices = {
 
     if (members.length <= 0) throw new HttpError('BAD_INPUT', 'No Members to be invited.');
 
-    const membership = await workspaceMemberServices.getMembership({
-      workspaceId,
-      email: user.email,
-    });
-
-    const roles = ['editor', 'owner'];
-    if (!roles.includes(membership.role))
-      throw new HttpError('FORBIDDEN', 'You do not have permission to invite members.');
+    const context = await ensureWorkspaceMember(data.workspaceId, user.email);
+    if (!context.permissions.canInvite)
+      throw new HttpError('FORBIDDEN', 'You do not have permission to invite members');
 
     const initialMembersData = members.map(member => ({ ...member, workspaceId }));
     if (!projectId) {
       const workspaceMembers = initialMembersData.map(m => ({ ...m, invitedBy: user.email }));
-      await workspaceMemberServices.store(workspaceMembers);
+      await workspaceMemberService.store(workspaceMembers);
     } else {
       if (!mongoose.Types.ObjectId.isValid(projectId))
         throw new HttpError('BAD_INPUT', 'Invalid project ID.');
@@ -65,21 +61,35 @@ export const invitationServices = {
     return workspaces;
   },
 
+  // strict: the invited user can only accept the invitation by the parameter email: session.user.email
   accept: async (data: { email: string; _id: string }) => {
-    if (!mongoose.Types.ObjectId.isValid(data._id))
-      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
-
-    const res = await workspaceMemberRepository.updateByIdAndEmail(data, {
+    const res = await workspaceMemberRepository.updateStatus(data, {
       status: 'accepted',
     });
-    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be updated.');
-    return;
+    if (!res) throw new HttpError('NOT_FOUND', 'No Invitation to be accepted');
+    return res;
   },
 
-  decline: async (data: { _id: string; email: string }) => {
-    if (!mongoose.Types.ObjectId.isValid(data._id))
-      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
-    const res = await workspaceMemberRepository.deleteByIdAndEmail(data);
-    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted.');
+  delete: async (data: { _id: string; email: string }) => {
+    const invitation = await workspaceMemberRepository.findById(data._id);
+    if (!invitation) throw new HttpError('NOT_FOUND', 'No Invitation to be deleted');
+
+    const context = await ensureWorkspaceMember(invitation.workspaceId, data.email);
+    if (!context.permissions.canDeleteInvite)
+      throw new HttpError('FORBIDDEN', 'You do not have permission');
+
+    await workspaceMemberRepository.deleteById(data._id);
+    return invitation;
+  },
+
+  reject: async (data: { _id: string; email: string }) => {
+    /**
+     * @todo
+     * Feature resend
+     * Reject must be soft delete
+     */
+    const res = await workspaceMemberRepository.deleteById(data._id);
+    if (!res) throw new HttpError('NOT_FOUND', 'No Invitation to be rejected');
+    return res;
   },
 };

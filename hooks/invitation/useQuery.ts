@@ -1,4 +1,4 @@
-import { invitationClient } from '@/lib/api/workspaceInvitationClient';
+import { invitationClient } from '@/lib/api/invitationClient';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetUserInvitations(userId: string) {

@@ -29,20 +29,23 @@ export function Leave({ item }: IProps) {
 
   const leaveWorkspace = useCallback(() => {
     setLoading(true);
-    mutation.leave.mutate(item.workspaceId._id as string, {
-      onSuccess: () => {
-        setIsOpen(false);
-        return;
-      },
-      onError: err => {
-        makeToastError(err.message);
-        return;
-      },
-      onSettled: () => {
-        setLoading(false);
-        return;
-      },
-    });
+    mutation.leave.mutate(
+      { wid: item.workspace._id as string },
+      {
+        onSuccess: () => {
+          setIsOpen(false);
+          return;
+        },
+        onError: err => {
+          makeToastError(err.message);
+          return;
+        },
+        onSettled: () => {
+          setLoading(false);
+          return;
+        },
+      }
+    );
   }, [item, mutation]);
 
   return (
@@ -100,7 +103,7 @@ export function Leave({ item }: IProps) {
           </AlertDialogTitle>
           <AlertDialogDescription>
             By leaving{' '}
-            <span className="font-bold text-accent-foreground">{item.workspaceId.title}</span>
+            <span className="font-bold text-accent-foreground">{item.workspace.title}</span>
             , you will lose access to all projects in that workspace.
             <br />
             <br />

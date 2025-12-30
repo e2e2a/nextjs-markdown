@@ -6,11 +6,11 @@ export function useWorkspaceMutations() {
   const queryClient = useQueryClient();
 
   const create = useMutation({
-    mutationFn: (data: { title: string; members: IWorkspaceMemberCreateDTO[] }) =>
+    mutationFn: (data: { userId: string; title: string; members: IWorkspaceMemberCreateDTO[] }) =>
       workspaceClient.create(data),
-    onSuccess: data => {
-      if (data && data.userId)
-        queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });
+    onSuccess: (_data, variables) => {
+      if (!variables) return;
+      queryClient.invalidateQueries({ queryKey: ['userWorkspaces', variables.userId] });
       return;
     },
   });

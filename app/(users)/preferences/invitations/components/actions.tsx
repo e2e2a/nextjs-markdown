@@ -28,38 +28,44 @@ export function Actions({ item }: IProps) {
 
   const handleAccept = useCallback(() => {
     setLoading(true);
-    mutation.accept.mutate(item._id as string, {
-      onSuccess: () => {
-        makeToastSucess('Invitation accepted successfully.');
-        setIsOpen(false);
-        return;
-      },
-      onError: err => {
-        makeToastError(err.message);
-        return;
-      },
-      onSettled: () => {
-        setLoading(false);
-      },
-    });
+    mutation.accept.mutate(
+      { id: item._id as string, workspaceId: item.workspace._id as string },
+      {
+        onSuccess: () => {
+          makeToastSucess('Invitation accepted successfully.');
+          setIsOpen(false);
+          return;
+        },
+        onError: err => {
+          makeToastError(err.message);
+          return;
+        },
+        onSettled: () => {
+          setLoading(false);
+        },
+      }
+    );
   }, [item, mutation]);
 
-  const handleDecline = useCallback(() => {
+  const handleReject = useCallback(() => {
     setLoading(true);
-    mutation.decline.mutate(item._id as string, {
-      onSuccess: () => {
-        makeToastSucess('Invitation declined successfully.');
-        setIsOpen(false);
-        return;
-      },
-      onError: err => {
-        makeToastError(err.message);
-        return;
-      },
-      onSettled: () => {
-        setLoading(false);
-      },
-    });
+    mutation.reject.mutate(
+      { id: item._id as string, workspaceId: item.workspace._id as string },
+      {
+        onSuccess: () => {
+          makeToastSucess('Invitation declined successfully.');
+          setIsOpen(false);
+          return;
+        },
+        onError: err => {
+          makeToastError(err.message);
+          return;
+        },
+        onSettled: () => {
+          setLoading(false);
+        },
+      }
+    );
   }, [item, mutation]);
 
   return (
@@ -107,7 +113,7 @@ export function Actions({ item }: IProps) {
             </AlertDialogTitle>
             <AlertDialogDescription>
               You are about to decline the invitation to{' '}
-              <span className="font-bold">{item.workspaceId.title}</span>
+              <span className="font-bold">{item.workspace.title}</span>
               . You will not be able to join this workspace unless you are invited again.
               <br />
               <br />
@@ -121,7 +127,7 @@ export function Actions({ item }: IProps) {
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
               disabled={loading}
-              onClick={() => handleDecline()}
+              onClick={() => handleReject()}
             >
               Continue
             </AlertDialogAction>

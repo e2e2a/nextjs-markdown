@@ -38,7 +38,8 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
     size: 10,
     minSize: 10,
     maxSize: 40,
-    accessorFn: row => (row.user ? `${row.user.given_name} ${row.user.family_name}` : ''),
+    accessorFn: row =>
+      row.status === 'accepted' ? `${row.user.given_name} ${row.user.family_name}` : '',
     header: ({ column }) => {
       return (
         <Button
@@ -55,7 +56,7 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
       const member = row.original;
       return (
         <>
-          {member.user ? (
+          {member.status === 'accepted' ? (
             <span>
               {member.user.given_name as string} {member.user.family_name as string}
             </span>
@@ -152,7 +153,9 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
   },
   {
     id: 'actions',
+    header: 'Actions',
     enableHiding: true,
+    size: 15,
     cell: ({ row, table }) => {
       const item = row.original;
 

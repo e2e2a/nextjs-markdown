@@ -12,8 +12,8 @@ import { makeToastError } from '@/lib/toast';
 
 export const WorkspaceClient = () => {
   const { data: session, status } = useSession();
-  const { data: workspaces, isLoading, error } = useGetUserWorkspaces(session?.user?._id as string);
-  console.log('workspaces', workspaces);
+  const { data, isLoading, error } = useGetUserWorkspaces(session?.user?._id as string);
+
   useEffect(() => {
     if (error) makeToastError(error.message);
   }, [error]);
@@ -30,7 +30,7 @@ export const WorkspaceClient = () => {
           </Link>
         </div>
         <div className="">
-          <DataTable columns={columns} data={(workspaces || []) as IUserWorkspaces[]} />
+          <DataTable columns={columns} data={(data.workspaces || []) as IUserWorkspaces[]} />
         </div>
       </main>
     </SidebarInset>

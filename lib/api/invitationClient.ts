@@ -1,10 +1,8 @@
-const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api`;
-const BASE_URL_INVITATIONS = `${BASE_URL}/invitations`;
-const BASE_URL_WORKSPACES = `${BASE_URL}/workspaces`;
+const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/invitations`;
 
 export const invitationClient = {
   async getPending() {
-    const res = await fetch(`${BASE_URL}/user/me/workspaces/invitations`);
+    const res = await fetch(BASE_URL);
     if (!res.ok) throw new Error(res.statusText || '');
     return res.json();
   },
@@ -16,7 +14,7 @@ export const invitationClient = {
       email: string;
     }[];
   }) {
-    const res = await fetch(`${BASE_URL_INVITATIONS}`, {
+    const res = await fetch(BASE_URL, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -25,13 +23,19 @@ export const invitationClient = {
   },
 
   async accept(id: string) {
-    const res = await fetch(`${BASE_URL_INVITATIONS}/${id}`, { method: 'PATCH' });
+    const res = await fetch(`${BASE_URL}/${id}/accept`, { method: 'POST' });
     if (!res.ok) throw new Error(res.statusText || '');
     return res.json();
   },
 
-  async decline(id: string) {
-    const res = await fetch(`${BASE_URL_INVITATIONS}/${id}`, { method: 'DELETE' });
+  async reject(id: string) {
+    const res = await fetch(`${BASE_URL}/${id}/reject`, { method: 'POST' });
+    if (!res.ok) throw new Error(res.statusText || '');
+    return res.json();
+  },
+
+  async trash(id: string) {
+    const res = await fetch(`${BASE_URL}/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(res.statusText || '');
     return res.json();
   },

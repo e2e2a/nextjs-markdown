@@ -1,7 +1,24 @@
-// const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspace/member`;
 const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 
 export const workspaceMemberClient = {
+  async leave(data: { wid: string }) {
+    const { wid } = data;
+    const res = await fetch(`${BASE_URL_WORKSPACES}/${wid}/members/me/leave`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error(res.statusText || '');
+    return res.json();
+  },
+
+  async trash(data: { wid: string; mid: string }) {
+    const { wid, mid } = data;
+    const res = await fetch(`${BASE_URL_WORKSPACES}/${wid}/members/${mid}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error(res.statusText || '');
+    return res.json();
+  },
+
   async getMyWorkspaceMembership(workspaceId: string) {
     const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/members/me`);
     if (!res.ok) throw new Error('Failed to fetch workspace');
@@ -9,16 +26,8 @@ export const workspaceMemberClient = {
     return res.json();
   },
 
-  async leave(workspaceId: string) {
-    const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/members/me`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) throw new Error('Failed to fetch workspace');
-    return res.json();
-  },
-
   async getMembersInWorkspace(workspaceId: string) {
-    const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/members/`);
+    const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/members`);
     if (!res.ok) throw new Error('Failed to fetch workspace');
     if (res.status !== 200) throw new Error('Opps Error Occured.');
     return res.json();

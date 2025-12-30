@@ -1,16 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invitationClient } from '@/lib/api/workspaceInvitationClient';
+import { invitationClient } from '@/lib/api/invitationClient';
 
 export function useInvitationMutations() {
   const queryClient = useQueryClient();
 
   const accept = useMutation({
-    mutationFn: (id: string) => invitationClient.accept(id),
-    onSuccess: data => {
-      if (data && data.userId) {
-        queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });
-        queryClient.invalidateQueries({ queryKey: ['userInvitations', data.userId] });
-      }
+    mutationFn: (data: { id: string; workspaceId: string }) => invitationClient.accept(data.id),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['workspaceMembers', variables.workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['userInvitations'] });
+      queryClient.invalidateQueries({ queryKey: ['userWorkspaces'] });
       return;
     },
   });
@@ -23,25 +22,30 @@ export function useInvitationMutations() {
         email: string;
       }[];
     }) => invitationClient.create(data),
-    onSuccess: data => {
-      if (data && data.userId) {
-        queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });
-        queryClient.invalidateQueries({ queryKey: ['userInvitations', data.userId] });
-      }
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['workspaceMembers', variables.workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['userInvitations'] }); // @broadcast
       return;
     },
   });
 
-  const decline = useMutation({
-    mutationFn: (id: string) => invitationClient.decline(id),
-    onSuccess: data => {
-      if (data && data.userId) {
-        queryClient.invalidateQueries({ queryKey: ['userWorkspaces', data.userId] });
-        queryClient.invalidateQueries({ queryKey: ['userInvitations', data.userId] });
-      }
+  const reject = useMutation({
+    mutationFn: (data: { id: string; workspaceId: string }) => invitationClient.reject(data.id),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['workspaceMembers', variables.workspaceId] }); // @broadcast
+      queryClient.invalidateQueries({ queryKey: ['userInvitations'] }); // @broadcast
       return;
     },
   });
 
-  return { accept, create, decline };
+  const trash = useMutation({
+    mutationFn: (data: { id: string; workspaceId: string }) => invitationClient.trash(data.id),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['workspaceMembers', variables.workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['userInvitations'] }); // @broadcast
+      return;
+    },
+  });
+
+  return { accept, create, reject, trash };
 }

@@ -1,44 +1,40 @@
-import { HttpError } from '@/utils/errors';
 import { workspaceRepository } from '@/modules/workspaces/workspace.repository';
 import { IWorkspace, IWorkspaceMemberCreateDTO } from '@/types';
-import { workspaceMemberServices } from './members/member.service';
+import { workspaceMemberService } from './members/member.service';
 import { User } from 'next-auth';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
-import mongoose from 'mongoose';
+import { ensureAuthenticated } from '@/lib/auth-utils';
 
 export const workspaceService = {
   initializeWorkspace: async (
     user: User,
-    workspace: IWorkspace,
+    workspaceDTO: IWorkspace,
     members: IWorkspaceMemberCreateDTO[]
   ) => {
-    const newWorkspace = await workspaceRepository.store(workspace);
+    const workspace = await workspaceRepository.store(workspaceDTO);
+    await workspaceMemberService.initializeOwnership({
+      email: user.email,
+      workspaceId: workspace._id,
+    });
 
     if (members.length > 0) {
       const membersDataToCreate = members.map(member => ({
         ...member,
         invitedBy: user._id!.toString(),
-        workspaceId: newWorkspace._id!.toString(),
+        workspaceId: workspace._id!.toString(),
       }));
-      await workspaceMemberServices.store(membersDataToCreate);
+      await workspaceMemberService.store(membersDataToCreate);
     }
 
-    return newWorkspace;
+    return { workspace };
   },
 
-  getUserWorkspaces: async (email: string) => {
+  getUserWorkspaces: async () => {
+    const session = await ensureAuthenticated();
     const workspaces = await workspaceMemberRepository.findByEmailAndStatus(
-      { email, status: 'accepted' },
+      { email: session.user.email, status: 'accepted' },
       { workspaceId: true }
     );
-    return workspaces;
-  },
-
-  leave: async (data: { workspaceId: string; userId: string }) => {
-    if (!mongoose.Types.ObjectId.isValid(data.workspaceId))
-      throw new HttpError('BAD_INPUT', 'Invalid workspace ID.');
-
-    const res = await workspaceMemberRepository.deleteByWorkspaceIdAndUserId(data);
-    if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted.');
+    return { workspaces };
   },
 };

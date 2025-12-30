@@ -11,12 +11,8 @@ import { useEffect } from 'react';
 
 export const InvitationClient = () => {
   const { data: session, status } = useSession();
-  const {
-    data: workspaces,
-    isLoading,
-    error,
-  } = useGetUserInvitations(session?.user?._id as string);
-
+  const { data: iData, isLoading, error } = useGetUserInvitations(session?.user?._id as string);
+  console.log('error', error);
   useEffect(() => {
     if (error) makeToastError(error.message);
   }, [error]);
@@ -29,7 +25,7 @@ export const InvitationClient = () => {
       <div className="px-3 py-4 w-full flex-1 overflow-y-auto">
         <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Invitations</h1>
         <div className={cn('overflow-x-auto')}>
-          <DataTable columns={columns} data={(workspaces || []) as IUserInvitations[]} />
+          <DataTable columns={columns} data={(iData.invitations || []) as IUserInvitations[]} />
         </div>
       </div>
     </SidebarInset>

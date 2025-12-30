@@ -42,8 +42,7 @@ export const columns: ColumnDef<IUserInvitations>[] = [
       return (
         <div className="whitespace-normal break-all">
           <span className="font-semibold">{item.invitedBy?.email} </span>
-          invited you to organization{' '}
-          <span className="font-semibold">{item.workspaceId?.title}</span>
+          invited you to organization <span className="font-semibold">{item.workspace?.title}</span>
         </div>
       );
     },

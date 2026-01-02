@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table } from '@tanstack/react-table';
 import { useParams } from 'next/navigation';
+import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
 
 interface IProps {
   item: IWorkspaceMember;
@@ -15,14 +16,18 @@ export function Actions({ item, table }: IProps) {
   const { setEditingMemberId } = meta;
   const params = useParams();
   const workspaceId = params.id as string;
+
+  const { data: mData, isLoading: mLoading } = useGetMyWorkspaceMembership(workspaceId);
+  if (mLoading) return;
+
   return (
     <div className="inline-grid grid-flow-col auto-cols-max gap-x-1.5 items-end justify-end">
       <div className="w-8.5">
-        {item.status === 'accepted' && (
+        {item.status === 'accepted' && mData.permissions.canEditMember && (
           <Button
             size={'sm'}
             variant={'outline'}
-            className="action-button items-center border-0 flex w-8.5!"
+            className="action-button items-center border-0 flex w-8.5! cursor-pointer"
             onClick={() => {
               setEditingMemberId(item._id);
             }}

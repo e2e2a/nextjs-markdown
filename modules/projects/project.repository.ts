@@ -1,7 +1,6 @@
 import Project from '@/modules/projects/project.model';
 import { PopulateOptions } from 'mongoose';
 import { IProject, ProjectPushNodeDTO } from '@/types';
-import { projectMemberRepository } from '../../repositories/projectMember';
 import mongoose from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
 
@@ -17,10 +16,9 @@ export function populateChildren(path: string, depth: number = 3): PopulateOptio
 export const projectRepository = {
   findAll: () => Project.find(),
 
-  find: async (workspaceId: string) => {
-    return await Project.aggregate([
-      { $match: { workspaceId: new mongoose.Types.ObjectId(workspaceId) } },
-
+  findMany: async (data: { workspaceId?: string }) => {
+    const res = await Project.aggregate([
+      { $match: { workspaceId: new mongoose.Types.ObjectId(data.workspaceId) } },
       {
         $lookup: {
           from: 'projectmembers',
@@ -34,7 +32,11 @@ export const projectRepository = {
 
       { $project: { members: 0 } },
     ]);
+    console.log('res', res);
+    return res;
   },
+
+  findOne: (data: { _id: string }) => Project.findById(data),
 
   findProject: (id: string) => Project.findById(id).populate('nodes'),
 
@@ -52,12 +54,6 @@ export const projectRepository = {
 
   create: async (data: { workspaceId: string; title: string; createdBy: string }) => {
     const project = await new Project(data).save();
-    await projectMemberRepository.create({
-      role: 'owner',
-      userId: data.createdBy,
-      workspaceId: data.workspaceId,
-      projectId: project._id.toString(),
-    });
     return project;
   },
 
@@ -84,8 +80,15 @@ export const projectRepository = {
       .exec();
   },
 
-  updateProjectTitle: (id: string, title: string) => {
-    return Project.findByIdAndUpdate(id, { $set: { title } }, { new: true, runValidators: true })
+  updateOne: (
+    dataToFind: { _id?: string; workspaceId?: string },
+    dataToUpdate: { title: string }
+  ) => {
+    return Project.findOneAndUpdate(
+      dataToFind,
+      { $set: dataToUpdate },
+      { new: true, runValidators: true }
+    )
       .lean<IProject>()
       .exec();
   },

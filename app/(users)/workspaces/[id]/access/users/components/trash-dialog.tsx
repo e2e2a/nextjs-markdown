@@ -47,16 +47,16 @@ export default function TrashDialog({ item, workspaceId }: IProps) {
   const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const isLastOwner = item.role === 'owner' && mData.ownerCount <= 1;
 
   const [canTrash] = useState(
     item.status === 'accepted'
-      ? !!mData.permissions.canDeleteMember
+      ? !!mData.permissions.canDeleteMember && !isLastOwner
       : !!mData.permissions.canDeleteInvite
   );
+
   const memberMutation = useWorkspaceMemberMutations();
   const invitationMutation = useInvitationMutations();
-  const isLastOwner = item.role === 'owner' && mData.ownerCount <= 1;
-  console.log('isLastOwner', isLastOwner);
 
   const handleTrashMember = () => {
     memberMutation.trash.mutate(
@@ -109,14 +109,14 @@ export default function TrashDialog({ item, workspaceId }: IProps) {
       <Tooltip>
         <AlertDialogTrigger
           className={'w-auto'}
-          disabled={!canTrash || isLastOwner}
+          disabled={!canTrash}
           onClick={() => setIsOpen(true)}
         >
           <TooltipTrigger asChild>
             <span tabIndex={0}>
               <div
                 className={`${
-                  !canTrash || isLastOwner
+                  !canTrash
                     ? 'opacity-50 cursor-not-allowed bg-secondary border-border rounded-md'
                     : 'action-button'
                 } w-full items-center flex size-4 px-2 gap-1.5 h-8`}

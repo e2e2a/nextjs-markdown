@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 export const projectMemberRepository = {
   create: async (data: {
     role: 'owner' | 'editor' | 'viewer';
-    userId: string;
+    email: string;
     workspaceId: string;
     projectId: string;
   }) => await new ProjectMember(data).save(),
@@ -28,10 +28,15 @@ export const projectMemberRepository = {
       .then(docs => docs.map(doc => doc.email));
   },
 
-  findProjectsByMember: async (data: { workspaceId: string; email: string }) => {
+  findProjects: async (data: { workspaceId?: string; email: string }) => {
     const { workspaceId, email } = data;
     return ProjectMember.aggregate([
-      { $match: { workspaceId: new mongoose.Types.ObjectId(workspaceId), email } },
+      {
+        $match: {
+          ...(workspaceId ? { workspaceId: new mongoose.Types.ObjectId(workspaceId) } : {}),
+          email,
+        },
+      },
       {
         $lookup: {
           from: 'projects',

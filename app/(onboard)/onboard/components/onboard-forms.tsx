@@ -44,7 +44,6 @@ export function OnboardForms() {
 
   const next = async () => {
     if (step === 1) {
-      console.log('run1');
       const valid = await form1.trigger();
       if (!valid) return;
       setStep(2);

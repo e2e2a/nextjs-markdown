@@ -30,7 +30,7 @@ export const WorkspaceClient = () => {
           </Link>
         </div>
         <div className="">
-          <DataTable columns={columns} data={(data.workspaces || []) as IUserWorkspaces[]} />
+          <DataTable columns={columns} data={(data?.workspaces || []) as IUserWorkspaces[]} />
         </div>
       </main>
     </SidebarInset>

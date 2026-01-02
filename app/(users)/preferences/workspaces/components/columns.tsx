@@ -37,7 +37,7 @@ export const columns: ColumnDef<IUserWorkspaces>[] = [
     size: 10,
     minSize: 10,
     maxSize: 40,
-    accessorKey: 'workspace.title',
+    accessorKey: 'title',
     header: ({ column }) => {
       return (
         <Button
@@ -51,7 +51,7 @@ export const columns: ColumnDef<IUserWorkspaces>[] = [
       );
     },
     cell: ({ row }) => {
-      const workspace = row.original.workspace;
+      const workspace = row.original;
       const value = row.getValue('Workspace Name');
       return (
         <Link
@@ -74,7 +74,7 @@ export const columns: ColumnDef<IUserWorkspaces>[] = [
   },
   {
     id: 'Role',
-    accessorKey: 'role',
+    accessorKey: 'membership.role',
     header: 'Role',
     cell: ({ row }) => {
       const value = row.getValue('Role');

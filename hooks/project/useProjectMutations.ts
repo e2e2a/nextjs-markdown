@@ -13,18 +13,18 @@ export function useProjectMutations() {
         email: string;
       }[];
     }) => projectClient.create(data),
-    onSuccess: data => {
-      if (data && data.workspaceId)
-        queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
+    onSuccess: () => {
+      // if (data && data.workspaceId)
+      //   queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
       return;
     },
   });
 
   const update = useMutation({
-    mutationFn: (data: { pid: string; title: string }) => projectClient.update(data),
-    onSuccess: data => {
-      if (data && data.workspaceId)
-        queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
+    mutationFn: (data: { wid: string; pid: string; title: string }) => projectClient.update(data),
+    onSuccess: (_data, variables) => {
+      if (!variables) return;
+      queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', variables.wid] });
       return;
     },
   });

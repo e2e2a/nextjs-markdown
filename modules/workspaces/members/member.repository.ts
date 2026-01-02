@@ -8,7 +8,6 @@ import { PipelineStage } from 'mongoose';
 import mongoose from 'mongoose';
 
 export interface IPopulateWorkspaceMember {
-  userId?: boolean;
   workspaceId?: boolean;
   invitedBy?: boolean;
 }
@@ -120,27 +119,25 @@ export const workspaceMemberRepository = {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: data });
     if (populate.workspaceId) addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);
-    if (populate.userId) addLookup(pipeline, 'email', 'email', 'users', false);
     if (populate.invitedBy) addLookup(pipeline, 'invitedBy', 'email', 'users', false);
 
     pipeline.push(...getOwnerCountStages(true));
-    if (populate.workspaceId)
-      pipeline.push({ $addFields: { workspace: '$workspaceId' } }, { $unset: 'workspaceId' });
+    // if (populate.workspaceId)
+    //   pipeline.push({ $addFields: { workspace: '$workspaceId' } }, { $unset: 'workspaceId' });
 
-    pipeline.push({
-      $project: {
-        _id: 1,
-        ...(populate.workspaceId ? { workspace: 1 } : {}),
-        ...(populate.userId ? { userId: 1 } : {}),
-        ...(populate.invitedBy ? { invitedBy: 1 } : {}),
-        role: 1,
-        status: 1,
-        createdAt: 1,
-        ownerCount: 1,
-      },
-    });
+    // pipeline.push({
+    //   $project: {
+    //     _id: 1,
+    //     ...(populate.workspaceId ? { workspace: 1 } : {}),
+    //     ...(populate.invitedBy ? { invitedBy: 1 } : {}),
+    //     role: 1,
+    //     status: 1,
+    //     createdAt: 1,
+    //     ownerCount: 1,
+    //   },
+    // });
 
-    pipeline.push(...getByEmailAndStatusFinalCleanupStages());
+    // pipeline.push(...getByEmailAndStatusFinalCleanupStages());
     const result = await WorkspaceMember.aggregate(pipeline);
     return result || [];
   },

@@ -16,7 +16,7 @@ import { MemberRole } from './member-role';
 import { useSession } from 'next-auth/react';
 import { notFound, redirect, useParams, useRouter } from 'next/navigation';
 import { workspaceSchema } from '@/lib/validators/workspace';
-import { makeToastError } from '@/lib/toast';
+import { makeToastError, makeToastSucess } from '@/lib/toast';
 import { useProjectMutations } from '@/hooks/project/useProjectMutations';
 import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
 
@@ -24,7 +24,7 @@ export const WorkspaceCreateClient = () => {
   const { data: session, status } = useSession();
   const params = useParams();
   const workspaceId = params.id as string;
-  const { data: membership, isLoading, error: mError } = useGetMyWorkspaceMembership(workspaceId);
+  const { data: mData, isLoading, error: mError } = useGetMyWorkspaceMembership(workspaceId);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>(
@@ -75,7 +75,8 @@ export const WorkspaceCreateClient = () => {
 
       mutation.create.mutate(payload, {
         onSuccess: data => {
-          return router.push(`/workspace/${data.workspaceId}/projects`);
+          makeToastSucess('New Project Created');
+          return router.push(`/project/${data.project._id}`);
         },
         onError: err => {
           return makeToastError(err.message);
@@ -89,7 +90,8 @@ export const WorkspaceCreateClient = () => {
 
   if (status === 'loading') return;
   if (isLoading) return;
-  if (mError) return notFound();
+  if (!mData.membership || mError) return notFound();
+
   return (
     <SidebarInset className="flex flex-col items-center h-full w-full overflow-y-auto">
       <div className="px-3 py-4 w-full flex-1 max-w-2xl">

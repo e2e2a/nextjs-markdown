@@ -5,10 +5,8 @@ import { projectRepository } from '@/modules/projects/project.repository';
 import { INode, ProjectPushNodeDTO } from '@/types';
 import { Session, User } from 'next-auth';
 import { projectMemberService } from './member/member.service';
-import { projectMemberRepository } from '@/repositories/projectMember';
+import { projectMemberRepository } from '@/modules/projects/member/member.repository';
 import mongoose from 'mongoose';
-import { projectSchema } from '@/lib/validators/project';
-import { MembersSchema } from '@/lib/validators/workspaceMember';
 import { ensureWorkspaceMember } from '../workspaces/workspace.context';
 
 const sortNodes = (nodes: INode[]) => {
@@ -25,17 +23,11 @@ export const projectService = {
     data: {
       title: string;
       workspaceId: string;
-      members: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
+      members?: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
     }
   ) => {
     const { workspaceId, title, members } = data;
     await ensureWorkspaceMember(data.workspaceId, user.email);
-
-    const res = projectSchema.safeParse({ title });
-    if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
-
-    const resM = MembersSchema.safeParse(members);
-    if (!resM.success) throw new HttpError('BAD_INPUT', 'Invalid member fields.');
 
     await projectService.checkTitleExist(workspaceId, title);
     const newProject = await projectRepository.create({
@@ -43,9 +35,14 @@ export const projectService = {
       title,
       createdBy: user._id!.toString(),
     });
+    await projectMemberService.addOwner({
+      workspaceId,
+      projectId: newProject._id as string,
+      email: user.email,
+    });
 
-    if (resM.data.length > 0) {
-      const membersDataToCreate = resM.data.map(member => ({
+    if (members && members.length > 0) {
+      const membersDataToCreate = members.map(member => ({
         ...member,
         projectId: newProject._id.toString(),
         workspaceId,
@@ -53,7 +50,7 @@ export const projectService = {
       await projectMemberService.create(user, membersDataToCreate);
     }
 
-    return newProject;
+    return { project: newProject };
   },
 
   checkTitleExist: async (workspaceId: string, title: string) => {
@@ -62,24 +59,26 @@ export const projectService = {
     return;
   },
 
-  async getMyWorkspaceProjects(workspaceId: string, email: string) {
+  getMyWorkspaceProjects: async (workspaceId: string, email: string) => {
     const { role } = await ensureWorkspaceMember(workspaceId, email);
-    if (role === 'owner') return await projectRepository.find(workspaceId);
+    if (role === 'owner') return await projectRepository.findMany({ workspaceId });
 
-    return await projectMemberRepository.findProjectsByMember({
+    return await projectMemberRepository.findProjects({
       workspaceId,
       email,
     });
   },
 
-  updateProjectTitle: async (projectId: string, title: string, user: User) => {
-    await projectMemberService.getMembership({ projectId, email: user.email });
+  getAllProjects: (email: string) => projectMemberRepository.findProjects({ email }),
 
-    const res = projectSchema.safeParse({ title });
-    if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
-
-    const project = await projectRepository.updateProjectTitle(projectId, title);
+  update: async (projectId: string, email: string, dataToUpdate: { title: string }) => {
+    const project = await projectRepository.findOne({ _id: projectId });
     if (!project) throw new HttpError('NOT_FOUND', 'No project to be updated.');
+
+    const { permissions } = await ensureWorkspaceMember(project.workspaceId, email);
+    if (!permissions.canEditProject) throw new HttpError('FORBIDDEN');
+    await projectService.checkTitleExist(project.workspaceId, dataToUpdate.title);
+    await projectRepository.updateOne({ _id: projectId }, dataToUpdate);
 
     return project;
   },

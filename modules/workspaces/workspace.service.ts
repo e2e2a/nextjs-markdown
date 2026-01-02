@@ -31,10 +31,25 @@ export const workspaceService = {
 
   getUserWorkspaces: async () => {
     const session = await ensureAuthenticated();
-    const workspaces = await workspaceMemberRepository.findByEmailAndStatus(
+    const docs = await workspaceMemberRepository.findByEmailAndStatus(
       { email: session.user.email, status: 'accepted' },
       { workspaceId: true }
     );
+
+    const workspaces = docs.map(doc => {
+      return {
+        ...doc.workspaceId,
+        membership: {
+          role: doc.role,
+          _id: doc._id,
+          status: doc.status,
+          createdAt: doc.createdAt,
+          email: doc.email,
+          invitedBy: doc.invitedBy,
+        },
+        ownerCount: doc.ownerCount,
+      };
+    });
     return { workspaces };
   },
 };

@@ -54,11 +54,31 @@ export const invitationServices = {
   },
 
   getPendingInvitations: async (data: { email: string }) => {
-    const workspaces = await workspaceMemberRepository.findByEmailAndStatus(
+    const docs = await workspaceMemberRepository.findByEmailAndStatus(
       { email: data.email, status: 'pending' },
       { workspaceId: true, invitedBy: true }
     );
-    return workspaces;
+    const invitations = docs.map(doc => {
+      return {
+        role: doc.role,
+        _id: doc._id,
+        status: doc.status,
+        createdAt: doc.createdAt,
+        email: doc.email,
+        invitedBy: {
+          _id: doc.invitedBy._id,
+          email: doc.invitedBy.email,
+          given_name: doc.invitedBy.given_name,
+          family_name: doc.invitedBy.family_name,
+          last_login: doc.invitedBy.last_login,
+        },
+        workspace: {
+          ...doc.workspaceId,
+          ownerCount: doc.ownerCount,
+        },
+      };
+    });
+    return invitations;
   },
 
   // strict: the invited user can only accept the invitation by the parameter email: session.user.email

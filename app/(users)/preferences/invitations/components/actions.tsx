@@ -75,6 +75,7 @@ export function Actions({ item }: IProps) {
           size={'sm'}
           type="button"
           variant={'secondary'}
+          disabled={loading}
           onClick={handleAccept}
           className="action-button"
         >

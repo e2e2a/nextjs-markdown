@@ -53,7 +53,7 @@ export const workspaceMemberService = {
 
   update: async (mid: string, data: { workspaceId: string; email: string; role: string }) => {
     const context = await ensureWorkspaceMember(data.workspaceId, data.email);
-    if (!context.permissions.canEdit) throw new HttpError('FORBIDDEN');
+    if (!context.permissions.canEditMember) throw new HttpError('FORBIDDEN');
     /**
      * @todo
      * 1. Notify admins user updating member roles

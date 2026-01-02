@@ -124,7 +124,7 @@ export type IWorkspaceMember = {
 };
 
 export type IWorkspace = {
-  _id?: string;
+  _id: string;
   ownerUserId: IUser | string;
   // projects?: IProject[];
   title: string;
@@ -136,13 +136,16 @@ export interface IWorkspaceMemberCreateDTO {
   email: string;
 }
 
-export type IUserWorkspaces = {
-  _id?: string;
-  workspace: Partial<IWorkspace>;
-  userId?: Partial<IUser>;
-  email: string;
-  role: 'owner' | 'editor' | 'viewer';
-  status: 'pending' | 'accepted';
+export type IUserWorkspaces = IWorkspace & {
+  membership: {
+    _id: string;
+    email: string;
+    role: 'owner' | 'editor' | 'viewer';
+    status: 'pending' | 'accepted';
+    createdAt: Date;
+    invitedBy: string;
+  };
+
   ownerCount?: number;
 };
 
@@ -223,4 +226,9 @@ export interface INav {
 export type TableMeta = {
   editingMemberId: string | null;
   setEditingMemberId: React.Dispatch<React.SetStateAction<string | null>>;
+};
+
+export type IErrorResponse = {
+  message: string;
+  success: boolean;
 };

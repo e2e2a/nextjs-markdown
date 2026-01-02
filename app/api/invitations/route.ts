@@ -6,7 +6,7 @@ import { IWorkspaceMemberCreateDTO } from '@/types';
 export async function GET() {
   try {
     const res = await invitationController.getMyInvitations();
-    return NextResponse.json(res ?? null, { status: 200 });
+    return NextResponse.json(res, { status: 200 });
   } catch (err) {
     return handleError(err);
   }
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       body as { workspaceId: string; projectId: string; members: IWorkspaceMemberCreateDTO[] }
     );
 
-    return NextResponse.json(res ?? null, { status: 201 });
+    return NextResponse.json(res, { status: 201 });
   } catch (err) {
     return handleError(err);
   }

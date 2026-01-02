@@ -23,14 +23,14 @@ interface IProps {
 export function Leave({ item }: IProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [disabled] = useState(item.role === 'owner' && item.ownerCount === 1);
+  const [disabled] = useState(item.membership.role === 'owner' && item.ownerCount === 1);
 
   const mutation = useWorkspaceMemberMutations();
 
   const leaveWorkspace = useCallback(() => {
     setLoading(true);
     mutation.leave.mutate(
-      { wid: item.workspace._id as string },
+      { wid: item._id as string },
       {
         onSuccess: () => {
           setIsOpen(false);
@@ -102,8 +102,7 @@ export function Leave({ item }: IProps) {
             Leave Workspace
           </AlertDialogTitle>
           <AlertDialogDescription>
-            By leaving{' '}
-            <span className="font-bold text-accent-foreground">{item.workspace.title}</span>
+            By leaving <span className="font-bold text-accent-foreground">{item.title}</span>
             , you will lose access to all projects in that workspace.
             <br />
             <br />

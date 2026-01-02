@@ -44,7 +44,7 @@ export const projectClient = {
   },
 
   async getProjectsByWorkspace(workspaceId: string) {
-    const res = await fetch(`${BASE_URL_PROJECTS}/me?wid=${workspaceId}`);
+    const res = await fetch(`${BASE_URL_PROJECTS}?wid=${workspaceId}`);
     if (!res.ok) throw new Error('Failed to fetch workspace');
     return res.json();
   },

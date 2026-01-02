@@ -10,6 +10,16 @@ export const workspaceMemberClient = {
     return res.json();
   },
 
+  async update(data: { wid: string; mid: string; role: 'editor' | 'owner' | 'viewer' }) {
+    const { wid, mid } = data;
+    const res = await fetch(`${BASE_URL_WORKSPACES}/${wid}/members/${mid}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role: data.role }),
+    });
+    if (!res.ok) throw new Error(res.statusText || '');
+    return res.json();
+  },
+
   async trash(data: { wid: string; mid: string }) {
     const { wid, mid } = data;
     const res = await fetch(`${BASE_URL_WORKSPACES}/${wid}/members/${mid}`, {

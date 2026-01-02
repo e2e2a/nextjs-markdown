@@ -1,5 +1,5 @@
 import { HttpError } from '@/utils/errors';
-import { projectMemberRepository } from '@/repositories/projectMember';
+import { projectMemberRepository } from '@/modules/projects/member/member.repository';
 import { workspaceMemberService } from '../../workspaces/members/member.service';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import { User } from 'next-auth';
@@ -48,7 +48,10 @@ export const projectMemberService = {
 
   getMembership: async (data: { projectId: string; email: string }) => {
     const membership = await projectMemberRepository.findOne(data);
-    if (!membership) throw new HttpError('Not a project member', 403);
+    if (!membership) throw new HttpError('FORBIDDEN', 'Not a project member');
     return membership;
   },
+
+  addOwner: (data: { projectId: string; workspaceId: string; email: string }) =>
+    projectMemberRepository.create({ ...data, role: 'owner' }),
 };

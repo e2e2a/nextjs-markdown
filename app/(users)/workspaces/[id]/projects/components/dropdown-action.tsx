@@ -9,6 +9,9 @@ import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EditProjectAction } from './edit-project-action';
 import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
+import { useState } from 'react';
+import { makeToastSucess } from '@/lib/toast';
+import { MoveProjectAction } from './move-project-action';
 
 interface IProps {
   item: IProject;
@@ -17,8 +20,9 @@ interface IProps {
 
 const DropdownActions = ({ item, workspaceId }: IProps) => {
   const { data: membership } = useGetMyWorkspaceMembership(workspaceId);
+  const [open, setOpen] = useState(false);
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger>
         <div className="action-button w-full items-center flex size-4 px-2 gap-1.5 h-8">
           <Ellipsis className="h-4 w-4" />
@@ -30,10 +34,16 @@ const DropdownActions = ({ item, workspaceId }: IProps) => {
             <Button
               variant={'ghost'}
               className="w-full justify-start px-2 font-normal cursor-pointer"
+              onClick={() => {
+                navigator.clipboard.writeText(item._id);
+                makeToastSucess('ID copied to clipboard!');
+                setOpen(false);
+              }}
             >
               Copy Project ID
             </Button>
             <EditProjectAction item={item} />
+            <MoveProjectAction item={item} />
             <Button
               variant={'ghost'}
               className="w-full justify-start px-2 font-normal cursor-pointer"

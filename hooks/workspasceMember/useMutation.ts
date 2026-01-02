@@ -13,6 +13,16 @@ export function useWorkspaceMemberMutations() {
     },
   });
 
+  const update = useMutation({
+    mutationFn: (data: { wid: string; mid: string; role: 'editor' | 'owner' | 'viewer' }) =>
+      workspaceMemberClient.update(data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['workspaceMembers', variables.wid] });
+      queryClient.invalidateQueries({ queryKey: ['userWorkspaces'] });
+      return;
+    },
+  });
+
   const trash = useMutation({
     mutationFn: (data: { wid: string; mid: string }) => workspaceMemberClient.trash(data),
     onSuccess: (_data, variables) => {
@@ -22,5 +32,5 @@ export function useWorkspaceMemberMutations() {
     },
   });
 
-  return { leave, trash };
+  return { leave, trash, update };
 }

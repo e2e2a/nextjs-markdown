@@ -35,14 +35,13 @@ export const columns: ColumnDef<IUserInvitations>[] = [
     size: 250,
     minSize: 250,
     maxSize: 250,
-    // accessorKey: 'workspaceId.title',
     header: 'Details',
     cell: ({ row }) => {
       const item = row.original;
       return (
         <div className="whitespace-normal break-all">
           <span className="font-semibold">{item.invitedBy?.email} </span>
-          invited you to organization <span className="font-semibold">{item.workspace?.title}</span>
+          invited you to workspace <span className="font-semibold">{item.workspace?.title}</span>
         </div>
       );
     },

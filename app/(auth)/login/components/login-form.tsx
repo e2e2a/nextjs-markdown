@@ -62,7 +62,7 @@ export function LoginForm({ className, ...props }: IProps) {
               email: data.email,
               callbackUrl: '/login',
             });
-            makeToastSucess('Redirecting To Workspace!');
+            makeToastSucess('Redirecting To Workspace');
           }
         },
         onError: err => {

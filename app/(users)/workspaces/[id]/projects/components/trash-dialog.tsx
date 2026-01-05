@@ -37,10 +37,10 @@ interface IProps {
 }
 
 export default function TrashDialog({ item, workspaceId }: IProps) {
-  const { data: membership } = useGetMyWorkspaceMembership(workspaceId);
+  const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [canTrash] = useState(membership.role !== 'viewer');
+  const [canTrash] = useState(mData?.permissions.canDeleteProject);
 
   const refinedSchema = projectSchema.refine(
     data => {

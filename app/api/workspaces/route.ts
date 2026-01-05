@@ -7,7 +7,7 @@ import { workspaceService } from '@/modules/workspaces/workspace.service';
 export async function POST(req: NextRequest) {
   try {
     const res = await workspaceController.create(req);
-    return NextResponse.json(res ?? null, { status: 201 });
+    return NextResponse.json(res, { status: 201 });
   } catch (err) {
     return handleError(err);
   }
@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const res = await workspaceService.getUserWorkspaces();
-    return NextResponse.json(res ?? null, { status: 200 });
+    const res = await workspaceController.getUserWorkspaces();
+    return NextResponse.json(res, { status: 200 });
   } catch (err) {
     return handleError(err);
   }

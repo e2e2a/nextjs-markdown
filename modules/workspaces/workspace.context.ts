@@ -1,10 +1,10 @@
 import { HttpError } from '@/utils/errors';
 import { resolveWorkspacePermissions, WorkspacePermissions } from '@/utils/permissions';
 import { workspaceMemberRepository } from './members/member.repository';
+import { IWorkspaceMember } from '@/types';
 
 export interface WorkspaceContext {
-  membership: object | null;
-  role: string;
+  membership: IWorkspaceMember | null;
   permissions: WorkspacePermissions;
   ownerCount: number;
   canLeave: boolean;
@@ -27,7 +27,6 @@ export async function getWorkspaceContext(
   if (!membership)
     return {
       membership: null,
-      role: 'none',
       permissions: resolveWorkspacePermissions('none'),
       ownerCount: 0,
       canLeave: false,
@@ -38,7 +37,6 @@ export async function getWorkspaceContext(
 
   return {
     membership: membership,
-    role: membership.role,
     permissions,
     ownerCount: membership.ownerCount,
     canLeave: canLeaveWorkspace(membership.role, membership.ownerCount),
@@ -54,7 +52,12 @@ export async function ensureWorkspaceMember(wid: string, email: string) {
   if (!context.membership)
     throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
 
-  return context;
+  return {
+    membership: context.membership,
+    permissions: context.permissions,
+    ownerCount: context.ownerCount,
+    canLeave: context.canLeave,
+  };
 }
 
 // workspace.service.ts

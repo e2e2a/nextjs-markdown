@@ -77,7 +77,7 @@ export const InviteUserClient = () => {
   });
   if (status === 'loading') return;
   if (isLoading) return;
-  if (!mData.membership || !mData.permissions.canInvite || mError) return notFound();
+  if (!mData?.membership || !mData?.permissions.canInvite || mError) return notFound();
 
   return (
     <SidebarInset className="flex flex-col items-center h-full w-full overflow-y-auto">

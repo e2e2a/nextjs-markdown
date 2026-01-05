@@ -29,6 +29,17 @@ export function useProjectMutations() {
     },
   });
 
+  const move = useMutation({
+    mutationFn: (data: { wid: string; currentwid: string; pid: string }) =>
+      projectClient.move(data),
+    onSuccess: (_data, variables) => {
+      if (!variables) return;
+      queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', variables.wid] });
+      queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', variables.currentwid] });
+      return;
+    },
+  });
+
   const handleDelete = useMutation({
     mutationFn: (data: { pid: string }) => projectClient.delete(data),
     onSuccess: data => {
@@ -38,5 +49,5 @@ export function useProjectMutations() {
     },
   });
 
-  return { create, update, handleDelete };
+  return { create, update, handleDelete, move };
 }

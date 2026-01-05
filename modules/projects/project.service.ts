@@ -8,6 +8,7 @@ import { projectMemberService } from './member/member.service';
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
 import mongoose from 'mongoose';
 import { ensureWorkspaceMember } from '../workspaces/workspace.context';
+import { workspaceMemberService } from '../workspaces/members/member.service';
 
 const sortNodes = (nodes: INode[]) => {
   return [...nodes].sort((a, b) => {
@@ -40,14 +41,21 @@ export const projectService = {
       projectId: newProject._id as string,
       email: user.email,
     });
-
+    const baseMemberData = { projectId: newProject._id.toString(), workspaceId };
     if (members && members.length > 0) {
-      const membersDataToCreate = members.map(member => ({
+      const workspaceMembersDataToCreate = members.map(member => ({
         ...member,
-        projectId: newProject._id.toString(),
-        workspaceId,
+        ...baseMemberData,
+        status: 'pending' as const,
+        invitedBy: user.email,
+        role: 'viewer' as const,
       }));
-      await projectMemberService.create(user, membersDataToCreate);
+      const projectMembersDataToCreate = members.map(member => ({
+        ...member,
+        ...baseMemberData,
+      }));
+      await workspaceMemberService.store(workspaceMembersDataToCreate);
+      await projectMemberService.store(projectMembersDataToCreate);
     }
 
     return { project: newProject };
@@ -60,8 +68,8 @@ export const projectService = {
   },
 
   getMyWorkspaceProjects: async (workspaceId: string, email: string) => {
-    const { role } = await ensureWorkspaceMember(workspaceId, email);
-    if (role === 'owner') return await projectRepository.findMany({ workspaceId });
+    const { membership } = await ensureWorkspaceMember(workspaceId, email);
+    if (membership.role === 'owner') return await projectRepository.findMany({ workspaceId });
 
     return await projectMemberRepository.findProjects({
       workspaceId,
@@ -73,13 +81,39 @@ export const projectService = {
 
   update: async (projectId: string, email: string, dataToUpdate: { title: string }) => {
     const project = await projectRepository.findOne({ _id: projectId });
-    if (!project) throw new HttpError('NOT_FOUND', 'No project to be updated.');
+    if (!project) throw new HttpError('NOT_FOUND', 'No project to be updated');
 
     const { permissions } = await ensureWorkspaceMember(project.workspaceId, email);
     if (!permissions.canEditProject) throw new HttpError('FORBIDDEN');
     await projectService.checkTitleExist(project.workspaceId, dataToUpdate.title);
     await projectRepository.updateOne({ _id: projectId }, dataToUpdate);
 
+    return project;
+  },
+
+  move: async (projectId: string, email: string, data: { workspaceId: string }) => {
+    const project = await projectRepository.findOne({ _id: projectId });
+    if (!project) throw new HttpError('NOT_FOUND', 'No project to be updated');
+    if (project.workspaceId === data.workspaceId)
+      throw new HttpError('BAD_INPUT', 'Project is already in the target workspace');
+
+    const sourceCtx = await ensureWorkspaceMember(project.workspaceId, email);
+    if (!sourceCtx.permissions.canMoveProject) throw new HttpError('FORBIDDEN');
+
+    const targetCtx = await ensureWorkspaceMember(data.workspaceId, email);
+    if (targetCtx.membership.role !== 'owner') throw new HttpError('FORBIDDEN');
+
+    await projectService.checkTitleExist(data.workspaceId, project.title);
+    await projectRepository.updateOne({ _id: projectId }, data);
+
+    const PMembers = await projectMemberService.move(
+      project.workspaceId,
+      data.workspaceId,
+      project._id
+    );
+    const PEmails = PMembers.map(m => m.email);
+    await workspaceMemberService.move(project.workspaceId, data.workspaceId, PEmails);
+    // update nodes workspaceId
     return project;
   },
 

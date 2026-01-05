@@ -45,9 +45,7 @@ export function MemberRole({ targetMember, setMembers }: IProps) {
                   onSelect={() => {
                     setMembers((prevMembers: IWorkspaceMemberCreateDTO[]) =>
                       prevMembers.map((member: IWorkspaceMemberCreateDTO) =>
-                        member.email === targetMember.email
-                          ? { ...member, role: selectedRole }
-                          : member
+                        member.email === targetMember.email ? { ...member, role } : member
                       )
                     );
                     setSelectedRole(role);

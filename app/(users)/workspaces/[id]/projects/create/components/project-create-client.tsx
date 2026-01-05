@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { SendHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
@@ -88,9 +88,14 @@ export const WorkspaceCreateClient = () => {
     }
   };
 
+  const email = useWatch({
+    control: form2.control,
+    name: 'email',
+  });
+
   if (status === 'loading') return;
   if (isLoading) return;
-  if (!mData.membership || mError) return notFound();
+  if (!mData?.membership || mError) return notFound();
 
   return (
     <SidebarInset className="flex flex-col items-center h-full w-full overflow-y-auto">
@@ -181,7 +186,8 @@ export const WorkspaceCreateClient = () => {
                         type="button"
                         title="Send Invite"
                         onClick={onSubmit}
-                        className="bg-secondary hover:bg-primary text-primary hover:text-secondary cursor-pointer"
+                        disabled={!email}
+                        className={cn('text-end bg-secondary text-foreground cursor-pointer')}
                       >
                         <SendHorizontal />
                       </Button>

@@ -20,4 +20,10 @@ export const workspaceController = {
 
     return null;
   },
+
+  getUserWorkspaces: async () => {
+    const session = await ensureAuthenticated();
+    const workspaces = await workspaceService.getUserWorkspaces({ email: session.user.email });
+    return workspaces;
+  },
 };

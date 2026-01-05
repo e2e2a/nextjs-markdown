@@ -5,10 +5,12 @@ export type WorkspacePermissions = {
   canEditProject: boolean;
 
   canInvite: boolean;
+  canCreateProject: boolean;
+  canMoveProject: boolean;
+
   canDeleteInvite: boolean;
   canDeleteMember: boolean;
   canDeleteWorkspace: boolean;
-  canCreateProject: boolean;
   canDeleteProject: boolean;
 };
 
@@ -24,6 +26,7 @@ export const resolveWorkspacePermissions = (role?: string): WorkspacePermissions
 
     canInvite: role === 'owner' || role === 'editor',
     canCreateProject: role === 'owner' || role === 'editor',
+    canMoveProject: role === 'owner',
 
     canDeleteInvite: role === 'owner' || role === 'editor',
     canDeleteMember: role === 'owner' || role === 'editor',

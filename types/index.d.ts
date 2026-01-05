@@ -146,6 +146,7 @@ export type IUserWorkspaces = IWorkspace & {
     invitedBy: string;
   };
 
+  projectCount?: number;
   ownerCount?: number;
 };
 
@@ -226,9 +227,4 @@ export interface INav {
 export type TableMeta = {
   editingMemberId: string | null;
   setEditingMemberId: React.Dispatch<React.SetStateAction<string | null>>;
-};
-
-export type IErrorResponse = {
-  message: string;
-  success: boolean;
 };

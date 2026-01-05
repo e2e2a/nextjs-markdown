@@ -19,7 +19,7 @@ interface IProps {
 }
 
 const DropdownActions = ({ item, workspaceId }: IProps) => {
-  const { data: membership } = useGetMyWorkspaceMembership(workspaceId);
+  const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
   const [open, setOpen] = useState(false);
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -29,29 +29,19 @@ const DropdownActions = ({ item, workspaceId }: IProps) => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end" className="w-40">
-        {membership.role !== 'viewer' && (
-          <>
-            <Button
-              variant={'ghost'}
-              className="w-full justify-start px-2 font-normal cursor-pointer"
-              onClick={() => {
-                navigator.clipboard.writeText(item._id);
-                makeToastSucess('ID copied to clipboard!');
-                setOpen(false);
-              }}
-            >
-              Copy Project ID
-            </Button>
-            <EditProjectAction item={item} />
-            <MoveProjectAction item={item} />
-            <Button
-              variant={'ghost'}
-              className="w-full justify-start px-2 font-normal cursor-pointer"
-            >
-              Move Project
-            </Button>
-          </>
-        )}
+        <Button
+          variant={'ghost'}
+          className="w-full justify-start px-2 font-normal cursor-pointer"
+          onClick={() => {
+            navigator.clipboard.writeText(item._id);
+            makeToastSucess('ID copied to clipboard!');
+            setOpen(false);
+          }}
+        >
+          Copy Project ID
+        </Button>
+        {mData?.permissions.canEditProject && <EditProjectAction item={item} />}
+        {mData?.permissions.canMoveProject && <MoveProjectAction item={item} />}
 
         <DropdownMenuSeparator />
         <Button

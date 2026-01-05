@@ -1,14 +1,10 @@
-import {
-  getByEmailAndStatusFinalCleanupStages,
-  getOwnerCountStages,
-} from '@/aggregation/workspacemember/findByEmailAndStatus';
+import { getOwnerCountStages, getProjectCountStages } from '@/aggregation/workspaceMember';
 import { addLookup } from '@/lib/helpers/aggregationHelpers';
 import WorkspaceMember from '@/modules/workspaces/members/member.model';
 import { PipelineStage } from 'mongoose';
 import mongoose from 'mongoose';
 
 export interface IPopulateWorkspaceMember {
-  workspaceId?: boolean;
   invitedBy?: boolean;
 }
 
@@ -19,6 +15,7 @@ export const workspaceMemberRepository = {
       email: string;
       invitedBy: string;
       workspaceId: string;
+      status: 'pending' | 'accepted';
     }[]
   ) => WorkspaceMember.insertMany(members),
 
@@ -61,9 +58,14 @@ export const workspaceMemberRepository = {
     return result ?? null;
   },
 
-  findMembers: async (data: { workspaceId: string; email: string }) => {
+  findMembers: async (data: { workspaceId: string; emails?: string[] }) => {
     const pipeline: PipelineStage[] = [];
-    pipeline.push({ $match: { workspaceId: new mongoose.Types.ObjectId(data.workspaceId) } });
+    pipeline.push({
+      $match: {
+        workspaceId: new mongoose.Types.ObjectId(data.workspaceId),
+        ...(data.emails && data.emails.length > 0 ? { email: { $in: data.emails } } : {}),
+      },
+    });
     pipeline.push({ $addFields: { originalEmail: '$email' } });
     addLookup(pipeline, 'email', 'email', 'users', false);
 
@@ -114,30 +116,15 @@ export const workspaceMemberRepository = {
 
   findByEmailAndStatus: async (
     data: { email: string; status: 'pending' | 'accepted' },
-    populate: IPopulateWorkspaceMember
+    populate?: IPopulateWorkspaceMember
   ) => {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: data });
-    if (populate.workspaceId) addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);
-    if (populate.invitedBy) addLookup(pipeline, 'invitedBy', 'email', 'users', false);
+    addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);
+    if (populate && populate.invitedBy) addLookup(pipeline, 'invitedBy', 'email', 'users', false);
 
     pipeline.push(...getOwnerCountStages(true));
-    // if (populate.workspaceId)
-    //   pipeline.push({ $addFields: { workspace: '$workspaceId' } }, { $unset: 'workspaceId' });
-
-    // pipeline.push({
-    //   $project: {
-    //     _id: 1,
-    //     ...(populate.workspaceId ? { workspace: 1 } : {}),
-    //     ...(populate.invitedBy ? { invitedBy: 1 } : {}),
-    //     role: 1,
-    //     status: 1,
-    //     createdAt: 1,
-    //     ownerCount: 1,
-    //   },
-    // });
-
-    // pipeline.push(...getByEmailAndStatusFinalCleanupStages());
+    pipeline.push(...getProjectCountStages(true));
     const result = await WorkspaceMember.aggregate(pipeline);
     return result || [];
   },

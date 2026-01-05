@@ -1,6 +1,5 @@
 import { HttpError } from '@/utils/errors';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
-import mongoose from 'mongoose';
 import { workspaceMemberService } from '../members/member.service';
 import { User } from 'next-auth';
 import { IWorkspaceMemberCreateDTO } from '@/types';
@@ -41,22 +40,28 @@ export const invitationServices = {
       throw new HttpError('FORBIDDEN', 'You do not have permission to invite members');
 
     const initialMembersData = members.map(member => ({ ...member, workspaceId }));
-    if (!projectId) {
-      const workspaceMembers = initialMembersData.map(m => ({ ...m, invitedBy: user.email }));
-      await workspaceMemberService.store(workspaceMembers);
-    } else {
-      if (!mongoose.Types.ObjectId.isValid(projectId))
-        throw new HttpError('BAD_INPUT', 'Invalid project ID.');
+
+    const workspaceMembers = initialMembersData.map(m => ({
+      ...m,
+      invitedBy: user.email,
+      // @Note: reason as 'viewer' because it is invited due to project member creation not invitation in the workspace
+      ...(projectId ? { role: 'viewer' as const } : {}),
+      status: 'pending' as const,
+    }));
+    await workspaceMemberService.store(workspaceMembers);
+
+    if (projectId) {
       const workspaceMembers = initialMembersData.map(m => ({ ...m, projectId }));
-      await projectMemberService.create(user, workspaceMembers);
+      await projectMemberService.store(workspaceMembers);
     }
+
     return true;
   },
 
   getPendingInvitations: async (data: { email: string }) => {
     const docs = await workspaceMemberRepository.findByEmailAndStatus(
       { email: data.email, status: 'pending' },
-      { workspaceId: true, invitedBy: true }
+      { invitedBy: true }
     );
     const invitations = docs.map(doc => {
       return {

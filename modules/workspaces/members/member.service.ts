@@ -9,14 +9,31 @@ export const workspaceMemberService = {
       email: string;
       invitedBy: string;
       workspaceId: string;
+      status: 'pending' | 'accepted';
     }[]
   ) => {
     const existing = await workspaceMemberService.checkWorkspaceMemberExistence(members);
 
     let nonExisting = members;
-    if (existing.length > 0) nonExisting = members.filter(e => !existing.includes(e));
+    if (existing.length > 0) nonExisting = members.filter(m => !existing.includes(m.email));
     if (nonExisting.length > 0) await workspaceMemberRepository.createMany(nonExisting);
 
+    return true;
+  },
+
+  move: async (oldwid: string, newwid: string, emails: string[]) => {
+    const members = await workspaceMemberRepository.findMembers({ workspaceId: oldwid, emails });
+
+    const newMembers = members?.map(m => {
+      return {
+        email: m.email,
+        role: 'viewer' as 'owner' | 'editor' | 'viewer',
+        invitedBy: m.invitedBy,
+        status: m.status,
+        workspaceId: newwid,
+      };
+    });
+    await workspaceMemberService.store(newMembers);
     return true;
   },
 
@@ -34,8 +51,10 @@ export const workspaceMemberService = {
     return await workspaceMemberRepository.findExistingEmails(members[0].workspaceId, emails);
   },
 
-  getMemberships: (data: { workspaceId: string; email: string }) =>
-    workspaceMemberRepository.findMembers(data),
+  getMemberships: async (data: { workspaceId: string }) => {
+    const members = await workspaceMemberRepository.findMembers(data);
+    return members;
+  },
 
   leave: async (data: { workspaceId: string; email: string }) => {
     const context = await ensureWorkspaceMember(data.workspaceId, data.email);

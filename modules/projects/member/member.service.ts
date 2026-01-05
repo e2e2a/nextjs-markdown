@@ -1,12 +1,8 @@
 import { HttpError } from '@/utils/errors';
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
-import { workspaceMemberService } from '../../workspaces/members/member.service';
-import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
-import { User } from 'next-auth';
 
 export const projectMemberService = {
-  create: async (
-    user: User,
+  store: async (
     members: {
       role: 'owner' | 'editor' | 'viewer';
       email: string;
@@ -14,21 +10,24 @@ export const projectMemberService = {
       projectId: string;
     }[]
   ) => {
-    if (members.length > 0) {
-      // Workspace members
-      const existingW = await workspaceMemberService.checkWorkspaceMemberExistence(members);
-      let nonExistingW = members.map(member => ({ ...member, invitedBy: user.email }));
-      if (existingW.length > 0) nonExistingW = nonExistingW.filter(e => !existingW.includes(e));
-      if (nonExistingW.length > 0) await workspaceMemberRepository.createMany(nonExistingW);
-
-      // Project members
-      const existingP = await projectMemberService.checkProjectMemberExistence(members);
-      let nonExistingP = members;
-      if (existingP.length > 0) nonExistingP = members.filter(e => !existingP.includes(e));
-      if (nonExistingP.length > 0) await projectMemberRepository.createMany(members);
-    }
+    // Project members
+    const existingP = await projectMemberService.checkProjectMemberExistence(members);
+    let nonExistingP = members;
+    if (existingP.length > 0) nonExistingP = members.filter(m => !existingP.includes(m.email));
+    if (nonExistingP.length > 0) await projectMemberRepository.createMany(members);
 
     return true;
+  },
+
+  move: async (oldwid: string, newwid: string, projectId: string) => {
+    const dataToUpdate = {
+      role: 'viewer' as const,
+      workspaceId: newwid,
+    };
+    // @Note: reason to update because project member cannot be exist without the project.
+    const members = await projectMemberRepository.findMany({ projectId, workspaceId: oldwid });
+    await projectMemberRepository.updateMany({ projectId, workspaceId: oldwid }, dataToUpdate);
+    return members;
   },
 
   checkProjectMemberExistence: async (

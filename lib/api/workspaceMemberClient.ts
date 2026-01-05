@@ -1,5 +1,15 @@
+import { IWorkspaceMember } from '@/types';
+import { WorkspacePermissions } from '@/utils/permissions';
+
 const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 
+type IResponse = {
+  canLeave: boolean;
+  membership: IWorkspaceMember;
+  permissions: WorkspacePermissions;
+  role: string;
+  ownerCount: number;
+};
 export const workspaceMemberClient = {
   async leave(data: { wid: string }) {
     const { wid } = data;
@@ -29,7 +39,7 @@ export const workspaceMemberClient = {
     return res.json();
   },
 
-  async getMyWorkspaceMembership(workspaceId: string) {
+  async getMyWorkspaceMembership(workspaceId: string): Promise<IResponse> {
     const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/members/me`);
     if (!res.ok) throw new Error('Failed to fetch workspace');
     if (res.status !== 200) throw new Error('Opps Error Occured.');

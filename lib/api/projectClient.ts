@@ -33,6 +33,18 @@ export const projectClient = {
     return json;
   },
 
+  async move(data: { pid: string; wid: string }) {
+    const res = await fetch(`${BASE_URL_PROJECTS}/${data.pid}/move`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workspaceId: data.wid }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+
+    return json;
+  },
+
   async delete(data: { pid: string }) {
     const res = await fetch(`${BASE_URL_PROJECTS}/${data.pid}`, {
       method: 'DELETE',

@@ -32,7 +32,6 @@ export const projectRepository = {
 
       { $project: { members: 0 } },
     ]);
-    console.log('res', res);
     return res;
   },
 
@@ -44,7 +43,7 @@ export const projectRepository = {
     Project.findOne(data).populate('nodes').lean<IProject>(),
 
   findProjectByTitle: (workspaceId: string, title: string) =>
-    Project.findOne({ workspaceId, title: { $regex: new RegExp(title, 'i') } }),
+    Project.findOne({ workspaceId, title }, { collation: { locale: 'en', strength: 2 } }),
 
   findProjectsByUserId: (userId: string) =>
     Project.find({ userId, 'archived.isArchived': false }).populate({
@@ -81,14 +80,10 @@ export const projectRepository = {
   },
 
   updateOne: (
-    dataToFind: { _id?: string; workspaceId?: string },
-    dataToUpdate: { title: string }
+    dataToFind: { _id: string; workspaceId?: string },
+    dataToUpdate: { title?: string; workspaceId?: string }
   ) => {
-    return Project.findOneAndUpdate(
-      dataToFind,
-      { $set: dataToUpdate },
-      { new: true, runValidators: true }
-    )
+    return Project.findOneAndUpdate(dataToFind, { $set: dataToUpdate }, updateOptions)
       .lean<IProject>()
       .exec();
   },
@@ -96,9 +91,7 @@ export const projectRepository = {
   archiveById(projectId: string, data: Partial<IProject>): Promise<IProject | null> {
     return Project.findByIdAndUpdate(
       projectId,
-      {
-        $set: { archived: data.archived },
-      },
+      { $set: { archived: data.archived } },
       updateOptions
     )
       .lean<IProject>()

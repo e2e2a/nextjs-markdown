@@ -38,6 +38,16 @@ export const projectController = {
     return null;
   },
 
+  move: async (req: NextRequest, pid: string | null) => {
+    const body = await req.json();
+    const session = await ensureAuthenticated();
+    if (!pid) throw new HttpError('BAD_INPUT', 'Invalid fields.');
+
+    await projectService.move(pid, session.user.email, { workspaceId: body.workspaceId });
+
+    return null;
+  },
+
   getProjects: async (wid: string | null) => {
     const session = await ensureAuthenticated();
     let projects = [];

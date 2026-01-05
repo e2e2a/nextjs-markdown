@@ -74,4 +74,12 @@ export const projectMemberRepository = {
   },
 
   findOne: async (data: { projectId: string; email: string }) => await ProjectMember.findOne(data),
+  findMany: async (data: { projectId: string; workspaceId: string }) =>
+    await ProjectMember.find(data),
+  updateMany: async (
+    dataToFind: { workspaceId: string; projectId: string },
+    updateData: { workspaceId: string; role: 'owner' | 'editor' | 'viewer' }
+  ) => {
+    return await ProjectMember.updateMany(dataToFind, { $set: updateData });
+  },
 };

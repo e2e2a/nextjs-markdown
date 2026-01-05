@@ -47,12 +47,12 @@ export default function TrashDialog({ item, workspaceId }: IProps) {
   const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const isLastOwner = item.role === 'owner' && mData.ownerCount <= 1;
+  const isLastOwner = item.role === 'owner' && (mData?.ownerCount || 0) <= 1;
 
   const [canTrash] = useState(
     item.status === 'accepted'
-      ? !!mData.permissions.canDeleteMember && !isLastOwner
-      : !!mData.permissions.canDeleteInvite
+      ? !!mData?.permissions.canDeleteMember && !isLastOwner
+      : !!mData?.permissions.canDeleteInvite
   );
 
   const memberMutation = useWorkspaceMemberMutations();

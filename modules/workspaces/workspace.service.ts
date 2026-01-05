@@ -1,14 +1,13 @@
 import { workspaceRepository } from '@/modules/workspaces/workspace.repository';
-import { IWorkspace, IWorkspaceMemberCreateDTO } from '@/types';
+import { IWorkspaceMemberCreateDTO } from '@/types';
 import { workspaceMemberService } from './members/member.service';
 import { User } from 'next-auth';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
-import { ensureAuthenticated } from '@/lib/auth-utils';
 
 export const workspaceService = {
   initializeWorkspace: async (
     user: User,
-    workspaceDTO: IWorkspace,
+    workspaceDTO: { ownerUserId: string; title: string },
     members: IWorkspaceMemberCreateDTO[]
   ) => {
     const workspace = await workspaceRepository.store(workspaceDTO);
@@ -22,6 +21,7 @@ export const workspaceService = {
         ...member,
         invitedBy: user._id!.toString(),
         workspaceId: workspace._id!.toString(),
+        status: 'pending' as 'pending' | 'accepted',
       }));
       await workspaceMemberService.store(membersDataToCreate);
     }
@@ -29,12 +29,12 @@ export const workspaceService = {
     return { workspace };
   },
 
-  getUserWorkspaces: async () => {
-    const session = await ensureAuthenticated();
-    const docs = await workspaceMemberRepository.findByEmailAndStatus(
-      { email: session.user.email, status: 'accepted' },
-      { workspaceId: true }
-    );
+  getUserWorkspaces: async (data: { email: string }) => {
+    const { email } = data;
+    const docs = await workspaceMemberRepository.findByEmailAndStatus({
+      email,
+      status: 'accepted',
+    });
 
     const workspaces = docs.map(doc => {
       return {
@@ -47,6 +47,7 @@ export const workspaceService = {
           email: doc.email,
           invitedBy: doc.invitedBy,
         },
+        projectCount: doc.projectCount,
         ownerCount: doc.ownerCount,
       };
     });

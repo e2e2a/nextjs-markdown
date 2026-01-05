@@ -6,6 +6,7 @@ import { IWorkspaceMemberCreateDTO } from '@/types';
 import { projectMemberService } from '../../projects/member/member.service';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
 import { ensureWorkspaceMember } from '../workspace.context';
+import { UnitOfWork } from '@/common/UnitOfWork';
 
 export const invitationServices = {
   /**
@@ -28,34 +29,36 @@ export const invitationServices = {
       members: IWorkspaceMemberCreateDTO[];
     }
   ) => {
-    const { workspaceId, projectId, members } = data;
+    return await UnitOfWork.run(async () => {
+      const { workspaceId, projectId, members } = data;
 
-    const res = MembersSchema.safeParse(members);
-    if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid member fields.');
+      const res = MembersSchema.safeParse(members);
+      if (!res.success) throw new HttpError('BAD_INPUT', 'Invalid member fields.');
 
-    if (members.length <= 0) throw new HttpError('BAD_INPUT', 'No Members to be invited.');
+      if (members.length <= 0) throw new HttpError('BAD_INPUT', 'No Members to be invited.');
 
-    const context = await ensureWorkspaceMember(data.workspaceId, user.email);
-    if (!context.permissions.canInvite)
-      throw new HttpError('FORBIDDEN', 'You do not have permission to invite members');
+      const context = await ensureWorkspaceMember(data.workspaceId, user.email);
+      if (!context.permissions.canInvite)
+        throw new HttpError('FORBIDDEN', 'You do not have permission to invite members');
 
-    const initialMembersData = members.map(member => ({ ...member, workspaceId }));
+      const initialMembersData = members.map(member => ({ ...member, workspaceId }));
 
-    const workspaceMembers = initialMembersData.map(m => ({
-      ...m,
-      invitedBy: user.email,
-      // @Note: reason as 'viewer' because it is invited due to project member creation not invitation in the workspace
-      ...(projectId ? { role: 'viewer' as const } : {}),
-      status: 'pending' as const,
-    }));
-    await workspaceMemberService.store(workspaceMembers);
+      const workspaceMembers = initialMembersData.map(m => ({
+        ...m,
+        invitedBy: user.email,
+        // @Note: reason as 'viewer' because it is invited due to project member creation not invitation in the workspace
+        ...(projectId ? { role: 'viewer' as const } : {}),
+        status: 'pending' as const,
+      }));
+      await workspaceMemberService.store(workspaceMembers);
 
-    if (projectId) {
-      const workspaceMembers = initialMembersData.map(m => ({ ...m, projectId }));
-      await projectMemberService.store(workspaceMembers);
-    }
+      if (projectId) {
+        const workspaceMembers = initialMembersData.map(m => ({ ...m, projectId }));
+        await projectMemberService.store(workspaceMembers);
+      }
 
-    return true;
+      return true;
+    });
   },
 
   getPendingInvitations: async (data: { email: string }) => {
@@ -88,23 +91,25 @@ export const invitationServices = {
 
   // strict: the invited user can only accept the invitation by the parameter email: session.user.email
   accept: async (data: { email: string; _id: string }) => {
-    const res = await workspaceMemberRepository.updateStatus(data, {
-      status: 'accepted',
+    return await UnitOfWork.run(async () => {
+      const res = await workspaceMemberRepository.updateStatus(data, {
+        status: 'accepted',
+      });
+      if (!res) throw new HttpError('NOT_FOUND', 'No Invitation to be accepted');
+      return res;
     });
-    if (!res) throw new HttpError('NOT_FOUND', 'No Invitation to be accepted');
-    return res;
   },
 
   delete: async (data: { _id: string; email: string }) => {
-    const invitation = await workspaceMemberRepository.findById(data._id);
-    if (!invitation) throw new HttpError('NOT_FOUND', 'No Invitation to be deleted');
+    return await UnitOfWork.run(async () => {
+      const invitation = await workspaceMemberRepository.deleteById(data._id);
+      if (!invitation) throw new HttpError('NOT_FOUND', 'No Invitation to be deleted');
 
-    const context = await ensureWorkspaceMember(invitation.workspaceId, data.email);
-    if (!context.permissions.canDeleteInvite)
-      throw new HttpError('FORBIDDEN', 'You do not have permission');
-
-    await workspaceMemberRepository.deleteById(data._id);
-    return invitation;
+      const context = await ensureWorkspaceMember(invitation.workspaceId, data.email);
+      if (!context.permissions.canDeleteInvite)
+        throw new HttpError('FORBIDDEN', 'You do not have permission');
+      return invitation;
+    });
   },
 
   reject: async (data: { _id: string; email: string }) => {
@@ -113,8 +118,10 @@ export const invitationServices = {
      * Feature resend
      * Reject must be soft delete
      */
-    const res = await workspaceMemberRepository.deleteById(data._id);
-    if (!res) throw new HttpError('NOT_FOUND', 'No Invitation to be rejected');
-    return res;
+    return await UnitOfWork.run(async () => {
+      const res = await workspaceMemberRepository.deleteById(data._id);
+      if (!res) throw new HttpError('NOT_FOUND', 'No Invitation to be rejected');
+      return res;
+    });
   },
 };

@@ -1,5 +1,6 @@
 import { HttpError } from '@/utils/errors';
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
+import { UnitOfWork } from '@/common/UnitOfWork';
 
 export const projectMemberService = {
   store: async (
@@ -10,24 +11,28 @@ export const projectMemberService = {
       projectId: string;
     }[]
   ) => {
-    // Project members
-    const existingP = await projectMemberService.checkProjectMemberExistence(members);
-    let nonExistingP = members;
-    if (existingP.length > 0) nonExistingP = members.filter(m => !existingP.includes(m.email));
-    if (nonExistingP.length > 0) await projectMemberRepository.createMany(members);
+    return await UnitOfWork.run(async () => {
+      // Project members
+      const existingP = await projectMemberService.checkProjectMemberExistence(members);
+      let nonExistingP = members;
+      if (existingP.length > 0) nonExistingP = members.filter(m => !existingP.includes(m.email));
+      if (nonExistingP.length > 0) await projectMemberRepository.createMany(members);
 
-    return true;
+      return true;
+    });
   },
 
   move: async (oldwid: string, newwid: string, projectId: string) => {
-    const dataToUpdate = {
-      role: 'viewer' as const,
-      workspaceId: newwid,
-    };
-    // @Note: reason to update because project member cannot be exist without the project.
-    const members = await projectMemberRepository.findMany({ projectId, workspaceId: oldwid });
-    await projectMemberRepository.updateMany({ projectId, workspaceId: oldwid }, dataToUpdate);
-    return members;
+    return await UnitOfWork.run(async () => {
+      const dataToUpdate = {
+        role: 'viewer' as const,
+        workspaceId: newwid,
+      };
+      // @Note: reason to update because project member cannot be exist without the project.
+      const members = await projectMemberRepository.findMany({ projectId, workspaceId: oldwid });
+      await projectMemberRepository.updateMany({ projectId, workspaceId: oldwid }, dataToUpdate);
+      return members;
+    });
   },
 
   checkProjectMemberExistence: async (

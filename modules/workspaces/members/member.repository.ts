@@ -1,9 +1,10 @@
 import { getOwnerCountStages, getProjectCountStages } from '@/aggregation/workspaceMember';
+import { UnitOfWork } from '@/common/UnitOfWork';
 import { addLookup } from '@/lib/helpers/aggregationHelpers';
 import WorkspaceMember from '@/modules/workspaces/members/member.model';
 import { PipelineStage } from 'mongoose';
 import mongoose from 'mongoose';
-
+const updateOptions = { new: true, runValidators: true };
 export interface IPopulateWorkspaceMember {
   invitedBy?: boolean;
 }
@@ -17,14 +18,21 @@ export const workspaceMemberRepository = {
       workspaceId: string;
       status: 'pending' | 'accepted';
     }[]
-  ) => WorkspaceMember.insertMany(members),
+  ) => {
+    const session = UnitOfWork.getSession();
+    return await WorkspaceMember.insertMany(members, { ...updateOptions, session });
+  },
 
   create: async (data: {
     role: 'owner' | 'editor' | 'viewer';
     email: string;
     status: 'pending' | 'accepted';
     workspaceId: string;
-  }) => await new WorkspaceMember(data).save(),
+  }) => {
+    const session = UnitOfWork.getSession();
+    const [newMember] = await WorkspaceMember.create(data, { session });
+    return newMember;
+  },
 
   findById: (_id: string) => WorkspaceMember.findOne({ _id }),
 
@@ -138,14 +146,26 @@ export const workspaceMemberRepository = {
       .then(docs => docs.map(doc => doc.email));
   },
 
-  deleteByWorkspaceIdAndEmail: (data: { workspaceId: string; email: string }) =>
-    WorkspaceMember.findOneAndDelete(data),
+  deleteByWorkspaceIdAndEmail: async (data: { workspaceId: string; email: string }) => {
+    const session = UnitOfWork.getSession();
+    return await WorkspaceMember.findOneAndDelete(data, { session });
+  },
 
-  deleteById: (_id: string) => WorkspaceMember.findOneAndDelete({ _id }),
+  deleteById: async (_id: string) => {
+    const session = UnitOfWork.getSession();
+    return await WorkspaceMember.findOneAndDelete({ _id }, { session });
+  },
 
-  updateStatus: (data: { email: string; _id: string }, updateData: { status: string }) =>
-    WorkspaceMember.findOneAndUpdate(data, updateData),
+  updateStatus: async (data: { email: string; _id: string }, updateData: { status: string }) => {
+    const session = UnitOfWork.getSession();
+    return await WorkspaceMember.findOneAndUpdate(data, updateData, { ...updateOptions, session });
+  },
 
-  updateById: (_id: string, updateData: { role?: string }) =>
-    WorkspaceMember.findOneAndUpdate({ _id }, updateData),
+  updateById: async (_id: string, updateData: { role?: string }) => {
+    const session = UnitOfWork.getSession();
+    return await WorkspaceMember.findOneAndUpdate({ _id }, updateData, {
+      ...updateOptions,
+      session,
+    });
+  },
 };

@@ -3,6 +3,7 @@ import { IWorkspaceMemberCreateDTO } from '@/types';
 import { workspaceMemberService } from './members/member.service';
 import { User } from 'next-auth';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
+import { UnitOfWork } from '@/common/UnitOfWork';
 
 export const workspaceService = {
   initializeWorkspace: async (
@@ -10,23 +11,25 @@ export const workspaceService = {
     workspaceDTO: { ownerUserId: string; title: string },
     members: IWorkspaceMemberCreateDTO[]
   ) => {
-    const workspace = await workspaceRepository.store(workspaceDTO);
-    await workspaceMemberService.initializeOwnership({
-      email: user.email,
-      workspaceId: workspace._id,
+    return await UnitOfWork.run(async () => {
+      const workspace = await workspaceRepository.store(workspaceDTO);
+      await workspaceMemberService.initializeOwnership({
+        email: user.email,
+        workspaceId: workspace._id,
+      });
+
+      if (members.length > 0) {
+        const membersDataToCreate = members.map(member => ({
+          ...member,
+          invitedBy: user._id!.toString(),
+          workspaceId: workspace._id!.toString(),
+          status: 'pending' as 'pending' | 'accepted',
+        }));
+        await workspaceMemberService.store(membersDataToCreate);
+      }
+
+      return { workspace };
     });
-
-    if (members.length > 0) {
-      const membersDataToCreate = members.map(member => ({
-        ...member,
-        invitedBy: user._id!.toString(),
-        workspaceId: workspace._id!.toString(),
-        status: 'pending' as 'pending' | 'accepted',
-      }));
-      await workspaceMemberService.store(membersDataToCreate);
-    }
-
-    return { workspace };
   },
 
   getUserWorkspaces: async (data: { email: string }) => {

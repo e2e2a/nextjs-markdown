@@ -2,6 +2,7 @@ import Project from '@/modules/projects/project.model';
 import { PopulateOptions } from 'mongoose';
 import { IProject, ProjectPushNodeDTO } from '@/types';
 import mongoose from 'mongoose';
+import { UnitOfWork } from '@/common/UnitOfWork';
 const updateOptions = { new: true, runValidators: true };
 
 export function populateChildren(path: string, depth: number = 3): PopulateOptions {
@@ -52,7 +53,8 @@ export const projectRepository = {
     }),
 
   create: async (data: { workspaceId: string; title: string; createdBy: string }) => {
-    const project = await new Project(data).save();
+    const session = UnitOfWork.getSession();
+    const [project] = await Project.create(data, { session });
     return project;
   },
 
@@ -79,11 +81,16 @@ export const projectRepository = {
       .exec();
   },
 
-  updateOne: (
+  updateOne: async (
     dataToFind: { _id: string; workspaceId?: string },
     dataToUpdate: { title?: string; workspaceId?: string }
   ) => {
-    return Project.findOneAndUpdate(dataToFind, { $set: dataToUpdate }, updateOptions)
+    const session = UnitOfWork.getSession();
+    return await Project.findOneAndUpdate(
+      dataToFind,
+      { $set: dataToUpdate },
+      { ...updateOptions, session }
+    )
       .lean<IProject>()
       .exec();
   },
@@ -110,7 +117,10 @@ export const projectRepository = {
       .exec();
   },
 
-  deleteOne: (_id: string) => Project.findOneAndDelete({ _id }).exec(),
+  deleteOne: async (_id: string) => {
+    const session = UnitOfWork.getSession();
+    return await Project.findOneAndDelete({ _id }, { session });
+  },
 
   findArchivedProjectsByUserId(userId: string) {
     return Project.find({ userId, 'archived.isArchived': true })

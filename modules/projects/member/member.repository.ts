@@ -1,5 +1,7 @@
+import { UnitOfWork } from '@/common/UnitOfWork';
 import ProjectMember from '@/modules/projects/member/member.model';
 import mongoose from 'mongoose';
+const updateOptions = { new: true, runValidators: true };
 
 export const projectMemberRepository = {
   create: async (data: {
@@ -7,7 +9,13 @@ export const projectMemberRepository = {
     email: string;
     workspaceId: string;
     projectId: string;
-  }) => await new ProjectMember(data).save(),
+  }) => {
+    const session = UnitOfWork.getSession();
+    // Note: Mongoose .create() expects an array when options (like session) are used
+    // This returns an array of created documents
+    const [newMember] = await ProjectMember.create([data], { ...updateOptions, session });
+    return newMember;
+  },
 
   createMany: async (
     members: {
@@ -16,7 +24,10 @@ export const projectMemberRepository = {
       workspaceId: string;
       projectId: string;
     }[]
-  ) => ProjectMember.insertMany(members),
+  ) => {
+    const session = UnitOfWork.getSession();
+    return await ProjectMember.insertMany(members, { ...updateOptions, session });
+  },
 
   findExistingEmails: async (workspaceId: string, projectId: string, emails: string[]) => {
     return await ProjectMember.find({
@@ -76,10 +87,16 @@ export const projectMemberRepository = {
   findOne: async (data: { projectId: string; email: string }) => await ProjectMember.findOne(data),
   findMany: async (data: { projectId: string; workspaceId: string }) =>
     await ProjectMember.find(data),
+
   updateMany: async (
     dataToFind: { workspaceId: string; projectId: string },
     updateData: { workspaceId: string; role: 'owner' | 'editor' | 'viewer' }
   ) => {
-    return await ProjectMember.updateMany(dataToFind, { $set: updateData });
+    const session = UnitOfWork.getSession();
+    return await ProjectMember.updateMany(
+      dataToFind,
+      { $set: updateData },
+      { ...updateOptions, session }
+    );
   },
 };

@@ -1,6 +1,5 @@
 import { Account, Profile, User } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
-import connectDb from '../db/connection';
 import { userRepository } from '@/modules/users/user.repository';
 import { AdapterUser } from 'next-auth/adapters';
 import { NullableJWT, NullableSession } from '@/types/next-auth';
@@ -14,7 +13,6 @@ export const authCallbacks = {
   }): Promise<boolean> {
     const { account } = params;
     try {
-      await connectDb();
       if (account?.provider === 'google') {
         // if (!profile) return false;
         // const existingProfile = await profileRepository.findByProviderAccountId(
@@ -33,7 +31,6 @@ export const authCallbacks = {
     const { session, token } = params;
     if (!token || !token._id) return (session.deleted = true);
 
-    await connectDb();
     session.user._id = token._id as string;
     session.user.sub = token.sub as string;
     const authUser = await userRepository.findUser(token._id, true);

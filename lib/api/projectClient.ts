@@ -1,5 +1,5 @@
 const BASE_URL_PROJECTS = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
-// const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
+const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 
 export const projectClient = {
   async create(data: {
@@ -56,7 +56,7 @@ export const projectClient = {
   },
 
   async getProjectsByWorkspace(workspaceId: string) {
-    const res = await fetch(`${BASE_URL_PROJECTS}?wid=${workspaceId}`);
+    const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/projects`);
     if (!res.ok) throw new Error('Failed to fetch workspace');
     return res.json();
   },

@@ -51,7 +51,6 @@ export async function ensureProjectMember(pid: string, email: string) {
   const context = await getProjectContext(pid, email);
   if (!context.membership)
     throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
-
   return context;
 }
 

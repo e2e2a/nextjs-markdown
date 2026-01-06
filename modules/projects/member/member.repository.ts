@@ -84,7 +84,8 @@ export const projectMemberRepository = {
     ]);
   },
 
-  findOne: async (data: { projectId: string; email: string }) => await ProjectMember.findOne(data),
+  findOne: async (data: { projectId: string; email: string }) => ProjectMember.findOne(data),
+
   findMany: async (data: { projectId: string; workspaceId: string }) =>
     await ProjectMember.find(data),
 

@@ -1,23 +1,14 @@
 import { HttpError } from '@/utils/errors';
-import { memberRepository } from '@/repositories/member';
-import { nodeRepository } from '@/repositories/node';
 import { projectRepository } from '@/modules/projects/project.repository';
-import { INode, ProjectPushNodeDTO } from '@/types';
-import { Session, User } from 'next-auth';
+import { ProjectPushNodeDTO } from '@/types';
+import { User } from 'next-auth';
 import { projectMemberService } from './member/member.service';
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
 import mongoose from 'mongoose';
 import { ensureWorkspaceMember } from '../workspaces/workspace.context';
 import { workspaceMemberService } from '../workspaces/members/member.service';
 import { UnitOfWork } from '@/common/UnitOfWork';
-
-const sortNodes = (nodes: INode[]) => {
-  return [...nodes].sort((a, b) => {
-    if (a.type === 'folder' && b.type !== 'folder') return -1;
-    if (a.type !== 'folder' && b.type === 'folder') return 1;
-    return a.title!.localeCompare(b.title!, undefined, { sensitivity: 'base' });
-  });
-};
+import { ensureProjectMember } from './project.context';
 
 export const projectService = {
   create: async (
@@ -132,60 +123,19 @@ export const projectService = {
     await projectMemberService.getMembership({ projectId, email: user.email });
 
     const project = await projectRepository.deleteOne(projectId);
-    if (!project) throw new HttpError('NOT_FOUND', 'No project to be deleted.');
+    if (!project) throw new HttpError('NOT_FOUND', 'No project to be deleted');
 
     return project;
   },
 
-  findProject: async (session: Session, id: string) => {
-    const project = await projectRepository.findProject(id);
-    if (!project) return null;
-    if (project.userId.toString() !== session.user._id) {
-      const member = await memberRepository.getMember({
-        projectId: project._id,
-        email: session.user.email,
-        status: 'accepted',
-      });
-      if (!member) throw new HttpError('FORBIDDEN', `Forbidden.`);
-    }
-    if (project.archived?.isArchived) return null;
-
-    // Skip if no nodes
-    if (!project.nodes || project.nodes.length === 0) return project;
-
-    // ✅ Filter only parent (top-level) nodes that aren't archived
-    const parentNodes = (project.nodes as INode[]).filter(
-      node => node.parentId === null && !node.archived?.isArchived
-    );
-
-    // ✅ Recursive helper to populate children (skip archived ones)
-    const populateChildrenRecursively = async (nodeId: string): Promise<INode | null> => {
-      const node = await nodeRepository.findNode(nodeId);
-      if (!node) return null;
-      if (node.archived?.isArchived) return null;
-
-      if (node.children && node.children.length > 0) {
-        const children = await Promise.all(
-          node.children.map((child: INode) => populateChildrenRecursively(child._id.toString()))
-        );
-
-        node.children = children.filter(Boolean) as INode[];
-        node.children = sortNodes(node.children);
-      }
-
-      return node;
-    };
-
-    // ✅ Sort and populate top-level nodes
-    const sortedTopLevelNodes = sortNodes(parentNodes);
-    const populatedNodes = await Promise.all(
-      sortedTopLevelNodes.map(n => populateChildrenRecursively(n._id.toString()))
-    );
-
-    // ✅ Filter out archived/null nodes and assign back
-    project.nodes = populatedNodes.filter(Boolean) as INode[];
-
-    return project;
+  findProject: async (email: string, _id: string) => {
+    const project = await projectRepository.findOne({ _id });
+    if (!project) throw new HttpError('NOT_FOUND', 'Project not found');
+    await Promise.all([
+      ensureWorkspaceMember(project.workspaceId, email), // wCtx
+      ensureProjectMember(project._id, email), // pCtx
+    ]);
+    return { project };
   },
 
   pushNode: async (id: string, data: ProjectPushNodeDTO) => {

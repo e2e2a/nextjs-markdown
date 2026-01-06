@@ -8,3 +8,11 @@ export function useGetProjectsByWorkspaceId(workspaceId: string) {
     enabled: !!workspaceId,
   });
 }
+
+export function useProjectByIdQuery(id: string) {
+  return useQuery({
+    queryKey: ['projectById', id],
+    queryFn: () => projectClient.getProjectById(id),
+    enabled: !!id,
+  });
+}

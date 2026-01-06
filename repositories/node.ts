@@ -1,4 +1,4 @@
-import Node from '@/models/node';
+import Node from '@/modules/projects/nodes/node.model';
 import { CreateNodeDTO, INode } from '@/types';
 const updateOptions = { new: true, runValidators: true };
 

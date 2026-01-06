@@ -8,17 +8,14 @@ import { AppSidebarHeader } from './app-sidebar-header';
 import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { AppSidebar } from './app-sidebar';
-import { IProject } from '@/modules/projects/project.model';
 
 export default function AppSidebarLayout({
   children,
-  project,
   nodes = [],
   breadcrumbs = [],
   active,
   setActive,
 }: PropsWithChildren<{
-  project: IProject;
   nodes?: INode[];
   breadcrumbs?: BreadcrumbItem[];
   active: Partial<INode> | null;
@@ -56,7 +53,7 @@ export default function AppSidebarLayout({
           collapsible
           className="text-muted-foreground flex h-full flex-row p-0"
         >
-          <AppSidebar active={active} setActive={setActive} project={project} nodes={nodes} />
+          <AppSidebar active={active} setActive={setActive} nodes={nodes} />
         </ResizablePanel>
 
         <ResizableHandle className="p-0" />

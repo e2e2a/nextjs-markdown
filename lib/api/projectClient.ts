@@ -57,21 +57,21 @@ export const projectClient = {
 
   async getProjectsByWorkspace(workspaceId: string) {
     const res = await fetch(`${BASE_URL_WORKSPACES}/${workspaceId}/projects`);
-    if (!res.ok) throw new Error('Failed to fetch workspace');
+    if (!res.ok) throw new Error('Failed to fetch projects in workspace');
     return res.json();
   },
 
-  // async findProject(id: string, cookieHeader?: string) {
-  //   const res = await fetch(BASE_URL_PROJECTS + `/${id}`, {
-  //     headers: {
-  //       Cookie: cookieHeader || '',
-  //     },
-  //     cache: 'no-store',
-  //   });
-  //   const json = await res.json();
-  //   if (!res.ok) return null;
-  //   return json;
-  // },
+  async getProjectById(id: string, cookieHeader?: string) {
+    const res = await fetch(`${BASE_URL_PROJECTS}/${id}`, {
+      headers: {
+        Cookie: cookieHeader || '',
+      },
+      cache: 'no-store',
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error('Failed to fetch project');
+    return json;
+  },
 
   // async getProjectsByUserId(userId?: string) {
   //   const res = await fetch(BASE_URL_PROJECTS + `?userId=${userId}`);

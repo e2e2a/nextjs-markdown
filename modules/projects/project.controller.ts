@@ -61,4 +61,11 @@ export const projectController = {
     }
     return projects;
   },
+
+  getProject: async (pid: string | null) => {
+    const session = await ensureAuthenticated();
+    if (!pid) throw new HttpError('BAD_INPUT');
+    const project = await projectService.findProject(session.user.email, pid);
+    return project;
+  },
 };

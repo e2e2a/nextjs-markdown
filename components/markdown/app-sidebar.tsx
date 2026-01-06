@@ -8,22 +8,27 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { IProject } from '@/modules/projects/project.model';
 import { CopyMinus, FilePlus2, FolderPlus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SidebarContextMenu } from './sidebar-context-menu';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { INode } from '@/types';
 import { makeToastError } from '@/lib/toast';
+import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
+import { useParams } from 'next/navigation';
+import { Button } from '../ui/button';
 
 interface IProps {
   active: Partial<INode> | null;
   setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
-  project: IProject;
   nodes: INode[];
 }
 
-export function AppSidebar({ active, setActive, project, nodes }: IProps) {
+export function AppSidebar({ active, setActive, nodes }: IProps) {
+  const params = useParams();
+  const pid = params.pid as string;
+  const { data: pData, isLoading: pLoading } = useProjectByIdQuery(pid);
+
   const [isCreating, setIsCreating] = useState(false);
   const [collapseAll, setCollapseAll] = useState(false);
   const [file, setFile] = useState<{
@@ -46,7 +51,7 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
       }
 
       const payload = {
-        projectId: project._id.toString(),
+        projectId: pData?.project._id.toString(),
         parentId: active?.type === 'folder' ? active._id : active?.parentId,
         title: data.name,
         type: data.type,
@@ -66,7 +71,7 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
         },
       });
     },
-    [mutation, project._id, active]
+    [mutation, pData, active]
   );
 
   const updateTitle = useCallback(
@@ -150,6 +155,7 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
     }
   }, [isCreating, updateNode]);
 
+  if (pLoading) return;
   return (
     <Sidebar
       className="group left-12 w-full border-r bg-none p-0 text-neutral-400"
@@ -166,23 +172,25 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
         setUpdateNode={setUpdateNode}
       >
         <div className="min-h-screen">
-          <SidebarHeader className="h-5 p-0">
-            <SidebarMenu className="flex w-full flex-row items-center">
-              <div className="font-bold truncate uppercase text-sm w-full text-black">
-                {project.title}
+          <SidebarHeader className="h-6 p-0">
+            <SidebarMenu className="h-6 flex w-full flex-row items-center justify-center">
+              <div className="font-bold truncate uppercase text-sm w-full text-accent-foreground">
+                {pData?.project.title}
               </div>
-              <div className="h-5 hidden w-full flex-row items-center justify-end gap-x-2 group-hover:flex">
+              <div className="hidden w-full flex-row items-center justify-end h-full gap-x-2 group-hover:flex">
                 <SidebarMenuItem className="p-0">
-                  <button
-                    className="z-10 rounded-none bg-transparent p-0 m-0 hover:text-black hover:brightness-120 dark:hover:text-white cursor-pointer"
+                  <Button
+                    className="p-0! cursor-pointer"
+                    variant={'ghost'}
                     onClick={() => setIsCreating(true)}
                   >
-                    <FilePlus2 className="h-4 w-4" />
-                  </button>
+                    <FilePlus2 className="h-4! w-4!" />
+                  </Button>
                 </SidebarMenuItem>
                 <SidebarMenuItem className="p-0">
-                  <button
-                    className="z-10 rounded-none bg-transparent p-0 m-0 hover:text-black hover:brightness-120 dark:hover:text-white cursor-pointer"
+                  <Button
+                    className="p-0! cursor-pointer"
+                    variant={'ghost'}
                     onClick={() => {
                       setIsCreating(true);
                       setFile(val => ({
@@ -193,20 +201,16 @@ export function AppSidebar({ active, setActive, project, nodes }: IProps) {
                     }}
                   >
                     <FolderPlus className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </SidebarMenuItem>
-                {/* <SidebarMenuItem className="p-0">
-                  <button className="z-10 rounded-none bg-transparent p-0 m-0 hover:text-black hover:brightness-120 dark:hover:text-white cursor-pointer">
-                    <FolderDown className="h-4 w-4" />
-                  </button>
-                </SidebarMenuItem> */}
                 <SidebarMenuItem className="p-0">
-                  <button
-                    className="z-10 rounded-none bg-transparent p-0 m-0 hover:text-black hover:brightness-120 dark:hover:text-white cursor-pointer"
+                  <Button
+                    className="p-0! cursor-pointer"
+                    variant={'ghost'}
                     onClick={() => setCollapseAll(true)}
                   >
                     <CopyMinus className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </SidebarMenuItem>
               </div>
             </SidebarMenu>

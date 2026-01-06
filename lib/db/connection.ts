@@ -1,5 +1,5 @@
 import mongoose, { Mongoose } from 'mongoose';
-import '@/models/node';
+import '@/modules/projects/nodes/node.model';
 import '@/modules/projects/project.model';
 import '@/models/account';
 import '@/modules/users/user.model';

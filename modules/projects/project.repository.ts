@@ -38,7 +38,7 @@ export const projectRepository = {
 
   findOne: (data: { _id: string }) => Project.findById(data),
 
-  findProject: (id: string) => Project.findById(id).populate('nodes'),
+  // findProject: (data:{_id}) => Project.findOne(id),
 
   findProjectByIdAndUserId: (data: { _id: string; userId: string }) =>
     Project.findOne(data).populate('nodes').lean<IProject>(),

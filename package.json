@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "seed": "npx tsx seeders/index.ts"
   },
   "overrides": {
     "@codemirror/view": "^6.38.8",
@@ -51,6 +52,7 @@
     "codemirror": "^6.0.2",
     "codemirror-markdown-commands": "^0.1.0",
     "codemirror-toolbar": "^0.1.0",
+    "dotenv": "^17.2.3",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.24",

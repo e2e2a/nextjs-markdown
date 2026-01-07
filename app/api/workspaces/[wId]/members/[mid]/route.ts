@@ -1,12 +1,14 @@
 import { handleError } from '@/lib/handleError';
 import { NextRequest, NextResponse } from 'next/server';
 import { workspaceMemberController } from '@/modules/workspaces/members/member.controller';
+import connectDb from '@/lib/db/connection';
 
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ wid: string; mid: string }> }
 ) {
   try {
+    await connectDb();
     const { wid, mid } = await context.params;
     const body = await req.json();
     const res = await workspaceMemberController.update(mid, wid, body);
@@ -18,10 +20,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ wid: string; mid: string }> }
 ) {
   try {
+    await connectDb();
     const { wid, mid } = await context.params;
     const res = await workspaceMemberController.delete(mid, wid);
 

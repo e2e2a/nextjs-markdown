@@ -10,10 +10,10 @@ export async function GET() {
   try {
     await connectDb();
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) throw new HttpError('Unauthorized', 401);
+    if (!session || !session.user) throw new HttpError('UNAUTHORIZED');
 
     const user = await userRepository.findUser(session.user._id, true);
-    if (!user) throw new HttpError('No User Found.', 404);
+    if (!user) throw new HttpError('NOT_FOUND', 'No User Found');
 
     return NextResponse.json(user);
   } catch (err) {

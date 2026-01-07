@@ -1,8 +1,10 @@
-import { SidebarGroup, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { SidebarGroup, SidebarMenuButton } from '@/components/ui/sidebar';
 import SidebarItem from './sidebar-item';
 import { ChevronRight, Folder, File } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { INode } from '@/types';
+import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
+import { useParams } from 'next/navigation';
 
 export function NavMain({
   collapseAll,
@@ -14,7 +16,6 @@ export function NavMain({
   setIsCreating,
   inputRef,
   setFile,
-  items = [],
   active,
   setActive,
   updateNode,
@@ -29,13 +30,15 @@ export function NavMain({
   setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
   inputRef: React.RefObject<HTMLInputElement | null>;
   setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
-  items: INode[];
   active: Partial<INode> | null;
   setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
   //** For updating */
   updateNode: boolean;
   setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const params = useParams();
+  const pid = params.pid as string;
+  const { data: nData, isLoading: nLoading, error: nError } = useNodesProjectIdQuery(pid);
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       if (isCreating) submit(file);
@@ -47,9 +50,12 @@ export function NavMain({
     }
   };
 
+  if (nLoading) return <div>Loading...</div>;
+  if (nError) return;
+
   return (
     <SidebarGroup className="gap-0 p-0 m-0">
-      {items.map((item, index) => {
+      {nData?.nodes.map((item: INode, index: number) => {
         return (
           <div className="" key={index}>
             <SidebarItem

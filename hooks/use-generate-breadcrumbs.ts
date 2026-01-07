@@ -19,7 +19,7 @@ function findDocumentPath(tree: INode[], targetId: string, path: INode[] = []): 
 
 export function generateBreadcrumbs(
   documentTree: INode[],
-  currentDocument: INode
+  currentDocument: INode | null
 ): BreadcrumbItem[] {
   let path: INode[] | null = [];
   if (currentDocument) {

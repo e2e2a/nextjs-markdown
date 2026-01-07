@@ -21,10 +21,9 @@ import { Button } from '../ui/button';
 interface IProps {
   active: Partial<INode> | null;
   setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
-  nodes: INode[];
 }
 
-export function AppSidebar({ active, setActive, nodes }: IProps) {
+export function AppSidebar({ active, setActive }: IProps) {
   const params = useParams();
   const pid = params.pid as string;
   const { data: pData, isLoading: pLoading } = useProjectByIdQuery(pid);
@@ -246,7 +245,6 @@ export function AppSidebar({ active, setActive, nodes }: IProps) {
                 setFile={setFile}
                 active={active}
                 setActive={setActive}
-                items={nodes as INode[]}
                 /** For updating */
                 updateNode={updateNode}
                 setUpdateNode={setUpdateNode}

@@ -1,23 +1,19 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { INode, type BreadcrumbItem } from '@/types';
+import { INode } from '@/types';
 import { useRef, type PropsWithChildren } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { AppContent } from './app-content';
 import { AppShell } from './app-shell';
-import { AppSidebarHeader } from './app-sidebar-header';
 import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { AppSidebar } from './app-sidebar';
+import { Button } from '../ui/button';
 
 export default function AppSidebarLayout({
   children,
-  nodes = [],
-  breadcrumbs = [],
   active,
   setActive,
 }: PropsWithChildren<{
-  nodes?: INode[];
-  breadcrumbs?: BreadcrumbItem[];
   active: Partial<INode> | null;
   setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
 }>) {
@@ -53,7 +49,7 @@ export default function AppSidebarLayout({
           collapsible
           className="text-muted-foreground flex h-full flex-row p-0"
         >
-          <AppSidebar active={active} setActive={setActive} nodes={nodes} />
+          <AppSidebar active={active} setActive={setActive} />
         </ResizablePanel>
 
         <ResizableHandle className="p-0" />
@@ -61,7 +57,11 @@ export default function AppSidebarLayout({
         <ResizablePanel className="flex-1 h-full max-h-full p-0" minSize={8} defaultSize={60}>
           <AppContent variant="sidebar" className="text-muted-foreground ">
             <div className="flex-1">
-              <AppSidebarHeader breadcrumbs={breadcrumbs} />
+              <header className="flex h-8 p-0 items-center border-b">
+                <div className="grid grid-cols-1 items-center overflow-x-auto">
+                  <Button variant={'outline'}>File 1</Button>
+                </div>
+              </header>
               {children}
             </div>
           </AppContent>

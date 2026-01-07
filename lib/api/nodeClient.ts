@@ -1,8 +1,9 @@
 import { CreateNodeDTO, UpdateNodeDTO } from '@/types';
 const BASE_URL = '/api/node';
+const BASE_URL_PROJECT = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
 
-export async function getNodes(projectId?: string) {
-  const res = await fetch(BASE_URL + `${projectId ? `?projectId=${projectId}` : ''}`);
+export async function getNodes(projectId: string) {
+  const res = await fetch(`${BASE_URL_PROJECT}/${projectId}/nodes`);
   if (!res.ok) throw new Error('Failed to fetch nodes');
   return res.json();
 }

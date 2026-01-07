@@ -1,10 +1,10 @@
 import { HttpError } from '@/utils/errors';
-import { nodeRepository } from '@/repositories/node';
+import { nodeRepository } from '@/modules/projects/nodes/node.repository';
 import { projectRepository } from '@/modules/projects/project.repository';
 import { ArchivedItem, INode, IProject } from '@/types';
 import { checkExistence, projectService } from '../modules/projects/project.service';
 import { BSON } from 'mongodb';
-import { checkNodeExistence } from './node';
+import { checkNodeExistence } from '../modules/projects/nodes/node.service';
 import { memberRepository } from '@/repositories/member';
 
 function calculateSize(doc: IProject | INode) {

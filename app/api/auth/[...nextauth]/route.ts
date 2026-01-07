@@ -5,10 +5,10 @@ import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '@/lib/db/adapter';
 import { authCallbacks } from '@/lib/nextauth/callbacks';
 import { userRepository } from '@/modules/users/user.repository';
-import connectDb from '@/lib/db/connection';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { AdapterUser } from 'next-auth/adapters';
 import { NullableJWT } from '@/types/next-auth';
+import connectDb from '@/lib/db/connection';
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -56,8 +56,8 @@ export const authOptions = {
         email: { label: 'Email', type: 'text' },
       },
       async authorize(credentials): Promise<User | null> {
-        if (!credentials) return null;
         await connectDb();
+        if (!credentials) return null;
         const user = await userRepository.findUserByEmail(credentials.email, true);
         if (!user) return null;
 

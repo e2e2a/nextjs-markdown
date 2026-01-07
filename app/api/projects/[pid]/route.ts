@@ -9,6 +9,7 @@ import { projectController } from '@/modules/projects/project.controller';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ pid: string }> }) {
   try {
+    await connectDb();
     const { pid } = await context.params;
     const res = await projectController.getProject(pid);
     return NextResponse.json(res);
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ pid: st
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ pid: string }> }) {
   try {
+    await connectDb();
     const { pid } = await context.params;
     const res = await projectController.update(req, pid);
     return NextResponse.json(res, { status: 201 });

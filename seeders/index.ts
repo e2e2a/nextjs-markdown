@@ -6,94 +6,73 @@ dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/testdb';
 
-const rootFolders = [
-  {
-    workspaceId: '693ac82516a8418a9bc8df99',
-    projectId: '69540959741645fa714e04d2',
-    title: 'n1',
-    type: 'folder',
-    parentId: null,
-    content: '',
-  },
-  {
-    workspaceId: '693ac82516a8418a9bc8df99',
-    projectId: '69540959741645fa714e04d2',
-    title: 'n2',
-    type: 'folder',
-    parentId: null,
-    content: '',
-  },
-];
+const BASE = {
+  workspaceId: '693ac82516a8418a9bc8df99',
+  projectId: '69540959741645fa714e04d2',
+};
 
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('MongoDB connected for seeding');
+    console.log('🚀 Connected to MongoDB');
 
-    await Node.deleteMany({});
-    console.log('Existing nodes removed');
+    // 1. Clear existing nodes to start fresh
+    await Node.deleteMany({ projectId: BASE.projectId });
+    console.log('🧹 Cleaned existing project nodes');
 
-    const roots = await Node.insertMany(rootFolders);
+    // 2. Create 5 Main Parent Trees
+    for (let i = 1; i <= 5; i++) {
+      console.log(`Building Tree #${i}...`);
 
-    for (const root of roots) {
-      const rootFiles = await Node.insertMany([
-        {
-          workspaceId: root.workspaceId,
-          projectId: root.projectId,
-          parentId: root._id,
-          title: `${root.title}-file-1`,
-          type: 'file',
-          content: 'Root file 1',
-        },
-        {
-          workspaceId: root.workspaceId,
-          projectId: root.projectId,
-          parentId: root._id,
-          title: `${root.title}-file-2`,
-          type: 'file',
-          content: 'Root file 2',
-        },
-      ]);
-
-      const subFolder = await Node.create({
-        workspaceId: root.workspaceId,
-        projectId: root.projectId,
-        parentId: root._id,
-        title: `${root.title}-subfolder`,
+      // Create Top Level Parent
+      let currentParent = await Node.create({
+        ...BASE,
+        parentId: null,
+        title: `Root-Parent-${i}`,
         type: 'folder',
-        content: '',
       });
 
-      const subFiles = await Node.insertMany([
-        {
-          workspaceId: root.workspaceId,
-          projectId: root.projectId,
-          parentId: subFolder._id,
-          title: `${root.title}-subfile-1`,
-          type: 'file',
-          content: 'Sub file 1',
-        },
-        {
-          workspaceId: root.workspaceId,
-          projectId: root.projectId,
-          parentId: subFolder._id,
-          title: `${root.title}-subfile-2`,
-          type: 'file',
-          content: 'Sub file 2',
-        },
-      ]);
+      // 3. Create 4 levels of nested sub-parents (Total depth: 5 folders)
+      for (let depth = 1; depth <= 4; depth++) {
+        const subParent = await Node.create({
+          ...BASE,
+          parentId: currentParent._id,
+          title: `Sub-Level-${depth}-of-Tree-${i}`,
+          type: 'folder',
+        });
 
-      subFolder.children = subFiles.map(f => f._id);
-      await subFolder.save();
+        // Update the currentParent's children array to include this new sub-folder
+        await Node.findByIdAndUpdate(currentParent._id, {
+          $push: { children: subParent._id },
+        });
 
-      root.children = [...rootFiles.map(f => f._id), subFolder._id];
-      await root.save();
+        // Move the pointer deeper: the new subParent becomes the parent for the next loop
+        currentParent = subParent;
+      }
+
+      // 4. Create 5 terminal "Child" files at the very bottom of this deep chain
+      const leafFiles = [];
+      for (let f = 1; f <= 5; f++) {
+        const file = await Node.create({
+          ...BASE,
+          parentId: currentParent._id,
+          title: `leaf-file-${f}.ts`,
+          type: 'file',
+          content: `// This is file ${f} inside the deep nested structure of tree ${i}`,
+        });
+        leafFiles.push(file._id);
+      }
+
+      // Final update to the deepest folder to include its files
+      await Node.findByIdAndUpdate(currentParent._id, {
+        $push: { children: { $each: leafFiles } },
+      });
     }
 
-    console.log('Seeded successfully');
-    await mongoose.disconnect();
+    console.log('✅ Success: 5 deep-nested trees created (5 levels deep each)');
   } catch (err) {
-    console.error('Seeding failed:', err);
+    console.error('❌ Seed failed:', err);
+  } finally {
     await mongoose.disconnect();
   }
 }

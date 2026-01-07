@@ -1,6 +1,16 @@
 import Node from '@/modules/projects/nodes/node.model';
 import { CreateNodeDTO, INode } from '@/types';
+import { FilterQuery, ObjectId } from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
+
+interface FlatNode {
+  _id: ObjectId;
+  parentId: ObjectId | null;
+  children: ObjectId[];
+  title?: string;
+  type: 'file' | 'folder';
+  content?: string;
+}
 
 export const nodeRepository = {
   findNodes: (email: string) => Node.find({ email }),
@@ -10,9 +20,16 @@ export const nodeRepository = {
 
   create: (data: CreateNodeDTO) => new Node(data).save(),
 
-  findNode: (id: string) => Node.findById(id).populate('children'),
+  findOne: (data: { _id?: string }) => Node.findOne(data),
 
-  findNodesByParentId: (parentId: string | null) => Node.find({ parentId }).populate('children'),
+  findConflict: (
+    params: FilterQuery<{
+      projectId: string;
+      parentId: string | null;
+      title: string;
+      type: 'file' | 'folder';
+    }>
+  ) => Node.findOne(params).collation({ locale: 'en', strength: 2 }),
 
   updateById: (nodeId: string, data: Partial<INode>): Promise<INode | null> =>
     Node.findOneAndUpdate({ _id: nodeId }, data, updateOptions).lean<INode>().exec(),
@@ -64,4 +81,6 @@ export const nodeRepository = {
 
   deleteMany: (userId: string, nodeIds: string[]) =>
     Node.deleteMany({ _id: { $in: nodeIds }, userId: userId }),
+
+  findMany: (data: { projectId: string }) => Node.find(data).lean<FlatNode[]>().exec(),
 };

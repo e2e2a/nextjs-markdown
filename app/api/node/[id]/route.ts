@@ -1,7 +1,7 @@
 import connectDb from '@/lib/db/connection';
 import { HttpError } from '@/utils/errors';
 import { handleError } from '@/lib/handleError';
-import { nodeService } from '@/services/node';
+import { nodeService } from '@/modules/projects/nodes/node.service';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';

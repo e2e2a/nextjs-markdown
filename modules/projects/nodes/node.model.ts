@@ -1,7 +1,6 @@
 import mongoose, { Schema, models, model, Document } from 'mongoose';
 
 export interface INode extends Document {
-  // userId: mongoose.Schema.Types.ObjectId;
   workspaceId: mongoose.Schema.Types.ObjectId;
   projectId: mongoose.Schema.Types.ObjectId;
   parentId?: mongoose.Schema.Types.ObjectId | null;
@@ -18,7 +17,6 @@ export interface INode extends Document {
 
 const nodeSchema = new Schema<INode>(
   {
-    // userId: { type: Schema.Types.ObjectId, ref: 'User' },
     workspaceId: { type: Schema.Types.ObjectId, ref: 'Project' },
     projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
     parentId: { type: Schema.Types.ObjectId, ref: 'Node', default: null },

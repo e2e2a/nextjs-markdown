@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import connectDb from './lib/db/connection';
+// import connectDb from './lib/db/connection';
 
 const SECRET = process.env.NEXTAUTH_SECRET;
 
 export async function middleware(request: NextRequest) {
-  await connectDb();
+  // await connectDb();
   const pathname = request.nextUrl.pathname;
 
   if (

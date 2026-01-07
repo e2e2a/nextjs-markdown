@@ -3,6 +3,7 @@ import { JWT } from 'next-auth/jwt';
 import { userRepository } from '@/modules/users/user.repository';
 import { AdapterUser } from 'next-auth/adapters';
 import { NullableJWT, NullableSession } from '@/types/next-auth';
+import connectDb from '../db/connection';
 
 export const authCallbacks = {
   async signIn(params: {
@@ -33,6 +34,7 @@ export const authCallbacks = {
 
     session.user._id = token._id as string;
     session.user.sub = token.sub as string;
+    await connectDb();
     const authUser = await userRepository.findUser(token._id, true);
     if (!authUser) return (session.deleted = true);
     session.user.username = `${authUser.given_name} ${authUser.family_name}`;

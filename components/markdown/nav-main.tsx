@@ -7,8 +7,6 @@ import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 import { useParams } from 'next/navigation';
 
 export function NavMain({
-  collapseAll,
-  setCollapseAll,
   submit,
   updateTitle,
   file = { name: '', type: '' },
@@ -21,8 +19,6 @@ export function NavMain({
   updateNode,
   setUpdateNode,
 }: {
-  collapseAll: boolean;
-  setCollapseAll: React.Dispatch<React.SetStateAction<boolean>>;
   submit: (data: { name: string; type: string }) => void;
   updateTitle: (data: { name: string; oldName?: string; type: string }) => void;
   file: { name: string; type: string };
@@ -30,8 +26,8 @@ export function NavMain({
   setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
   inputRef: React.RefObject<HTMLInputElement | null>;
   setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
-  active: Partial<INode> | null;
-  setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
+  active: INode | null;
+  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
   //** For updating */
   updateNode: boolean;
   setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -54,14 +50,12 @@ export function NavMain({
   if (nError) return;
 
   return (
-    <SidebarGroup className="gap-0 p-0 m-0">
+    <SidebarGroup className="gap-0! p-0! m-0! space-y-0! h-auto! px-0!">
       {nData?.nodes.map((item: INode, index: number) => {
         return (
           <div className="" key={index}>
             <SidebarItem
               updateTitle={updateTitle}
-              collapseAll={collapseAll}
-              setCollapseAll={setCollapseAll}
               handleKeyDown={handleKeyDown}
               file={file}
               isCreating={isCreating}

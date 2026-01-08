@@ -1,4 +1,8 @@
-import { TabModel } from '../models/tab';
+import { INode } from '@/types';
+
+interface TabModel {
+  node: INode;
+}
 
 const STORAGE_KEY = 'editor-tabs';
 

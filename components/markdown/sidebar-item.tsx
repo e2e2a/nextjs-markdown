@@ -1,24 +1,17 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, Folder, FolderOpen, File } from 'lucide-react';
+import { ChevronRight, Folder, File } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '../ui/sidebar';
+import { SidebarGroupContent, SidebarMenu, SidebarMenuButton } from '../ui/sidebar';
 import { SidebarContextMenu } from './sidebar-context-menu';
 import { cn } from '@/lib/utils';
 import { handleMouseClick } from '@/hooks/handle-mouse-click';
 import { INode } from '@/types';
+import SidebarFolderItem from './sidebar-folder-item';
+import { useNodeStore } from '@/features/editor/stores/nodes';
 
 interface IProps {
   updateTitle: (data: { name: string; oldName?: string; type: string }) => void;
-  collapseAll: boolean;
-  setCollapseAll: React.Dispatch<React.SetStateAction<boolean>>;
   handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   file: { name: string; oldName?: string; type: string };
   isCreating: boolean;
@@ -26,8 +19,8 @@ interface IProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
   setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
   item: INode;
-  active: Partial<INode> | null;
-  setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
+  active: INode | null;
+  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
   //** For updating */
   updateNode: boolean;
   setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -36,8 +29,6 @@ interface IProps {
 
 export default function SidebarItem({
   updateTitle,
-  collapseAll,
-  setCollapseAll,
   handleKeyDown,
   file = { name: '', oldName: '', type: '' },
   isCreating,
@@ -51,38 +42,26 @@ export default function SidebarItem({
   setUpdateNode,
   depth,
 }: IProps) {
-  const localStorageKey = `sidebar-open-${item._id}`;
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
+  const localStorageKey = `sidebar-folder-open-${item._id}`;
+  const { collapseVersion } = useNodeStore();
+  const [isOpen, setIsOpen] = useState(() => {
     try {
-      const stored = localStorage.getItem(localStorageKey);
-      if (stored === 'true') {
-        requestAnimationFrame(() => {
-          setIsOpen(true);
-        });
-      }
+      return localStorage.getItem(localStorageKey) === 'true';
     } catch {
-      return;
+      return false;
     }
-  }, [localStorageKey]);
+  });
+  const [prevVersion, setPrevVersion] = useState(collapseVersion);
 
-  useEffect(() => {
-    if (collapseAll) {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('folder-')) localStorage.setItem(key, 'false');
-      });
-      requestAnimationFrame(() => {
-        setIsOpen(false);
-        setCollapseAll(false);
-      });
-    }
-    return;
-  }, [collapseAll]);
+  if (collapseVersion !== prevVersion) {
+    setPrevVersion(collapseVersion);
+    setIsOpen(false);
+  }
 
   useEffect(() => {
     localStorage.setItem(localStorageKey, String(isOpen));
   }, [localStorageKey, isOpen]);
+
   useEffect(() => {
     if (isCreating)
       if (item._id === active?._id) {
@@ -93,23 +72,11 @@ export default function SidebarItem({
       }
   }, [isCreating]);
 
-  const handleKeyF2 = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.key === 'F2') {
-      setUpdateNode(true);
-      setFile({
-        name: item?.title || '',
-        oldName: item?.title || '',
-        type: item?.type || '',
-      });
-      e.preventDefault();
-    }
-  };
-
   if (item.type === 'file' && item.parentId && !item.children?.length) {
     return (
       <SidebarMenuButton
         tooltip={{ children: item.title }}
-        onKeyDown={handleKeyF2}
+        // onKeyDown={handleKeyF2}
         onMouseDown={e =>
           handleMouseClick(
             file,
@@ -161,11 +128,9 @@ export default function SidebarItem({
       <SidebarContextMenu
         setFile={setFile}
         setIsCreating={setIsCreating}
-        itemType={item.type}
         /** For updating */
         node={item}
         setActive={setActive}
-        setUpdateNode={setUpdateNode}
         setIsOpen={setIsOpen}
       >
         <div
@@ -173,7 +138,6 @@ export default function SidebarItem({
             'pl-2 hover:bg-gray-200 active:bg-gray-200 text-sidebar-foreground/70 font-medium text-sm rounded-none',
             active && active._id == item._id ? 'bg-gray-200 text-black' : ''
           )}
-          onKeyDown={handleKeyF2}
         >
           <SidebarMenuButton
             tooltip={{ children: item.title }}
@@ -221,109 +185,31 @@ export default function SidebarItem({
 
   return (
     <>
-      <SidebarMenu className="gap-0">
-        <Collapsible key={item.title} open={isOpen} onOpenChange={setIsOpen} className="gap-0">
-          <CollapsibleTrigger
-            disabled={updateNode}
-            asChild
-            className={cn(
-              'bg-transparent border-none outline-none shadow-none hover:bg-transparent! focus:outline-none focus:ring-0',
-              'overflow-hidden cursor-pointer'
-            )}
-          >
-            <div
-              className={cn('gap-0 p-0 h-4.5 w-full  focus:outline-none')}
-              tabIndex={0}
-              onKeyDown={handleKeyF2}
-            >
+      <SidebarMenu className="gap-0! p-0! ">
+        <Collapsible
+          key={item.title}
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className={cn('leading-none')}
+        >
+          <CollapsibleTrigger disabled={updateNode} asChild>
+            <div className={cn('w-full focus:outline-none')}>
               <SidebarContextMenu
                 setFile={setFile}
                 setIsCreating={setIsCreating}
-                itemType={item.type}
-                /** For updating */
                 node={item}
                 setActive={setActive}
-                setUpdateNode={setUpdateNode}
                 setIsOpen={setIsOpen}
               >
-                <SidebarMenuButton
-                  onMouseDown={e =>
-                    handleMouseClick(
-                      file,
-                      updateTitle,
-                      e,
-                      {
-                        ...item,
-                        ...(item.parentId
-                          ? {
-                              parentId:
-                                item.type === 'folder'
-                                  ? (item._id as string)
-                                  : item.parentId
-                                  ? String(item.parentId)
-                                  : '',
-                            }
-                          : {}),
-                      },
-                      active,
-                      setActive,
-                      isCreating,
-                      setIsCreating,
-                      updateNode,
-                      setUpdateNode
-                    )
-                  }
-                  className={cn(
-                    'bg-transparent border-none outline-none shadow-none focus:outline-none focus:ring-0',
-                    'w-full p-0 gap-0 h-1 font-medium active:bg-gray-200 hover:bg-gray-200 rounded-none cursor-pointer **:hover:text-black',
-                    active?._id === item._id ? 'bg-gray-200' : ''
-                  )}
-                  style={{
-                    paddingLeft: `${depth * 8}px`,
-                  }}
-                >
-                  <ChevronRight className={`${isOpen ? 'rotate-90' : 'rotate-0'}`} />
-                  <div className="flex items-center p-0 text-sidebar-foreground/70 truncate w-full">
-                    {updateNode && active && active._id === item._id ? (
-                      <>
-                        <Folder className={`w-4 h-4 min-w-4 min-h-4`} />
-                        <div className="truncate bg-transparent w-full">
-                          <input
-                            ref={inputRef}
-                            autoFocus
-                            onMouseDown={e => e.stopPropagation()}
-                            onKeyDown={handleKeyDown}
-                            value={file.name}
-                            onFocus={e => e.stopPropagation()}
-                            onClick={e => e.stopPropagation()}
-                            onChange={e => setFile({ name: e.target.value, type: file.type })}
-                            className="w-full flex px-0 pb-1.5 font-normal h-4 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black py-1 rounded-none"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        {isOpen ? (
-                          <FolderOpen className={`w-4 h-4 min-w-4 min-h-4`} />
-                        ) : (
-                          <Folder className={`w-4 h-4 min-w-4 min-h-4`} />
-                        )}
-                        <p
-                          className={cn('truncate', active?._id === item._id ? 'text-black!' : '')}
-                        >
-                          {item.title}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </SidebarMenuButton>
+                <div className="">
+                  <SidebarFolderItem item={item} isOpen={isOpen} depth={depth} />
+                </div>
               </SidebarContextMenu>
             </div>
           </CollapsibleTrigger>
-
-          <CollapsibleContent className="gap-0">
-            <SidebarGroupContent className="gap-0">
-              <SidebarMenu className="gap-0">
+          <CollapsibleContent className="gap-0 m-0! p-0!">
+            <SidebarGroupContent className="gap-0 m-0! space-0! p-0!">
+              <SidebarMenu className="gap-0 m-0! space-0! p-0!">
                 {isCreating &&
                   active &&
                   ((active.type === 'folder' && active._id === item._id) ||
@@ -333,11 +219,9 @@ export default function SidebarItem({
                     <SidebarContextMenu
                       setFile={setFile}
                       setIsCreating={setIsCreating}
-                      itemType={item.type}
                       /** For updating */
                       node={item}
                       setActive={setActive}
-                      setUpdateNode={setUpdateNode}
                       setIsOpen={setIsOpen}
                     >
                       <div
@@ -397,11 +281,9 @@ export default function SidebarItem({
                       setFile={setFile}
                       setIsCreating={setIsCreating}
                       key={i}
-                      itemType={child.type as string}
                       /** For updating */
                       node={child}
                       setActive={setActive}
-                      setUpdateNode={setUpdateNode}
                       setIsOpen={setIsOpen}
                     >
                       <div
@@ -411,8 +293,6 @@ export default function SidebarItem({
                       >
                         <SidebarItem
                           updateTitle={updateTitle}
-                          collapseAll={collapseAll}
-                          setCollapseAll={setCollapseAll}
                           handleKeyDown={handleKeyDown}
                           file={file}
                           isCreating={isCreating}

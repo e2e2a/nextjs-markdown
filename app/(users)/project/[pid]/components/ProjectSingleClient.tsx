@@ -9,11 +9,11 @@ import { notFound, useParams } from 'next/navigation';
 import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 
 export function ProjectSingleClient() {
-  const [active, setActive] = useState<Partial<INode> | null>(null);
+  const [active, setActive] = useState<INode | null>(null);
   const params = useParams();
   const pid = params.pid as string;
 
-  const [prevActive, setPrevActive] = useState<Partial<INode> | null>(null);
+  const [prevActive, setPrevActive] = useState<INode | null>(null);
   const { data: pData, isLoading: pLoading, error: pError } = useProjectByIdQuery(pid);
   // const node = nData?.nodes?.find((n: INode) => n._id === prevActive?._id) as INode; // create another api to get single node
   // const breadcrumbs = generateBreadcrumbs(nData?.nodes, null);

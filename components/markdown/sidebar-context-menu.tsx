@@ -9,32 +9,57 @@ import {
 import { INode } from '@/types';
 import { ReactNode } from 'react';
 import { DangerConfirmDialog } from '../danger-confirm-dialog';
+import { useNodeStore } from '@/features/editor/stores/nodes';
 
 interface ContainerProps {
   children: ReactNode;
-  itemType: string;
   setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
   setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
-  //** For updating */
   node: INode | null;
-  setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
-  setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
+  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function SidebarContextMenu({
   children,
-  itemType,
   setIsCreating,
   setFile,
   node,
   setActive,
-  setUpdateNode,
   setIsOpen,
 }: ContainerProps) {
+  const { activeNode, isUpdatingNode, setIsUpdatingNode } = useNodeStore();
+  const handleClickRename = () => {
+    if (!activeNode) return;
+    setIsUpdatingNode(node);
+  };
+
+  const isUpdatingSelf = !!isUpdatingNode && isUpdatingNode._id === node?._id;
+  console.log('isUpdatingSelf', isUpdatingSelf);
+  if (isUpdatingSelf) {
+    return (
+      <div
+        node-editing="true"
+        onContextMenu={e => {
+          // 1. Stop the event from bubbling up to the Parent ContextMenu
+          e.stopPropagation();
+
+          // 2. DO NOT call e.preventDefault() here.
+          // This allows the native browser context menu to appear.
+        }}
+        onMouseDown={e => {
+          // prevent parent reset
+          e.stopPropagation();
+        }}
+        className="min-h-full max-h-full h-full"
+      >
+        {children}
+      </div>
+    );
+  }
   return (
-    <ContextMenu modal={true}>
-      <ContextMenuTrigger className="min-h-full max-h-full h-full" asChild>
+    <ContextMenu modal={false}>
+      <ContextMenuTrigger className="min-h-full max-h-full h-full w-full" asChild>
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent
@@ -42,47 +67,43 @@ export function SidebarContextMenu({
         onContextMenu={e => e.preventDefault()}
         className="w-52"
       >
-        {(!itemType || itemType === 'folder') && (
-          <>
-            <ContextMenuItem
-              className="cursor-pointer"
-              onMouseDown={e => e.stopPropagation()}
-              onClick={e => {
-                e.stopPropagation();
-                setIsCreating(val => !val);
-                if (setIsOpen) setIsOpen(true);
-                setActive(node ? node : null);
-                setFile(val => ({
-                  name: val.name,
-                  oldName: '',
-                  type: 'file',
-                }));
-              }}
-              inset
-            >
-              New File
-            </ContextMenuItem>
-            <ContextMenuItem
-              className="cursor-pointer"
-              onMouseDown={e => e.stopPropagation()}
-              onClick={e => {
-                e.stopPropagation();
-                setIsCreating(val => !val);
-                if (setIsOpen) setIsOpen(true);
-                setActive(node ? node : null);
-                setFile(val => ({
-                  name: val.name,
-                  oldName: '',
-                  type: 'folder',
-                }));
-              }}
-              inset
-            >
-              New Folder
-            </ContextMenuItem>
-            <ContextMenuSeparator />
-          </>
-        )}
+        <ContextMenuItem
+          className="cursor-pointer"
+          onMouseDown={e => e.stopPropagation()}
+          onClick={e => {
+            e.stopPropagation();
+            setIsCreating(val => !val);
+            if (setIsOpen) setIsOpen(true);
+            setActive(node ? node : null);
+            setFile(val => ({
+              name: val.name,
+              oldName: '',
+              type: 'file',
+            }));
+          }}
+          inset
+        >
+          New File
+        </ContextMenuItem>
+        <ContextMenuItem
+          className="cursor-pointer"
+          onMouseDown={e => e.stopPropagation()}
+          onClick={e => {
+            e.stopPropagation();
+            setIsCreating(val => !val);
+            if (setIsOpen) setIsOpen(true);
+            setActive(node ? node : null);
+            setFile(val => ({
+              name: val.name,
+              oldName: '',
+              type: 'folder',
+            }));
+          }}
+          inset
+        >
+          New Folder
+        </ContextMenuItem>
+        <ContextMenuSeparator />
 
         <ContextMenuItem className="cursor-pointer" inset>
           Cut
@@ -99,12 +120,7 @@ export function SidebarContextMenu({
             <ContextMenuItem
               className="cursor-pointer"
               onMouseDown={e => e.stopPropagation()}
-              onClick={e => {
-                e.stopPropagation();
-                setUpdateNode(val => !val);
-                setActive(node ? node : null);
-                setFile({ name: node.title!, oldName: node.title!, type: node.type });
-              }}
+              onClick={handleClickRename}
               inset
             >
               Rename

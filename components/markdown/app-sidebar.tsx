@@ -1,13 +1,7 @@
 'use client';
 import { handleMouseClick } from '@/hooks/handle-mouse-click';
 import { NavMain } from './nav-main';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
 import { CopyMinus, FilePlus2, FolderPlus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SidebarContextMenu } from './sidebar-context-menu';
@@ -17,10 +11,11 @@ import { makeToastError } from '@/lib/toast';
 import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 import { useParams } from 'next/navigation';
 import { Button } from '../ui/button';
+import { useNodeStore } from '@/features/editor/stores/nodes';
 
 interface IProps {
-  active: Partial<INode> | null;
-  setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
+  active: INode | null;
+  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
 }
 
 export function AppSidebar({ active, setActive }: IProps) {
@@ -29,7 +24,7 @@ export function AppSidebar({ active, setActive }: IProps) {
   const { data: pData, isLoading: pLoading } = useProjectByIdQuery(pid);
 
   const [isCreating, setIsCreating] = useState(false);
-  const [collapseAll, setCollapseAll] = useState(false);
+  const { setCollapseAll } = useNodeStore();
   const [file, setFile] = useState<{
     name: string;
     type: string;
@@ -164,59 +159,47 @@ export function AppSidebar({ active, setActive }: IProps) {
       <SidebarContextMenu
         setFile={setFile}
         setIsCreating={setIsCreating}
-        itemType={''}
-        /** For updating */
         node={null}
         setActive={setActive}
-        setUpdateNode={setUpdateNode}
       >
-        <div className="min-h-screen">
+        <div className="h-screen overflow-hidden flex flex-col">
           <SidebarHeader className="h-6 p-0">
-            <SidebarMenu className="h-6 flex w-full flex-row items-center justify-center">
-              <div className="font-bold truncate uppercase text-sm w-full text-accent-foreground">
+            <SidebarMenu className="h-6 flex w-full flex-row items-center justify-center px-1 border-b border-border">
+              <div className="font-bold truncate uppercase text-sm w-full text-accent-foreground ">
                 {pData?.project.title}
               </div>
-              <div className="hidden w-full flex-row items-center justify-end h-full gap-x-2 group-hover:flex">
-                <SidebarMenuItem className="p-0">
-                  <Button
-                    className="p-0! cursor-pointer"
-                    variant={'ghost'}
-                    onClick={() => setIsCreating(true)}
-                  >
-                    <FilePlus2 className="h-4! w-4!" />
-                  </Button>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="p-0">
-                  <Button
-                    className="p-0! cursor-pointer"
-                    variant={'ghost'}
-                    onClick={() => {
-                      setIsCreating(true);
-                      setFile(val => ({
-                        name: val.name,
-                        oldName: '',
-                        type: 'folder',
-                      }));
-                    }}
-                  >
-                    <FolderPlus className="h-4 w-4" />
-                  </Button>
-                </SidebarMenuItem>
-                <SidebarMenuItem className="p-0">
-                  <Button
-                    className="p-0! cursor-pointer"
-                    variant={'ghost'}
-                    onClick={() => setCollapseAll(true)}
-                  >
-                    <CopyMinus className="h-4 w-4" />
-                  </Button>
-                </SidebarMenuItem>
+              <div className="hidden w-full bg-transparent flex-row items-center justify-end h-full gap-x-2 group-hover:flex">
+                <Button
+                  className="p-0! h-auto cursor-pointer bg-transparent text-inherit hover:text-accent-foreground hover:bg-transparent"
+                  onClick={() => setIsCreating(true)}
+                >
+                  <FilePlus2 className="h-4! w-4!" />
+                </Button>
+                <Button
+                  className="p-0! h-auto cursor-pointer bg-transparent text-inherit hover:text-accent-foreground hover:bg-transparent"
+                  onClick={() => {
+                    setIsCreating(true);
+                    setFile(val => ({
+                      name: val.name,
+                      oldName: '',
+                      type: 'folder',
+                    }));
+                  }}
+                >
+                  <FolderPlus className="h-4 w-4" />
+                </Button>
+                <Button
+                  className="p-0! h-auto cursor-pointer bg-transparent text-inherit hover:text-accent-foreground hover:bg-transparent"
+                  onClick={() => setCollapseAll(true)}
+                >
+                  <CopyMinus className="h-4 w-4" />
+                </Button>
               </div>
             </SidebarMenu>
           </SidebarHeader>
 
           <div
-            className="h-[calc(100vh-20px)] overflow-y-auto text-neutral-400"
+            className="h-full overflow-y-auto"
             onMouseDown={e =>
               handleMouseClick(
                 file,
@@ -232,10 +215,8 @@ export function AppSidebar({ active, setActive }: IProps) {
               )
             }
           >
-            <SidebarContent className="ml-0 p-0 overflow-y-hidden pb-20">
+            <SidebarContent className="ml-0 p-0! space-y-0! overflow-y-hidden pb-20">
               <NavMain
-                collapseAll={collapseAll}
-                setCollapseAll={setCollapseAll}
                 submit={submit}
                 updateTitle={updateTitle}
                 file={file}

@@ -1,6 +1,6 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { INode } from '@/types';
-import { useRef, type PropsWithChildren } from 'react';
+import { useEffect, useRef, type PropsWithChildren } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { AppContent } from './app-content';
 import { AppShell } from './app-shell';
@@ -8,15 +8,17 @@ import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { AppSidebar } from './app-sidebar';
 import { Button } from '../ui/button';
+import { useNodeStore } from '@/features/editor/stores/nodes';
 
 export default function AppSidebarLayout({
   children,
   active,
   setActive,
 }: PropsWithChildren<{
-  active: Partial<INode> | null;
-  setActive: React.Dispatch<React.SetStateAction<Partial<INode> | null>>;
+  active: INode | null;
+  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
 }>) {
+  const { activeNode, setIsCreating, setIsUpdatingNode } = useNodeStore();
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
   const handleResizeLeftSidebar = (size: number) => {
     if (size <= 4 && LeftSidebarRef.current) {
@@ -30,13 +32,36 @@ export default function AppSidebarLayout({
       RightidebarRef.current.collapse();
     }
   };
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'F2') {
+        if (!activeNode) return;
+        setIsUpdatingNode(activeNode);
+        e.preventDefault();
+      }
+    };
 
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [activeNode, setIsUpdatingNode]);
+  console.log('Rendering AppSidebarLayout', activeNode);
   return (
     <AppShell variant="sidebar">
       <ResizablePanelGroup
         direction="horizontal"
         autoSaveId="sidebar-layout"
         className="overflow-y-hidden rounded-none bg-white"
+        onMouseDownCapture={e => {
+          if (e.button === 0 || e.button === 1 || e.button === 2) {
+            const target = e.target as HTMLElement;
+
+            if (target.closest('[node-editing="true"]')) return;
+            console.log('running mouse down capture, resetting states');
+            setIsCreating(false);
+            setIsUpdatingNode(null);
+          }
+          return;
+        }}
       >
         <MiniSidebarTemplate />
 
@@ -55,11 +80,13 @@ export default function AppSidebarLayout({
         <ResizableHandle className="p-0" />
 
         <ResizablePanel className="flex-1 h-full max-h-full p-0" minSize={8} defaultSize={60}>
-          <AppContent variant="sidebar" className="text-muted-foreground ">
+          <AppContent variant="sidebar" className="text-muted-foreground">
             <div className="flex-1">
-              <header className="flex h-8 p-0 items-center border-b">
-                <div className="grid grid-cols-1 items-center overflow-x-auto">
-                  <Button variant={'outline'}>File 1</Button>
+              <header className="flex h-6 p-0 items-center border-b">
+                <div className="flex flex-row h-full items-center overflow-x-auto overflow-y-hidden">
+                  <Button className="bg-transparent rounded-none border border-border border-b-background z-100 h-full">
+                    File 1
+                  </Button>
                 </div>
               </header>
               {children}

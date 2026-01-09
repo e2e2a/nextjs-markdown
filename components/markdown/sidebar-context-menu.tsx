@@ -52,17 +52,18 @@ export function SidebarContextMenu({
 
   return (
     <ContextMenu
-      onOpenChange={() => {
+      onOpenChange={e => {
         if (!node) return setSelectedNode(null);
         if (selectedNode?._id === node._id) return;
         setSelectedNode(node);
       }}
-      modal={false}
+      modal={true}
     >
       <ContextMenuTrigger className="min-h-full max-h-full h-full w-full contents" asChild>
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent
+        onCloseAutoFocus={e => e.preventDefault()}
         onClick={e => e.preventDefault()}
         onContextMenu={e => e.preventDefault()}
         className="w-52"

@@ -5,10 +5,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/colla
 import { SidebarGroupContent, SidebarMenu, SidebarMenuButton } from '../ui/sidebar';
 import { SidebarContextMenu } from './sidebar-context-menu';
 import { cn } from '@/lib/utils';
-import { handleMouseClick } from '@/hooks/handle-mouse-click';
+// import { handleMouseClick } from '@/hooks/handle-mouse-click';
 import { INode } from '@/types';
 import SidebarFolderItem from './sidebar-folder-item';
 import { useNodeStore } from '@/features/editor/stores/nodes';
+import SidebarFileItem from './sidebar-file-item';
 
 interface IProps {
   updateTitle: (data: { name: string; oldName?: string; type: string }) => void;
@@ -74,53 +75,60 @@ export default function SidebarItem({
 
   if (item.type === 'file' && item.parentId && !item.children?.length) {
     return (
-      <SidebarMenuButton
-        tooltip={{ children: item.title }}
-        onMouseDown={e =>
-          handleMouseClick(
-            file,
-            updateTitle,
-            e,
-            {
-              ...item,
-              ...(item.parentId ? { parentId: String(item.parentId) } : {}),
-            },
-            active,
-            setActive,
-            isCreating,
-            setIsCreating,
-            updateNode,
-            setUpdateNode
-          )
-        }
-        className={cn(
-          active && active._id == item._id ? 'bg-gray-200 text-black' : '',
-          'm-0 h-4.5 gap-0 hover:bg-gray-200 pl-5 rounded-none cursor-pointer active:bg-transparent hover:text-black focus-visible:outline-none focus-visible:ring-0'
-        )}
-        style={{
-          paddingLeft: `${15 + depth * 8}px`,
-        }}
-      >
-        <div className="flex items-center m-0 p-0 truncate w-full">
-          <File className={`w-4 h-4 min-w-4 min-h-4`} />
-          {updateNode && active && active._id === item._id ? (
-            <input
-              ref={inputRef}
-              value={file.name}
-              autoFocus
-              onMouseDown={e => e.stopPropagation()}
-              onKeyDown={handleKeyDown}
-              onClick={e => e.stopPropagation()}
-              onChange={e => setFile({ name: e.target.value, type: file.type })}
-              className="w-full flex pb-1.5 font-normal h-4 z-100 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black py-1 rounded-none"
-            />
-          ) : (
-            <p className="truncate">{item.title}</p>
-          )}
-        </div>
-      </SidebarMenuButton>
+      <div className="w-full">
+        <SidebarFileItem item={item} depth={depth} />
+      </div>
     );
   }
+  // if (item.type === 'file' && item.parentId && !item.children?.length) {
+  //   return (
+  //     <SidebarMenuButton
+  //       tooltip={{ children: item.title }}
+  //       onMouseDown={e =>
+  //         handleMouseClick(
+  //           file,
+  //           updateTitle,
+  //           e,
+  //           {
+  //             ...item,
+  //             ...(item.parentId ? { parentId: String(item.parentId) } : {}),
+  //           },
+  //           active,
+  //           setActive,
+  //           isCreating,
+  //           setIsCreating,
+  //           updateNode,
+  //           setUpdateNode
+  //         )
+  //       }
+  //       className={cn(
+  //         active && active._id == item._id ? 'bg-gray-200 text-black' : '',
+  //         'm-0 h-4.5 gap-0 hover:bg-gray-200 pl-5 rounded-none cursor-pointer active:bg-transparent hover:text-black focus-visible:outline-none focus-visible:ring-0'
+  //       )}
+  //       style={{
+  //         paddingLeft: `${15 + depth * 8}px`,
+  //       }}
+  //     >
+  //       <div className="flex items-center m-0 p-0 truncate w-full">
+  //         <File className={`w-4 h-4 min-w-4 min-h-4`} />
+  //         {updateNode && active && active._id === item._id ? (
+  //           <input
+  //             ref={inputRef}
+  //             value={file.name}
+  //             autoFocus
+  //             onMouseDown={e => e.stopPropagation()}
+  //             onKeyDown={handleKeyDown}
+  //             onClick={e => e.stopPropagation()}
+  //             onChange={e => setFile({ name: e.target.value, type: file.type })}
+  //             className="w-full flex pb-1.5 font-normal h-4 z-100 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black py-1 rounded-none"
+  //           />
+  //         ) : (
+  //           <p className="truncate">{item.title}</p>
+  //         )}
+  //       </div>
+  //     </SidebarMenuButton>
+  //   );
+  // }
 
   if (item.type === 'file' && !item.parentId && !item.children?.length) {
     return (
@@ -133,53 +141,72 @@ export default function SidebarItem({
       >
         <div
           className={cn(
-            'pl-2 hover:bg-gray-200 active:bg-gray-200 text-sidebar-foreground/70 font-medium text-sm rounded-none',
-            active && active._id == item._id ? 'bg-gray-200 text-black' : ''
+            'flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0'
           )}
         >
-          <SidebarMenuButton
-            tooltip={{ children: item.title }}
-            onMouseDown={e =>
-              handleMouseClick(
-                file,
-                updateTitle,
-                e,
-                {
-                  ...item,
-                  ...(item.parentId ? { parentId: String(item.parentId) } : {}),
-                },
-                active,
-                setActive,
-                isCreating,
-                setIsCreating,
-                updateNode,
-                setUpdateNode
-              )
-            }
-            className="m-0 pr-0 h-4.5 gap-0 rounded-none active:bg-transparent cursor-pointer hover:bg-transparent hover:text-black focus-visible:outline-none focus-visible:ring-0"
-          >
-            <div className="flex items-center m-0 p-0 truncate w-full">
-              <File className={`w-4 h-4 min-w-4 min-h-4`} />
-              {updateNode && active && active._id === item._id ? (
-                <input
-                  ref={inputRef}
-                  onMouseDown={e => e.stopPropagation()}
-                  value={file.name}
-                  autoFocus
-                  onClick={e => e.stopPropagation()}
-                  onKeyDown={handleKeyDown}
-                  onChange={e => setFile({ name: e.target.value, type: file.type })}
-                  className="w-full flex pb-1.5 font-normal h-4 z-100 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black py-1 rounded-none"
-                />
-              ) : (
-                <p className="truncate">{item.title}</p>
-              )}
-            </div>
-          </SidebarMenuButton>
+          <SidebarFileItem item={item} depth={depth + 2} />
         </div>
       </SidebarContextMenu>
     );
   }
+  // if (item.type === 'file' && !item.parentId && !item.children?.length) {
+  //   return (
+  //     <SidebarContextMenu
+  //       setFile={setFile}
+  //       setIsCreating={setIsCreating}
+  //       node={item}
+  //       setActive={setActive}
+  //       setIsOpen={setIsOpen}
+  //     >
+  //       <div
+  //         className={cn(
+  //           'pl-2 hover:bg-gray-200 active:bg-gray-200 text-sidebar-foreground/70 font-medium text-sm rounded-none',
+  //           active && active._id == item._id ? 'bg-gray-200 text-black' : ''
+  //         )}
+  //       >
+  //         <SidebarMenuButton
+  //           tooltip={{ children: item.title }}
+  //           onMouseDown={e =>
+  //             handleMouseClick(
+  //               file,
+  //               updateTitle,
+  //               e,
+  //               {
+  //                 ...item,
+  //                 ...(item.parentId ? { parentId: String(item.parentId) } : {}),
+  //               },
+  //               active,
+  //               setActive,
+  //               isCreating,
+  //               setIsCreating,
+  //               updateNode,
+  //               setUpdateNode
+  //             )
+  //           }
+  //           className="m-0 pr-0 h-4.5 gap-0 rounded-none active:bg-transparent cursor-pointer hover:bg-transparent hover:text-black focus-visible:outline-none focus-visible:ring-0"
+  //         >
+  //           <div className="flex items-center m-0 p-0 truncate w-full">
+  //             <File className={`w-4 h-4 min-w-4 min-h-4`} />
+  //             {updateNode && active && active._id === item._id ? (
+  //               <input
+  //                 ref={inputRef}
+  //                 onMouseDown={e => e.stopPropagation()}
+  //                 value={file.name}
+  //                 autoFocus
+  //                 onClick={e => e.stopPropagation()}
+  //                 onKeyDown={handleKeyDown}
+  //                 onChange={e => setFile({ name: e.target.value, type: file.type })}
+  //                 className="w-full flex pb-1.5 font-normal h-4 z-100 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black py-1 rounded-none"
+  //               />
+  //             ) : (
+  //               <p className="truncate">{item.title}</p>
+  //             )}
+  //           </div>
+  //         </SidebarMenuButton>
+  //       </div>
+  //     </SidebarContextMenu>
+  //   );
+  // }
 
   return (
     <>
@@ -300,7 +327,7 @@ export default function SidebarItem({
                           item={child as INode}
                           updateNode={updateNode}
                           setUpdateNode={setUpdateNode}
-                          depth={depth + 1}
+                          depth={depth + 2}
                         />
                       </div>
                     </SidebarContextMenu>

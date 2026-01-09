@@ -1,4 +1,4 @@
-import { CreateNodeDTO, UpdateNodeDTO } from '@/types';
+import { CreateNodeDTO } from '@/types';
 const BASE_URL = '/api/node';
 const BASE_URL_PROJECT = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
 
@@ -25,7 +25,7 @@ export async function createNode(data: CreateNodeDTO) {
   return json;
 }
 
-export async function updateNode(data: UpdateNodeDTO) {
+export async function updateNode(data: { _id: string; title?: string; content?: string }) {
   const res = await fetch(`${BASE_URL}/${data._id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

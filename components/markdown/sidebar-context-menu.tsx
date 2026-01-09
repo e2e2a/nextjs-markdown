@@ -10,6 +10,7 @@ import { INode } from '@/types';
 import { ReactNode } from 'react';
 import { DangerConfirmDialog } from '../danger-confirm-dialog';
 import { useNodeStore } from '@/features/editor/stores/nodes';
+import React from 'react';
 
 interface ContainerProps {
   children: ReactNode;
@@ -28,8 +29,7 @@ export function SidebarContextMenu({
   setActive,
   setIsOpen,
 }: ContainerProps) {
-  const { isUpdatingNode, setIsUpdatingNode } = useNodeStore();
-
+  const { isUpdatingNode, selectedNode, setIsUpdatingNode, setSelectedNode } = useNodeStore();
   const isUpdatingSelf = !!isUpdatingNode && isUpdatingNode._id === node?._id;
   if (isUpdatingSelf) {
     return (
@@ -42,19 +42,24 @@ export function SidebarContextMenu({
           // 2. DO NOT call e.preventDefault() here.
           // This allows the native browser context menu to appear.
         }}
-        onMouseDown={e => {
-          // prevent parent reset
-          e.stopPropagation();
-        }}
+        onMouseDown={e => e.stopPropagation()}
         className="min-h-full max-h-full h-full"
       >
         {children}
       </div>
     );
   }
+
   return (
-    <ContextMenu modal={false}>
-      <ContextMenuTrigger className="min-h-full max-h-full h-full w-full" asChild>
+    <ContextMenu
+      onOpenChange={() => {
+        if (!node) return setSelectedNode(null);
+        if (selectedNode?._id === node._id) return;
+        setSelectedNode(node);
+      }}
+      modal={false}
+    >
+      <ContextMenuTrigger className="min-h-full max-h-full h-full w-full contents" asChild>
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent

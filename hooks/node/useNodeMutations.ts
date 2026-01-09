@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNode, updateNode } from '@/lib/api/nodeClient';
-import { UpdateNodeDTO } from '@/types';
 
 export function useNodeMutations() {
   const queryClient = useQueryClient();
@@ -17,16 +16,12 @@ export function useNodeMutations() {
   });
 
   const update = useMutation({
-    mutationFn: (data: UpdateNodeDTO) => updateNode(data),
-    onSuccess: data => {
-      if (!data.updateContent) {
-        if (data.data.userId) {
-          queryClient.invalidateQueries({ queryKey: ['project', data.data.projectId] });
-          queryClient.invalidateQueries({ queryKey: ['projectsByUserId', data.data.userId] });
-        }
-        if (data.data.archived)
-          queryClient.invalidateQueries({ queryKey: ['trash', data.data.userId] });
-      }
+    mutationFn: (data: { _id: string; pid?: string; title?: string; content?: string }) =>
+      updateNode(data),
+    onSuccess: (_data, variables) => {
+      if (!variables) return;
+      if (variables.title)
+        queryClient.invalidateQueries({ queryKey: ['nodesByProjectId', variables.pid] });
       return;
     },
   });

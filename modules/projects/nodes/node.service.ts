@@ -1,6 +1,6 @@
 import { HttpError } from '@/utils/errors';
 import { nodeRepository } from '@/modules/projects/nodes/node.repository';
-import { CreateNodeDTO, INode } from '@/types';
+import { CreateNodeDTO } from '@/types';
 import { ObjectId } from 'mongoose';
 
 interface FlatNode {
@@ -68,7 +68,7 @@ async function checkNodeExistence(params: {
     title: { $regex: new RegExp(`^${title}$`, 'i') },
     type,
   });
-
+  console.log('Existing node check:', existingNode);
   if (existingNode) throw new HttpError('CONFLICT', `A ${type} named "${title}" already exists`);
 }
 
@@ -91,17 +91,12 @@ export const nodeService = {
     return node;
   },
 
-  updateNodeById: async (id: string, data: Partial<INode>) => {
-    if (data.title) {
-      await checkNodeExistence({
-        projectId: data.projectId!,
-        parentId: data.parentId!,
-        type: data.type as 'file' | 'folder',
-        title: data.title,
-      });
-    }
-    if (data.archived) return nodeRepository.archiveById(id, data);
-    return nodeRepository.updateById(id, data);
+  update: async (id: string, data: { title?: string; content?: string }) => {
+    const node = await nodeRepository.findOne({ _id: id });
+    if (!node) throw new HttpError('NOT_FOUND', 'Node not found');
+    if (data.title) await checkNodeExistence({ ...node, title: data.title });
+
+    return await nodeRepository.updateOne({ _id: id }, data);
   },
 
   findNodeByProjectId: async (projectId: string) => {

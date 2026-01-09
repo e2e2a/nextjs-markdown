@@ -127,7 +127,6 @@ export default function SidebarItem({
       <SidebarContextMenu
         setFile={setFile}
         setIsCreating={setIsCreating}
-        /** For updating */
         node={item}
         setActive={setActive}
         setIsOpen={setIsOpen}
@@ -192,7 +191,7 @@ export default function SidebarItem({
           className="leading-none"
         >
           <CollapsibleTrigger disabled={updateNode} asChild>
-            <div className="w-full focus:outline-none">
+            <div className="w-full focus:outline-none gap-0 cursor-pointer">
               <SidebarContextMenu
                 setFile={setFile}
                 setIsCreating={setIsCreating}
@@ -206,9 +205,9 @@ export default function SidebarItem({
               </SidebarContextMenu>
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="gap-0 m-0! p-0!">
-            <SidebarGroupContent className="gap-0 m-0! space-0! p-0!">
-              <SidebarMenu className="gap-0 m-0! space-0! p-0!">
+          <CollapsibleContent>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 {isCreating &&
                   active &&
                   ((active.type === 'folder' && active._id === item._id) ||

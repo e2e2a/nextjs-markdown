@@ -18,7 +18,7 @@ export default function AppSidebarLayout({
   active: INode | null;
   setActive: React.Dispatch<React.SetStateAction<INode | null>>;
 }>) {
-  const { activeNode, setIsCreating, setIsUpdatingNode, setSelectedNode } = useNodeStore();
+  const { selectedNode, setIsUpdatingNode } = useNodeStore();
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
   const handleResizeLeftSidebar = (size: number) => {
     if (size <= 4 && LeftSidebarRef.current) {
@@ -32,18 +32,18 @@ export default function AppSidebarLayout({
       RightidebarRef.current.collapse();
     }
   };
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'F2') {
-        if (!activeNode) return;
-        setIsUpdatingNode(activeNode);
+        setIsUpdatingNode(selectedNode);
         e.preventDefault();
       }
     };
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [activeNode, setIsUpdatingNode]);
+  }, [selectedNode, setIsUpdatingNode]);
 
   return (
     <AppShell variant="sidebar">
@@ -51,18 +51,6 @@ export default function AppSidebarLayout({
         direction="horizontal"
         autoSaveId="sidebar-layout"
         className="overflow-y-hidden rounded-none bg-white"
-        onMouseDownCapture={e => {
-          if (e.button === 0 || e.button === 1 || e.button === 2) {
-            const target = e.target as HTMLElement;
-
-            if (target.closest('[node-editing="true"]')) return;
-            console.log('running mouse down capture, resetting states');
-            setIsCreating(false);
-            setIsUpdatingNode(null);
-            if (e.button !== 2) setSelectedNode(null);
-          }
-          return;
-        }}
       >
         <MiniSidebarTemplate />
 

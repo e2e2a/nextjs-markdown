@@ -31,8 +31,8 @@ export const nodeRepository = {
     }>
   ) => Node.findOne(params).collation({ locale: 'en', strength: 2 }),
 
-  updateById: (nodeId: string, data: Partial<INode>): Promise<INode | null> =>
-    Node.findOneAndUpdate({ _id: nodeId }, data, updateOptions).lean<INode>().exec(),
+  updateOne: (dataToFind: { _id: string }, dataToUpdate: Partial<INode>): Promise<INode | null> =>
+    Node.findOneAndUpdate(dataToFind, dataToUpdate, updateOptions).lean<INode>().exec(),
 
   pushChild(parentId: string, childId: string): Promise<INode | null> {
     return Node.findByIdAndUpdate(parentId, { $push: { children: childId } }, updateOptions)

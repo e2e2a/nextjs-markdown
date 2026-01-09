@@ -44,6 +44,10 @@ export const useNodeStore = create<NodesState>(set => ({
   collapseVersion: 0,
 
   setSelectedNode: node => set({ selectedNode: node }),
+  // setSelectedNode: node => {
+  //   console.log('Setting selectedNode to:', node);
+  //   set({ selectedNode: node });
+  // },
   setActiveNode: node => set({ activeNode: node }),
 
   // setActiveFile: file => set({ activeFile: file }),

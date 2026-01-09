@@ -28,14 +28,9 @@ export function SidebarContextMenu({
   setActive,
   setIsOpen,
 }: ContainerProps) {
-  const { activeNode, isUpdatingNode, setIsUpdatingNode } = useNodeStore();
-  const handleClickRename = () => {
-    if (!activeNode) return;
-    setIsUpdatingNode(node);
-  };
+  const { isUpdatingNode, setIsUpdatingNode } = useNodeStore();
 
   const isUpdatingSelf = !!isUpdatingNode && isUpdatingNode._id === node?._id;
-  console.log('isUpdatingSelf', isUpdatingSelf);
   if (isUpdatingSelf) {
     return (
       <div
@@ -120,7 +115,7 @@ export function SidebarContextMenu({
             <ContextMenuItem
               className="cursor-pointer"
               onMouseDown={e => e.stopPropagation()}
-              onClick={handleClickRename}
+              onClick={() => setIsUpdatingNode(node)}
               inset
             >
               Rename

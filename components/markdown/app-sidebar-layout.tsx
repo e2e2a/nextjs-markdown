@@ -18,7 +18,7 @@ export default function AppSidebarLayout({
   active: INode | null;
   setActive: React.Dispatch<React.SetStateAction<INode | null>>;
 }>) {
-  const { activeNode, setIsCreating, setIsUpdatingNode } = useNodeStore();
+  const { activeNode, setIsCreating, setIsUpdatingNode, setSelectedNode } = useNodeStore();
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
   const handleResizeLeftSidebar = (size: number) => {
     if (size <= 4 && LeftSidebarRef.current) {
@@ -44,7 +44,7 @@ export default function AppSidebarLayout({
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [activeNode, setIsUpdatingNode]);
-  console.log('Rendering AppSidebarLayout', activeNode);
+
   return (
     <AppShell variant="sidebar">
       <ResizablePanelGroup
@@ -59,6 +59,7 @@ export default function AppSidebarLayout({
             console.log('running mouse down capture, resetting states');
             setIsCreating(false);
             setIsUpdatingNode(null);
+            if (e.button !== 2) setSelectedNode(null);
           }
           return;
         }}

@@ -31,8 +31,6 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
     setIsUpdatingNode(null);
   };
 
-  console.log('SidebarFolderItem onMouseDown, setting selectedNode to', selectedNode);
-
   if (isUpdatingNode && isUpdatingNode._id === item._id)
     return (
       <Button
@@ -60,12 +58,15 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
                 console.log('Input lost focus, cancel update if needed');
                 setIsUpdatingNode(null);
                 setIsCreating(false);
+                /**
+                 * @TODO Save updated title if there is e value
+                 */
               }
             }}
             autoFocus
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="h-4 text-inherit text-start w-full px-0"
+            className="h-4 text-inherit text-start w-full px-0 focus-visible:ring-0 rounded-none"
           />
         </div>
       </Button>
@@ -74,20 +75,20 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
   return (
     <div className="">
       <Button
-        onPointerDown={e => {
-          // e.stopPropagation();
-          e.preventDefault();
+        onPointerDown={() => {
           if (selectedNode?._id === item._id) return;
           setSelectedNode(item);
         }}
         onClick={() => handleNodeClick(item)}
+        tabIndex={0}
         className={cn(
-          'h-4.5 bg-transparent text-inherit border-none outline-none shadow-none focus:outline-none focus:ring-0 cursor-pointer w-full justify-start truncate',
-          'p-0 rounded-none gap-0 font-normal',
+          'transition-none gap-0 duration-0 h-4.5 rounded-none bg-transparent active:ring-0 hover:bg-accent text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
           activeNode?._id === item._id
-            ? 'bg-primary text-foreground hover:bg-none!'
+            ? 'bg-accent text-foreground focus:bg-primary focus:text-primary-foreground focus:hover:bg-primary'
             : 'hover:bg-accent hover:text-accent-foreground',
-          selectedNode?._id === item._id ? 'ring-2 ring-inset ring-blue-500' : ''
+          selectedNode?._id === item._id
+            ? 'ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
+            : 'active:ring-0'
         )}
         style={{
           paddingLeft: `${depth * 8}px`,

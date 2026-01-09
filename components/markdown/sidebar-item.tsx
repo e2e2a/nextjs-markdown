@@ -43,7 +43,7 @@ export default function SidebarItem({
   depth,
 }: IProps) {
   const localStorageKey = `sidebar-folder-open-${item._id}`;
-  const { collapseVersion } = useNodeStore();
+  const { collapseVersion, isUpdatingNode } = useNodeStore();
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return localStorage.getItem(localStorageKey) === 'true';
@@ -76,7 +76,6 @@ export default function SidebarItem({
     return (
       <SidebarMenuButton
         tooltip={{ children: item.title }}
-        // onKeyDown={handleKeyF2}
         onMouseDown={e =>
           handleMouseClick(
             file,
@@ -189,11 +188,11 @@ export default function SidebarItem({
         <Collapsible
           key={item.title}
           open={isOpen}
-          onOpenChange={setIsOpen}
-          className={cn('leading-none')}
+          onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
+          className="leading-none"
         >
           <CollapsibleTrigger disabled={updateNode} asChild>
-            <div className={cn('w-full focus:outline-none')}>
+            <div className="w-full focus:outline-none">
               <SidebarContextMenu
                 setFile={setFile}
                 setIsCreating={setIsCreating}
@@ -219,7 +218,6 @@ export default function SidebarItem({
                     <SidebarContextMenu
                       setFile={setFile}
                       setIsCreating={setIsCreating}
-                      /** For updating */
                       node={item}
                       setActive={setActive}
                       setIsOpen={setIsOpen}
@@ -281,7 +279,6 @@ export default function SidebarItem({
                       setFile={setFile}
                       setIsCreating={setIsCreating}
                       key={i}
-                      /** For updating */
                       node={child}
                       setActive={setActive}
                       setIsOpen={setIsOpen}

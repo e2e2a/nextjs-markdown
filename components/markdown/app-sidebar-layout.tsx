@@ -1,6 +1,5 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { INode } from '@/types';
-import { useEffect, useRef, type PropsWithChildren } from 'react';
+import { useEffect, useRef } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { AppContent } from './app-content';
 import { AppShell } from './app-shell';
@@ -10,14 +9,7 @@ import { AppSidebar } from './app-sidebar';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 
-export default function AppSidebarLayout({
-  children,
-  active,
-  setActive,
-}: PropsWithChildren<{
-  active: INode | null;
-  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
-}>) {
+export default function AppSidebarLayout({ children }: { children: React.ReactNode }) {
   const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode } = useNodeStore();
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
   const handleResizeLeftSidebar = (size: number) => {
@@ -52,10 +44,9 @@ export default function AppSidebarLayout({
         autoSaveId="sidebar-layout"
         className="overflow-y-hidden rounded-none bg-white"
         onMouseDownCapture={e => {
-          if (e.button !== 2) {
-            setSelectedNode(activeNode ? activeNode : null);
-            return;
-          }
+          const target = e.target as HTMLElement;
+          if (target.closest('[data-sidebar-node]')) return;
+          if (e.button !== 2) return setSelectedNode(activeNode ? activeNode : null);
         }}
       >
         <MiniSidebarTemplate />
@@ -69,7 +60,7 @@ export default function AppSidebarLayout({
           collapsible
           className="text-muted-foreground flex h-full flex-row p-0"
         >
-          <AppSidebar active={active} setActive={setActive} />
+          <AppSidebar />
         </ResizablePanel>
 
         <ResizableHandle className="p-0" />

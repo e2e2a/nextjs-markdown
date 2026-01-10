@@ -1,19 +1,50 @@
 import { HttpError } from '@/utils/errors';
 import { nodeRepository } from '@/modules/projects/nodes/node.repository';
-import { CreateNodeDTO } from '@/types';
 import { ObjectId } from 'mongoose';
+import { projectService } from '../project.service';
 
 interface FlatNode {
   _id: ObjectId;
   parentId: ObjectId | null;
   children: ObjectId[];
-  title?: string;
+  title: string;
   type: 'file' | 'folder';
   content?: string;
 }
 
 export interface TreeNode extends Omit<FlatNode, 'children'> {
   children: TreeNode[];
+}
+
+/**
+ * Recursively sorts a tree structure:
+ * 1. Folders before Files
+ * 2. Alphabetical (Case-Insensitive) within the same type
+ */
+export function sortNodeTree(nodes: TreeNode[]): TreeNode[] {
+  const sortFn = (a: TreeNode, b: TreeNode) => {
+    // Folders first logic
+    if (a.type === 'folder' && b.type !== 'folder') return -1;
+    if (a.type !== 'folder' && b.type === 'folder') return 1;
+
+    // Alphabetical secondary sort
+    return a.title.localeCompare(b.title, undefined, {
+      sensitivity: 'base',
+      numeric: true,
+    });
+  };
+
+  // Sort the current level
+  nodes.sort(sortFn);
+
+  // Recursively sort children
+  for (const node of nodes) {
+    if (node.children && node.children.length > 0) {
+      sortNodeTree(node.children);
+    }
+  }
+
+  return nodes;
 }
 
 /**
@@ -68,7 +99,6 @@ async function checkNodeExistence(params: {
     title: { $regex: new RegExp(`^${title}$`, 'i') },
     type,
   });
-  console.log('Existing node check:', existingNode);
   if (existingNode) throw new HttpError('CONFLICT', `A ${type} named "${title}" already exists`);
 }
 
@@ -76,19 +106,22 @@ export const nodeService = {
   getProjectNodeTree: async (projectId: string): Promise<{ nodes: TreeNode[] }> => {
     const flatNodes = await nodeRepository.findMany({ projectId });
     const nodes = buildTree(flatNodes);
-    return { nodes };
+    const sortedTree = sortNodeTree(nodes);
+    return { nodes: sortedTree };
   },
 
-  createNode: async (data: CreateNodeDTO) => {
-    await checkNodeExistence({
-      projectId: data.projectId,
-      parentId: data.parentId!,
-      type: data.type as 'file' | 'folder',
-      title: data.title || '',
-    });
-    const node = await nodeRepository.create(data);
-    if (node && node.parentId) await nodeRepository.pushChild(node.parentId, node._id as string);
-    return node;
+  create: async (
+    email: string,
+    data: {
+      projectId: string;
+      parentId: string | null;
+      type: 'file' | 'folder';
+      title: string;
+    }
+  ) => {
+    const resP = await projectService.findProject(email, data.projectId);
+    await checkNodeExistence(data);
+    return await nodeRepository.create({ ...data, workspaceId: resP.project.workspaceId });
   },
 
   update: async (id: string, data: { title?: string; content?: string }) => {
@@ -97,9 +130,5 @@ export const nodeService = {
     if (data.title) await checkNodeExistence({ ...node, title: data.title });
 
     return await nodeRepository.updateOne({ _id: id }, data);
-  },
-
-  findNodeByProjectId: async (projectId: string) => {
-    return nodeRepository.findNodeByProject(projectId);
   },
 };

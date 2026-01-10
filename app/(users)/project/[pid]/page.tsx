@@ -12,11 +12,9 @@ export const generateMetadata = async ({
   const headersList = await headers();
   const cookieHeader = headersList.get('cookie');
   try {
-    const project = await projectClient.getProjectById(projectId, cookieHeader!);
-    if (!project) {
-      return { title: 'Project Not Found' };
-    }
-    const capitalizedTitle = project.title.charAt(0).toUpperCase() + project.title.slice(1);
+    const res = await projectClient.getProjectById(projectId, cookieHeader!);
+    if (!res && !res.project) return { title: 'Project Not Found' };
+    const capitalizedTitle = res.project.title.charAt(0).toUpperCase() + res.project.title.slice(1);
     return {
       title: capitalizedTitle,
     };

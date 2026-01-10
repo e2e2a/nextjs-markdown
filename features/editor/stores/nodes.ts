@@ -13,7 +13,11 @@ interface NodesState {
   updatedNode: INode | null;
 
   /** Flags for creating/updating files */
-  isCreating: boolean;
+  /**
+   * function {isCreating}
+   * type is used to display folder or file and parent is where the new node will be show visualy in the tree structure
+   */
+  isCreating: { type: 'file' | 'folder'; parentId: string | null } | null;
   isUpdatingNode: INode | null;
 
   /** UI flags */
@@ -22,7 +26,7 @@ interface NodesState {
 
   /** Actions */
   // setActiveFile(file: INode | null): void;
-  setIsCreating(flag: boolean): void;
+  setIsCreating(node: { type: 'file' | 'folder'; parentId: string | null } | null): void;
   setIsUpdatingNode(flag: INode | null): void;
   setCollapseAll(flag: boolean): void;
 
@@ -38,7 +42,7 @@ export const useNodeStore = create<NodesState>(set => ({
   activeNode: null,
   selectedNode: null,
   updatedNode: null,
-  isCreating: false,
+  isCreating: null,
   isUpdatingNode: null,
   collapseAll: false,
   collapseVersion: 0,
@@ -68,7 +72,7 @@ export const useNodeStore = create<NodesState>(set => ({
   resetEditor: () =>
     set({
       activeNode: null,
-      isCreating: false,
+      isCreating: null,
       isUpdatingNode: null,
     }),
 }));

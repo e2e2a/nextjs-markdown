@@ -14,22 +14,12 @@ import React from 'react';
 
 interface ContainerProps {
   children: ReactNode;
-  setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
-  setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
   node: INode | null;
-  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
-  setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function SidebarContextMenu({
-  children,
-  setIsCreating,
-  setFile,
-  node,
-  setActive,
-  setIsOpen,
-}: ContainerProps) {
-  const { isUpdatingNode, selectedNode, setIsUpdatingNode, setSelectedNode } = useNodeStore();
+export function SidebarContextMenu({ children, node }: ContainerProps) {
+  const { isUpdatingNode, selectedNode, setIsUpdatingNode, setSelectedNode, setIsCreating } =
+    useNodeStore();
   const isUpdatingSelf = !!isUpdatingNode && isUpdatingNode._id === node?._id;
   if (isUpdatingSelf) {
     return (
@@ -50,9 +40,12 @@ export function SidebarContextMenu({
     );
   }
 
+  let parentId: string | null = null;
+  if (node) parentId = node.type === 'file' ? node.parentId : node._id;
+
   return (
     <ContextMenu
-      onOpenChange={e => {
+      onOpenChange={() => {
         if (!node) return setSelectedNode(null);
         if (selectedNode?._id === node._id) return;
         setSelectedNode(node);
@@ -73,14 +66,13 @@ export function SidebarContextMenu({
           onMouseDown={e => e.stopPropagation()}
           onClick={e => {
             e.stopPropagation();
-            setIsCreating(val => !val);
-            if (setIsOpen) setIsOpen(true);
-            setActive(node ? node : null);
-            setFile(val => ({
-              name: val.name,
-              oldName: '',
-              type: 'file',
-            }));
+            setIsCreating({ type: 'file', parentId });
+            setTimeout(() => {
+              const input = document.querySelector<HTMLInputElement>(
+                '#sidebar-creating-file-item input'
+              );
+              input?.focus();
+            }, 0);
           }}
           inset
         >
@@ -91,14 +83,13 @@ export function SidebarContextMenu({
           onMouseDown={e => e.stopPropagation()}
           onClick={e => {
             e.stopPropagation();
-            setIsCreating(val => !val);
-            if (setIsOpen) setIsOpen(true);
-            setActive(node ? node : null);
-            setFile(val => ({
-              name: val.name,
-              oldName: '',
-              type: 'folder',
-            }));
+            setIsCreating({ type: 'folder', parentId });
+            setTimeout(() => {
+              const input = document.querySelector<HTMLInputElement>(
+                '#sidebar-creating-folder-item input'
+              );
+              input?.focus();
+            }, 0);
           }}
           inset
         >
@@ -120,7 +111,9 @@ export function SidebarContextMenu({
             <ContextMenuSeparator />
             <ContextMenuItem
               className="cursor-pointer"
-              onMouseDown={e => e.stopPropagation()}
+              onMouseDown={e => {
+                e.stopPropagation();
+              }}
               onClick={() => setIsUpdatingNode(node)}
               inset
             >

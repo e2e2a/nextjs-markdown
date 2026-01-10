@@ -1,35 +1,34 @@
-import { Button } from '../ui/button';
 import { INode } from '@/types';
 import { cn } from '@/lib/utils';
-import { ChevronRight } from 'lucide-react';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Input } from '../ui/input';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { makeToastError } from '@/lib/toast';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface IProps {
   item: INode;
-  isOpen: boolean;
   depth: number;
 }
 
-const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
+const SidebarFileItem = ({ item, depth }: IProps) => {
   const {
     activeNode,
     isUpdatingNode,
     setActiveNode,
     setIsCreating,
     setIsUpdatingNode,
-    selectedNode,
     setSelectedNode,
+    selectedNode,
   } = useNodeStore();
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
+
   const handleNodeClick = (node: INode) => {
     setActiveNode(node);
-    setIsCreating(false);
+    setIsCreating(null);
     setSelectedNode(node);
   };
 
@@ -77,19 +76,18 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
           paddingLeft: `${depth * 8}px`,
         }}
       >
-        <ChevronRight className={`${isOpen ? 'rotate-90' : 'rotate-0'}`} />
         <Image
-          src={isOpen ? '/images/opened-folder.svg' : '/images/closed-folder.svg'}
-          alt="Folder Icon"
-          className="w-4.5 h-4.5"
-          width={20}
-          height={20}
+          src={'/images/file.svg'}
+          alt="File Icon"
+          className="w-4.5! h-4.5"
+          width={5}
+          height={5}
         />
         <div className="truncate bg-transparent w-full">
           <Input
             onBlur={update}
-            autoFocus
             disabled={disabled}
+            autoFocus
             value={title || item?.title || ''}
             onChange={e => setTitle(e.target.value)}
             className="h-4 text-sm text-primary-foreground text-start w-full px-0 focus-visible:ring-0 rounded-none"
@@ -115,17 +113,16 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
         paddingLeft: `${depth * 8}px`,
       }}
     >
-      <ChevronRight className={`${isOpen ? 'rotate-90' : 'rotate-0'}`} />
       <Image
-        src={isOpen ? '/images/opened-folder.svg' : '/images/closed-folder.svg'}
-        alt="Folder Icon"
-        className="w-4.5 h-4.5"
-        width={20}
-        height={20}
+        src={'/images/file.svg'}
+        alt="File Icon"
+        className="w-4.5! h-4.5"
+        width={5}
+        height={5}
       />
-      <p className="truncate">{title || item.title}</p>
+      <p className="truncate">{item.title}</p>
     </Button>
   );
 };
 
-export default SidebarFolderItem;
+export default SidebarFileItem;

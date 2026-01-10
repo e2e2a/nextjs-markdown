@@ -1,5 +1,5 @@
 import Node from '@/modules/projects/nodes/node.model';
-import { CreateNodeDTO, INode } from '@/types';
+import { INode } from '@/types';
 import { FilterQuery, ObjectId } from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
 
@@ -7,7 +7,7 @@ interface FlatNode {
   _id: ObjectId;
   parentId: ObjectId | null;
   children: ObjectId[];
-  title?: string;
+  title: string;
   type: 'file' | 'folder';
   content?: string;
 }
@@ -18,7 +18,13 @@ export const nodeRepository = {
   findNodeByProject: (projectId: string) =>
     Node.find({ projectId, parentId: null }).populate('children'),
 
-  create: (data: CreateNodeDTO) => new Node(data).save(),
+  create: (data: {
+    projectId: string;
+    parentId: string | null | undefined;
+    workspaceId: string;
+    type: string;
+    title: string;
+  }) => new Node(data).save(),
 
   findOne: (data: { _id?: string }) => Node.findOne(data),
 

@@ -1,119 +1,51 @@
-import { SidebarGroup, SidebarMenuButton } from '@/components/ui/sidebar';
-import SidebarItem from './sidebar-item';
-import { ChevronRight, Folder, File } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { SidebarGroup } from '@/components/ui/sidebar';
 import { INode } from '@/types';
 import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 import { useParams } from 'next/navigation';
+import { useNodeStore } from '@/features/editor/stores/nodes';
+import { groupNodes } from '@/utils/node-utils';
+import SidebarCreateFolderItem from '../project/nodes/sidebar-create-folder-item';
+import SidebarItem from '../project/nodes/sidebar-item';
+import SidebarCreateFileItem from '../project/nodes/sidebar-create-file-item';
 
-export function NavMain({
-  submit,
-  updateTitle,
-  file = { name: '', type: '' },
-  isCreating,
-  setIsCreating,
-  inputRef,
-  setFile,
-  active,
-  setActive,
-  updateNode,
-  setUpdateNode,
-}: {
-  submit: (data: { name: string; type: string }) => void;
-  updateTitle: (data: { name: string; oldName?: string; type: string }) => void;
-  file: { name: string; type: string };
-  isCreating: boolean;
-  setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  setFile: React.Dispatch<React.SetStateAction<{ name: string; oldName?: string; type: string }>>;
-  active: INode | null;
-  setActive: React.Dispatch<React.SetStateAction<INode | null>>;
-  //** For updating */
-  updateNode: boolean;
-  setUpdateNode: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
+export function NavMain() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: nData, isLoading: nLoading, error: nError } = useNodesProjectIdQuery(pid);
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      if (isCreating) submit(file);
-      if (updateNode) updateTitle(file);
-    }
-    if (e.key === 'Escape') {
-      setIsCreating(false);
-      setFile({ name: '', oldName: '', type: '' });
-    }
-  };
+  const { isCreating } = useNodeStore();
+
+  // const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === 'Enter') {
+  //     // if (isCreating) submit(file);
+  //     // if (updateNode) updateTitle(file);
+  //   }
+  //   if (e.key === 'Escape') {
+  //     setIsCreating(false);
+  //     setFile({ name: '', oldName: '', type: '' });
+  //   }
+  // };
 
   if (nLoading) return <div>Loading...</div>;
   if (nError) return;
-
+  const { folders, files } = groupNodes(nData?.nodes || []);
+  const isCreatingAtRoot = isCreating && isCreating.parentId === null;
   return (
-    <SidebarGroup className="gap-0! p-0! m-0! space-y-0! h-auto! px-0!">
-      {nData?.nodes.map((item: INode, index: number) => {
-        return (
-          <div className="" key={index}>
-            <SidebarItem
-              updateTitle={updateTitle}
-              handleKeyDown={handleKeyDown}
-              file={file}
-              isCreating={isCreating}
-              setIsCreating={setIsCreating}
-              inputRef={inputRef}
-              setFile={setFile}
-              active={active}
-              setActive={setActive}
-              item={item as INode}
-              /** For updating */
-              updateNode={updateNode}
-              setUpdateNode={setUpdateNode}
-              depth={0}
-            />
-          </div>
-        );
-      })}
-      {isCreating && active == null && (
-        <div className="gap-0 p-0 h-4.5 ">
-          {file && file.type === 'folder' ? (
-            <SidebarMenuButton
-              className={cn('p-0 gap-0 h-4.5 font-medium rounded-none text-black')}
-              style={{
-                paddingLeft: `${0 * 8}px`,
-              }}
-            >
-              <ChevronRight className={''} />
-              <div className="flex items-center gap-0.5">
-                <Folder className={`w-4 h-4 min-w-4 min-h-4`} />
-                <div className="truncate pr-5">
-                  <input
-                    ref={inputRef}
-                    value={file.name}
-                    onKeyDown={handleKeyDown}
-                    autoFocus
-                    onChange={e => setFile({ name: e.target.value, type: file.type })}
-                    className="w-full flex pb-1.5 font-normal h-4 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black px-2 py-1 rounded-none"
-                  />
-                </div>
-              </div>
-            </SidebarMenuButton>
-          ) : (
-            <SidebarMenuButton className="m-0 h-4.5 gap-0 rounded-none cursor-point bg-transparent text-black">
-              <div className="flex items-center m-0 pl-2">
-                <File className={`min-w-4 min-h-4 h-4 w-4`} />
-                <input
-                  ref={inputRef}
-                  value={file.name}
-                  autoFocus
-                  onKeyDown={handleKeyDown}
-                  onChange={e => setFile({ name: e.target.value, type: file.type })}
-                  className="w-full flex pb-1.5 font-normal h-4 border focus:outline-none focus:ring-0 focus:ring-none focus:ring-offset-2 border-blue-300 text-sm text-black px-2 py-1 rounded-none"
-                />
-              </div>
-            </SidebarMenuButton>
-          )}
+    <SidebarGroup className="p-0! h-auto">
+      {/* If creating a folder, show it at the very top of the folder list */}
+      {isCreatingAtRoot && isCreating.type === 'folder' && <SidebarCreateFolderItem depth={0} />}
+      {folders.map((item: INode, index: number) => (
+        <div key={index}>
+          <SidebarItem item={item as INode} depth={0} />
         </div>
-      )}
+      ))}
+
+      {/* If creating a file, show it at the very top of the file list (after all folders) */}
+      {isCreatingAtRoot && isCreating.type === 'file' && <SidebarCreateFileItem depth={2} />}
+      {files.map((item: INode, index: number) => (
+        <div key={index}>
+          <SidebarItem item={item as INode} depth={0} />
+        </div>
+      ))}
     </SidebarGroup>
   );
 }

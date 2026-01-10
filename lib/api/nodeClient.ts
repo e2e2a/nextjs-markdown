@@ -1,4 +1,3 @@
-import { CreateNodeDTO } from '@/types';
 const BASE_URL = '/api/node';
 const BASE_URL_PROJECT = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
 
@@ -14,7 +13,12 @@ export async function getNode(id: string) {
   return res.json();
 }
 
-export async function createNode(data: CreateNodeDTO) {
+export async function createNode(data: {
+  projectId: string;
+  parentId: string | null;
+  type: 'file' | 'folder';
+  title: string;
+}) {
   const res = await fetch(BASE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

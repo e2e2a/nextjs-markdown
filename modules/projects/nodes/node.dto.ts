@@ -1,15 +1,22 @@
 import { z } from 'zod';
+import { ObjectId } from 'mongodb';
 
 /**
  * NodeDTO Namespace
  * Encapsulates all validation schemas (Input DTOs) for the Node entity.
  */
+const objectIdSchema = (fieldName: string) =>
+  z.string().refine(val => ObjectId.isValid(val), {
+    message: `Invalid ${fieldName}`, // field-specific message
+  });
+
 export const NodeDTO = {
   // DTO for creating a new node
   create: z.object({
-    title: z.string().min(1, 'Title is required'),
-    content: z.string().min(1, 'Content is required'),
-    tags: z.array(z.string()).optional(),
+    projectId: objectIdSchema('Project id'),
+    parentId: objectIdSchema('Parent id').nullable(),
+    type: z.enum(['file', 'folder']),
+    title: z.string().max(50, { message: 'Title must be at most 50 characters' }),
   }),
 
   // DTO for partial updates (your specific requirement)

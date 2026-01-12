@@ -16,7 +16,17 @@ import {
 import { INode } from '@/types';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import { cn } from '@/lib/utils';
+const isDescendant = (nodes: INode[], potentialAncestorId: string, targetNode: INode): boolean => {
+  let currentParentId: string | null = targetNode.parentId;
 
+  while (currentParentId) {
+    if (currentParentId === potentialAncestorId) return true;
+    const parent = nodes.find(n => n._id === currentParentId);
+    currentParentId = parent ? parent.parentId : null;
+  }
+
+  return false;
+};
 export const DragContext = createContext<{ activeNode: INode | null }>({
   activeNode: null,
 });
@@ -34,7 +44,7 @@ export function TreeDndProvider({
       activationConstraint: {
         // delay: 1,
         // tolerance: 1,
-        distance: 0.5, // Instant activation
+        distance: 1, // Instant activation
       },
     })
   );
@@ -44,20 +54,60 @@ export function TreeDndProvider({
     if (node) setActiveNode(node);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
     setActiveNode(null);
 
-    const { active, over } = event;
-    console.log('over', over);
-    console.log('active', active);
-    if (!over) return;
-    if (!over.data.current) return;
+    // 1. Validate Drop Target
+    if (!over || !over.data.current) return;
 
     const activeId = active.id as string;
     const overId = over.id as string;
+    const activeData = active.data.current as INode;
+    const overData = over.data.current as INode;
 
-    if (activeId === overId) return;
-    if (over.data.current.type === 'file') return;
+    // 2. Production Guards (VS Code Style)
+    if (activeId === overId) return; // Dropped on self
+    if (overData.type === 'file') return; // Cannot drop INTO a file
+    if (activeData.parentId === overId) return; // Already in this folder
+
+    // 3. Prevent Circular References (Moving Parent into Child)
+    // We get the full list of nodes from your store to check lineage
+    // const allNodes = useNodeStore.getState().nodes;
+    if (isDescendant(allNodes, activeId, overData)) {
+      console.warn('Invalid Move: Cannot move a folder into its own subdirectory.');
+      return;
+    }
+
+    // 4. Optimistic UI Update
+    // Update the local state immediately so the UI feels "snappy"
+    // const originalNodes = [...useNodeStore.getState().nodes];
+    try {
+      // This function should update the parentId of activeId to overId in your Zustand store
+      // useNodeStore.getState().moveNode(activeId, overId);
+
+      // 5. Backend Sync
+      const response = await fetch(`/api/nodes/${activeId}/move`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newParentId: overId,
+          updatedAt: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      // 6. Optional: Success Notification
+      // toast.success(`Moved ${activeData.name} to ${overData.name}`);
+    } catch (error) {
+      console.error('Failed to move node:', error);
+
+      // 7. Rollback on Failure
+      // If the server fails, revert the store to the original state
+      // useNodeStore.setState({ nodes: originalNodes });
+      // toast.error("Failed to move item. Reverting changes.");
+    }
   };
 
   return (

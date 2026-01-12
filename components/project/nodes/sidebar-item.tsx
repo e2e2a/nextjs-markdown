@@ -17,32 +17,37 @@ import { useDndContext } from '@dnd-kit/core';
 interface IProps {
   item: INode;
   depth: number;
+  isParentDragging?: boolean; // New prop to track recursive drag state
 }
 
-export default function SidebarItem({ item, depth }: IProps) {
+export default function SidebarItem({ item, depth, isParentDragging = false }: IProps) {
   const localStorageKey = `sidebar-folder-open-${item._id}`;
   const { isCreating, collapseVersion, isUpdatingNode } = useNodeStore();
   const { over, active } = useDndContext();
 
+  // Determine if this specific node is the one being dragged
+  const isBeingDragged = active?.id === item._id;
+  // If this item or any of its parents are dragging, this subtree is "active"
+  const isSelfOrParentDragging = isBeingDragged || isParentDragging;
+
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
     id: item._id,
     data: { ...item },
+    disabled: isSelfOrParentDragging, // Disable interaction if it's the item moving
   });
 
-  // --- LOGICAL TARGETING ---
   const overData = over?.data?.current as INode | undefined;
+  const activeData = active?.data?.current as INode | undefined;
 
   const isTargeted = useMemo(() => {
-    if (!active || !over || active.id === item._id) return false;
+    if (!active || isSelfOrParentDragging) return false;
 
-    // 1. Direct hit: Mouse is over this folder
-    if (over.id === item._id) return true;
+    if (over?.id === item._id && item.type === 'folder') return true;
 
-    // 2. Indirect hit: Mouse is over a FILE, and that file's parent is THIS folder
     if (overData?.type === 'file' && overData.parentId === item._id) return true;
 
     return false;
-  }, [active, over, overData, item._id]);
+  }, [active, over, overData, item._id, isSelfOrParentDragging, item.type]);
 
   const [isOpen, setIsOpen] = useState(() => {
     try {
@@ -62,20 +67,21 @@ export default function SidebarItem({ item, depth }: IProps) {
     localStorage.setItem(localStorageKey, String(isOpen));
   }, [localStorageKey, isOpen]);
 
+  // --- AUTO-EXPAND ON DRAG OVER ---
   useEffect(() => {
-    if (overData?._id === item._id && item.type === 'folder' && !isOpen) {
-      // Optional: Add a small timeout so folders don't pop open instantly
+    if (item.type === 'folder' && !isOpen && over?.id === item._id && !isSelfOrParentDragging) {
       const timer = setTimeout(() => {
         setIsOpen(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [overData?._id, item._id, item.type, isOpen]);
+  }, [over?.id, item._id, item.type, isOpen, isSelfOrParentDragging]);
 
   const isCreatingHere = isCreating && isCreating.parentId === item._id;
   const { folders, files } = groupNodes(item.children);
   const childIds = useMemo(() => item.children?.map(c => c._id) || [], [item.children]);
 
+  // --- STYLES ---
   const dragStyle = {
     opacity: isDragging ? 0.4 : 1,
   };
@@ -90,7 +96,8 @@ export default function SidebarItem({ item, depth }: IProps) {
           {...attributes}
           {...listeners}
           className={cn(
-            'transition-none flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0 cursor-pointer bg-transparent'
+            'transition-none flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0 cursor-pointer bg-transparent',
+            isSelfOrParentDragging && 'pointer-events-none' // Disable hover/interaction
           )}
         >
           <SidebarFileItem item={item} depth={!item.parentId ? depth + 2 : depth} />
@@ -101,7 +108,11 @@ export default function SidebarItem({ item, depth }: IProps) {
 
   // --- FOLDER RENDER ---
   return (
-    <div ref={setNodeRef} style={dragStyle}>
+    <div
+      ref={setNodeRef}
+      style={dragStyle}
+      className={cn(isSelfOrParentDragging && 'pointer-events-none')}
+    >
       <SidebarMenu className="gap-0! p-0!">
         <Collapsible
           key={item._id}
@@ -109,10 +120,10 @@ export default function SidebarItem({ item, depth }: IProps) {
           onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
           className={cn(
             'leading-none transition-none',
-            isTargeted ? 'bg-accent' : 'bg-transparent'
+            isTargeted ? 'bg-accent/50' : 'bg-transparent'
           )}
         >
-          <CollapsibleTrigger disabled={isUpdatingNode?._id === item._id} asChild>
+          <CollapsibleTrigger asChild>
             <div
               {...attributes}
               {...listeners}
@@ -135,7 +146,12 @@ export default function SidebarItem({ item, depth }: IProps) {
                   )}
 
                   {folders.map(child => (
-                    <SidebarItem key={child._id} item={child} depth={depth + 2} />
+                    <SidebarItem
+                      key={child._id}
+                      item={child}
+                      depth={depth + 2}
+                      isParentDragging={isSelfOrParentDragging} // Pass state down
+                    />
                   ))}
 
                   {isCreatingHere && isCreating.type === 'file' && (
@@ -143,7 +159,12 @@ export default function SidebarItem({ item, depth }: IProps) {
                   )}
 
                   {files.map(child => (
-                    <SidebarItem key={child._id} item={child} depth={depth + 2} />
+                    <SidebarItem
+                      key={child._id}
+                      item={child}
+                      depth={depth + 2}
+                      isParentDragging={isSelfOrParentDragging} // Pass state down
+                    />
                   ))}
                 </SortableContext>
               </SidebarMenu>

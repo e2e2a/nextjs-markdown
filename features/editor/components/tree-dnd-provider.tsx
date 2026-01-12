@@ -46,7 +46,18 @@ export function TreeDndProvider({
 
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveNode(null);
-    // ... (Your move mutation logic)
+
+    const { active, over } = event;
+    console.log('over', over);
+    console.log('active', active);
+    if (!over) return;
+    if (!over.data.current) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    if (activeId === overId) return;
+    if (over.data.current.type === 'file') return;
   };
 
   return (

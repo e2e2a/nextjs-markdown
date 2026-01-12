@@ -62,6 +62,16 @@ export default function SidebarItem({ item, depth }: IProps) {
     localStorage.setItem(localStorageKey, String(isOpen));
   }, [localStorageKey, isOpen]);
 
+  useEffect(() => {
+    if (overData?._id === item._id && item.type === 'folder' && !isOpen) {
+      // Optional: Add a small timeout so folders don't pop open instantly
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [overData?._id, item._id, item.type, isOpen]);
+
   const isCreatingHere = isCreating && isCreating.parentId === item._id;
   const { folders, files } = groupNodes(item.children);
   const childIds = useMemo(() => item.children?.map(c => c._id) || [], [item.children]);

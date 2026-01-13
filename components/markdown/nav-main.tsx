@@ -50,7 +50,7 @@ import SidebarCreateFileItem from '../project/nodes/sidebar-create-file-item';
 import { TreeDndProvider } from '@/features/editor/components/tree-dnd-provider';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import React from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import { useDndContext, useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 
 // In a utility file or top of NavMain
@@ -82,7 +82,7 @@ export function NavMain() {
 function NavMainInner({ nodes }: { nodes: INode[] }) {
   const { isCreating } = useNodeStore();
   const { folders, files } = React.useMemo(() => groupNodes(nodes), [nodes]);
-
+  const { active } = useDndContext();
   // Static tree content never sees drag state
   const treeContent = React.useMemo(
     () => (
@@ -91,17 +91,29 @@ function NavMainInner({ nodes }: { nodes: INode[] }) {
           <SidebarCreateFolderItem depth={0} />
         )}
         {folders.map(item => (
-          <SidebarItem active={null} key={item._id} item={item} depth={0} />
+          <SidebarItem
+            activeId={active?.id as string}
+            activeParentId={active?.data?.current?.parentId as string}
+            key={item._id}
+            item={item}
+            depth={0}
+          />
         ))}
         {isCreating && isCreating.parentId === null && isCreating.type === 'file' && (
           <SidebarCreateFileItem depth={0} />
         )}
         {files.map(item => (
-          <SidebarItem active={null} key={item._id} item={item} depth={0} />
+          <SidebarItem
+            activeId={active?.id as string}
+            activeParentId={active?.data?.current?.parentId as string}
+            key={item._id}
+            item={item}
+            depth={0}
+          />
         ))}
       </>
     ),
-    [folders, files, isCreating]
+    [folders, files, active?.data?.current?.parentId, active?.id, isCreating]
   );
 
   return <RootDroppableWrapper>{treeContent}</RootDroppableWrapper>;
@@ -109,13 +121,17 @@ function NavMainInner({ nodes }: { nodes: INode[] }) {
 
 // Small wrapper only for drag-over highlight
 function RootDroppableWrapper({ children }: { children: React.ReactNode }) {
-  // const { setNodeRef } = useDroppable({ id: 'root' });
-  console.log('asd');
-  // const highlightClass = React.useMemo(() => {
-  //   if (!active) return 'bg-transparent';
-  //   // return 'bg-accent/30 ring-2 ring-inset ring-accent-foreground/10';
-  //   return 'bg-transparent';
-  // }, [active]);
+  const { setNodeRef, isOver, active } = useDroppable({ id: 'root' });
+  const highlightClass = React.useMemo(() => {
+    if (!active) return 'bg-transparent';
+    if (isOver && active?.data?.current?.parentId !== null)
+      return 'bg-accent/30 ring-2 ring-inset ring-accent-foreground/10';
+    return 'bg-transparent';
+  }, [isOver, active]);
 
-  return <div>{children}</div>;
+  return (
+    <div ref={setNodeRef} className={highlightClass}>
+      {children}
+    </div>
+  );
 }

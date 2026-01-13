@@ -1,4 +1,3 @@
-// TreeDndProvider.tsx
 import { INode } from '@/types';
 import {
   DndContext,
@@ -102,10 +101,10 @@ export function TreeDndProvider({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={pointerWithin} // Faster than pointerWithin
+      collisionDetection={pointerWithin} // can we use any other method that is light but the detection will be the end of drag
       measuring={{
         droppable: {
-          strategy: MeasuringStrategy.BeforeDragging, // CRITICAL: Measure once, not every frame
+          strategy: MeasuringStrategy.BeforeDragging,
         },
       }}
       onDragStart={e => setActiveNode(e.active.data.current as INode)}
@@ -114,18 +113,12 @@ export function TreeDndProvider({
     >
       {children}
 
-      {/* PORTAL OPTIMIZATION: 
-          Keep the overlay child as lightweight as possible.
-          'dropAnimation={null}' prevents the JS thread from running spring physics on release.
-      */}
       <DragOverlay modifiers={[snapCenterToCursor]} transition={undefined} dropAnimation={null}>
         {activeNode ? (
           <div
             style={{
-              // Force GPU Layer
               willChange: 'transform',
               pointerEvents: 'none',
-              // Use standard cursor behavior
               transform: 'translate3d(0, 0, 0)',
             }}
             className="bg-background border px-2 py-1 rounded shadow-xl text-[13px] w-fit h-fit whitespace-nowrap opacity-90"

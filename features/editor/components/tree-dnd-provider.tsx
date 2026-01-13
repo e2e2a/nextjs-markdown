@@ -1,21 +1,17 @@
-'use client';
-import React, { ReactNode, useState, createContext } from 'react';
+// TreeDndProvider.tsx
+import { INode } from '@/types';
 import {
   DndContext,
-  DragEndEvent,
-  DragStartEvent,
-  DragOverlay,
+  MeasuringStrategy,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
-  Modifier,
-  useDroppable,
-  pointerWithin, // Import Modifier type
+  pointerWithin,
+  DragOverlay,
+  DragEndEvent,
 } from '@dnd-kit/core';
-import { INode } from '@/types';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
-import { cn } from '@/lib/utils';
+import { ReactNode, useState } from 'react';
 const isDescendant = (nodes: INode[], potentialAncestorId: string, targetNode: INode): boolean => {
   let currentParentId: string | null = targetNode.parentId;
 
@@ -27,9 +23,6 @@ const isDescendant = (nodes: INode[], potentialAncestorId: string, targetNode: I
 
   return false;
 };
-export const DragContext = createContext<{ activeNode: INode | null }>({
-  activeNode: null,
-});
 
 export function TreeDndProvider({
   children,
@@ -39,20 +32,16 @@ export function TreeDndProvider({
   allNodes: INode[];
 }) {
   const [activeNode, setActiveNode] = useState<INode | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        // delay: 1,
-        // tolerance: 1,
-        distance: 1, // Instant activation
+        // delay: 10,
+        // tolerance: 0,
+        distance: 2, // Don't start drag immediately on click, wait for 3px move
       },
     })
   );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const node = event.active.data.current as INode;
-    if (node) setActiveNode(node);
-  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -111,39 +100,40 @@ export function TreeDndProvider({
   };
 
   return (
-    <DragContext.Provider value={{ activeNode }}>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={pointerWithin}
-        // collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="h-full">{children}</div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={pointerWithin} // Faster than pointerWithin
+      measuring={{
+        droppable: {
+          strategy: MeasuringStrategy.BeforeDragging, // CRITICAL: Measure once, not every frame
+        },
+      }}
+      onDragStart={e => setActiveNode(e.active.data.current as INode)}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveNode(null)}
+    >
+      {children}
 
-        <DragOverlay
-          className="bg-background h-4!"
-          style={{
-            width: 'fit-content',
-            whiteSpace: 'nowrap',
-            pointerEvents: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            color: '#fff',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            fontSize: '13px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-            margin: 0,
-            transition: 'none', // Disables CSS transitions
-            animation: 'none', // Disables CSS keyframes
-          }}
-          modifiers={[snapCenterToCursor]}
-          dropAnimation={null}
-        >
-          <span>{activeNode?.title}</span>
-        </DragOverlay>
-      </DndContext>
-    </DragContext.Provider>
+      {/* PORTAL OPTIMIZATION: 
+          Keep the overlay child as lightweight as possible.
+          'dropAnimation={null}' prevents the JS thread from running spring physics on release.
+      */}
+      <DragOverlay modifiers={[snapCenterToCursor]} transition={undefined} dropAnimation={null}>
+        {activeNode ? (
+          <div
+            style={{
+              // Force GPU Layer
+              willChange: 'transform',
+              pointerEvents: 'none',
+              // Use standard cursor behavior
+              transform: 'translate3d(0, 0, 0)',
+            }}
+            className="bg-background border px-2 py-1 rounded shadow-xl text-[13px] w-fit h-fit whitespace-nowrap opacity-90"
+          >
+            {activeNode.title}
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

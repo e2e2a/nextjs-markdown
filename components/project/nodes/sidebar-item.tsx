@@ -1,54 +1,30 @@
 'use client';
-import React, { useEffect, useState, useMemo } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
-import { SidebarGroupContent, SidebarMenu } from '../../ui/sidebar';
-import { SidebarContextMenu } from '../../markdown/sidebar-context-menu';
+import React, { useMemo, memo, useState, useEffect } from 'react';
+import { Active, useDndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import { INode } from '@/types';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import SidebarFileItem from './sidebar-file-item';
-import SidebarCreateFileItem from './sidebar-create-file-item';
 import { groupNodes } from '@/utils/node-utils';
-import SidebarCreateFolderItem from './sidebar-create-folder-item';
+
+// Sub-components
+import SidebarFileItem from './sidebar-file-item';
 import SidebarFolderItem from './sidebar-folder-item';
-import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useDndContext } from '@dnd-kit/core';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
+import { SidebarMenu, SidebarGroupContent } from '../../ui/sidebar';
+import { SidebarContextMenu } from '../../markdown/sidebar-context-menu';
+import SidebarCreateFolderItem from './sidebar-create-folder-item';
+import SidebarCreateFileItem from './sidebar-create-file-item';
 
 interface IProps {
   item: INode;
   depth: number;
-  isParentDragging?: boolean; // New prop to track recursive drag state
+  active: Active | null;
+  isParentDragging?: boolean;
 }
 
-export default function SidebarItem({ item, depth, isParentDragging = false }: IProps) {
+function SidebarItemComponent({ item, depth, active, isParentDragging = false }: IProps) {
   const localStorageKey = `sidebar-folder-open-${item._id}`;
   const { isCreating, collapseVersion, isUpdatingNode } = useNodeStore();
-  const { over, active } = useDndContext();
-
-  // Determine if this specific node is the one being dragged
-  const isBeingDragged = active?.id === item._id;
-  // If this item or any of its parents are dragging, this subtree is "active"
-  const isSelfOrParentDragging = isBeingDragged || isParentDragging;
-
-  const { attributes, listeners, setNodeRef, isDragging } = useSortable({
-    id: item._id,
-    data: { ...item },
-    disabled: isSelfOrParentDragging, // Disable interaction if it's the item moving
-  });
-
-  const overData = over?.data?.current as INode | undefined;
-  const activeData = active?.data?.current as INode | undefined;
-
-  const isTargeted = useMemo(() => {
-    if (!active || isSelfOrParentDragging) return false;
-
-    if (over?.id === item._id && item.type === 'folder') return true;
-
-    if (overData?.type === 'file' && overData.parentId === item._id) return true;
-
-    return false;
-  }, [active, over, overData, item._id, isSelfOrParentDragging, item.type]);
-
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return localStorage.getItem(localStorageKey) === 'true';
@@ -57,116 +33,141 @@ export default function SidebarItem({ item, depth, isParentDragging = false }: I
     }
   });
 
+  const activeId = active?.id;
+  const activeData = active?.data?.current;
+
+  const isAncestorOfActive = useMemo(() => {
+    if (!activeData?.parentId) return false;
+    if (activeData && activeData.parentId === item._id) return true;
+  }, [activeData, item._id]);
+
+  // 1. Data stability
+  const dndData = useMemo(
+    () => ({
+      id: item._id,
+      type: item.type,
+      title: item.title,
+      parentId: item.parentId,
+    }),
+    [item._id, item.type, item.parentId, item.title]
+  );
+
+  // 2. Draggable (The Header only)
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDraggableRef,
+    isDragging,
+  } = useDraggable({
+    id: item._id,
+    data: dndData,
+    disabled: isParentDragging,
+  });
+
+  // 3. Droppable (The Wrapper)
+  // We attach this to the wrapper so the 'rect' includes children.
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: item._id,
+    data: dndData,
+    // Disable files, dragging node, and children of dragging node
+    disabled: item.type === 'file' || activeId === item._id || isParentDragging,
+  });
+
   const [prevVersion, setPrevVersion] = useState(collapseVersion);
   if (collapseVersion !== prevVersion) {
     setPrevVersion(collapseVersion);
     setIsOpen(false);
   }
-
   useEffect(() => {
     localStorage.setItem(localStorageKey, String(isOpen));
   }, [localStorageKey, isOpen]);
-
-  // --- AUTO-EXPAND ON DRAG OVER ---
-  useEffect(() => {
-    if (item.type === 'folder' && !isOpen && over?.id === item._id && !isSelfOrParentDragging) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [over?.id, item._id, item.type, isOpen, isSelfOrParentDragging]);
-
   const isCreatingHere = isCreating && isCreating.parentId === item._id;
-  const { folders, files } = groupNodes(item.children);
-  const childIds = useMemo(() => item.children?.map(c => c._id) || [], [item.children]);
+  // ... (Keep your existing isOpen / Collapsible logic) ...
+  const { folders, files } = useMemo(() => groupNodes(item.children || []), [item.children]);
 
-  // --- STYLES ---
-  const dragStyle = {
-    opacity: isDragging ? 0.4 : 1,
-  };
+  // VS Code Pattern: Highlight the folder block if hovered
+  const folderContainerStyles = cn(
+    'group/folder relative transition-none rounded-sm',
+    // This is the "Whole Area" highlight you want
+    isOver &&
+      !isAncestorOfActive &&
+      'bg-accent/50 text-accent-foreground ring-1 ring-inset ring-accent'
+  );
 
-  // --- FILE RENDER ---
   if (item.type === 'file') {
     return (
-      <SidebarContextMenu node={item}>
-        <div
-          ref={setNodeRef}
-          style={dragStyle}
-          {...attributes}
-          {...listeners}
-          className={cn(
-            'transition-none flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0 cursor-pointer bg-transparent',
-            isSelfOrParentDragging && 'pointer-events-none' // Disable hover/interaction
-          )}
-        >
-          <SidebarFileItem item={item} depth={!item.parentId ? depth + 2 : depth} />
-        </div>
-      </SidebarContextMenu>
+      <div
+        ref={setDraggableRef}
+        {...attributes}
+        {...listeners}
+        className={cn(
+          'flex items-center cursor-pointer transition-none select-none',
+          isDragging && 'opacity-20',
+          isParentDragging && 'pointer-events-none'
+        )}
+      >
+        <SidebarFileItem item={item} depth={!item.parentId ? depth + 2 : depth} />
+      </div>
     );
   }
 
-  // --- FOLDER RENDER ---
   return (
-    <div
-      ref={setNodeRef}
-      style={dragStyle}
-      className={cn(isSelfOrParentDragging && 'pointer-events-none')}
-    >
+    /* CRITICAL: The Droppable Ref goes on this outer DIV. 
+       This DIV grows as the Collapsible expands, covering the children's area.
+    */
+    <div ref={setDroppableRef} className={folderContainerStyles}>
       <SidebarMenu className="gap-0! p-0!">
         <Collapsible
-          key={item._id}
           open={isOpen}
           onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
-          className={cn(
-            'leading-none transition-none',
-            isTargeted ? 'bg-accent/50' : 'bg-transparent'
-          )}
         >
+          {/* Draggable Ref is only on the Trigger (The Folder Header) */}
           <CollapsibleTrigger asChild>
             <div
+              ref={setDraggableRef}
               {...attributes}
               {...listeners}
-              className="w-full focus:outline-none gap-0 cursor-pointer"
+              className={cn(
+                'w-full focus:outline-none gap-0 cursor-pointer',
+                isDragging && 'opacity-20'
+              )}
             >
               <SidebarContextMenu node={item}>
-                <div>
+                <div className="w-full">
                   <SidebarFolderItem item={item} isOpen={isOpen} depth={depth} />
                 </div>
               </SidebarContextMenu>
             </div>
           </CollapsibleTrigger>
 
-          <CollapsibleContent>
+          <CollapsibleContent className="transition-none!">
             <SidebarGroupContent>
               <SidebarMenu>
-                <SortableContext items={childIds} strategy={verticalListSortingStrategy}>
-                  {isCreatingHere && isCreating.type === 'folder' && (
-                    <SidebarCreateFolderItem depth={depth + 2} />
-                  )}
+                {isCreatingHere && isCreating.type === 'folder' && (
+                  <SidebarCreateFolderItem depth={depth + 2} />
+                )}
 
-                  {folders.map(child => (
-                    <SidebarItem
-                      key={child._id}
-                      item={child}
-                      depth={depth + 2}
-                      isParentDragging={isSelfOrParentDragging} // Pass state down
-                    />
-                  ))}
-
-                  {isCreatingHere && isCreating.type === 'file' && (
-                    <SidebarCreateFileItem depth={depth + 2} />
-                  )}
-
-                  {files.map(child => (
-                    <SidebarItem
-                      key={child._id}
-                      item={child}
-                      depth={depth + 2}
-                      isParentDragging={isSelfOrParentDragging} // Pass state down
-                    />
-                  ))}
-                </SortableContext>
+                {folders.map(child => (
+                  <SidebarItem
+                    active={active}
+                    key={child._id}
+                    item={child}
+                    depth={depth + 2}
+                    isParentDragging={isDragging || isParentDragging}
+                  />
+                ))}
+                {isCreatingHere && isCreating.type === 'file' && (
+                  <SidebarCreateFileItem depth={depth + 2} />
+                )}
+                {files.map(child => (
+                  <SidebarItem
+                    active={active}
+                    key={child._id}
+                    item={child}
+                    depth={depth + 2}
+                    isParentDragging={isDragging || isParentDragging}
+                  />
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>
@@ -175,3 +176,16 @@ export default function SidebarItem({ item, depth, isParentDragging = false }: I
     </div>
   );
 }
+
+// 5. THE KEY: React.memo with a custom comparator.
+// We only want to re-render if the essential props change.
+const SidebarItem = memo(SidebarItemComponent, (prev, next) => {
+  return (
+    prev.item._id === next.item._id &&
+    prev.item.children?.length === next.item.children?.length &&
+    prev.depth === next.depth &&
+    prev.isParentDragging === next.isParentDragging
+  );
+});
+
+export default SidebarItem;

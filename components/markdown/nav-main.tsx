@@ -1,3 +1,43 @@
+// 'use client';
+// import { SidebarGroup } from '@/components/ui/sidebar';
+// import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
+// import { useParams } from 'next/navigation';
+// import { useNodeStore } from '@/features/editor/stores/nodes';
+// import { groupNodes } from '@/utils/node-utils';
+// import SidebarCreateFolderItem from '../project/nodes/sidebar-create-folder-item';
+// import SidebarItem from '../project/nodes/sidebar-item';
+// import SidebarCreateFileItem from '../project/nodes/sidebar-create-file-item';
+// import { useDndContext } from '@dnd-kit/core';
+
+// // 2. Update NavMainInner to be "Static"
+// export function NavMain() {
+//   const params = useParams();
+//   const pid = params.pid as string;
+//   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
+//   const { isCreating } = useNodeStore();
+//   const { active } = useDndContext();
+//   console.log('active123', active);
+
+//   if (nLoading) return <div>Loading...</div>;
+//   const { folders, files } = groupNodes(nData?.nodes || []);
+//   const isCreatingAtRoot = isCreating && isCreating.parentId === null;
+//   return (
+//     <div className="h-full">
+//       <SidebarGroup className="p-0! h-auto">
+//         {isCreatingAtRoot && isCreating.type === 'folder' && <SidebarCreateFolderItem depth={0} />}
+//         {folders.map(item => (
+//           <SidebarItem active={active} key={item._id} item={item} depth={0} />
+//         ))}
+
+//         {isCreatingAtRoot && isCreating.type === 'file' && <SidebarCreateFileItem depth={0} />}
+//         {files.map(item => (
+//           <SidebarItem active={active} key={item._id} item={item} depth={0} />
+//         ))}
+//       </SidebarGroup>
+//     </div>
+//   );
+// }
+
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { INode } from '@/types';
 import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
@@ -34,66 +74,48 @@ export function NavMain() {
 
   return (
     <TreeDndProvider allNodes={nData?.nodes || []}>
-      {/* We call the inner component here so it can use useDroppable */}
       <NavMainInner nodes={nData?.nodes || []} />
     </TreeDndProvider>
   );
 }
 
 function NavMainInner({ nodes }: { nodes: INode[] }) {
-  const params = useParams();
-  const pid = params.pid as string;
-  const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
   const { isCreating } = useNodeStore();
-  // Register the entire sidebar area as a Droppable
-  const { setNodeRef, isOver, active } = useDroppable({
-    id: 'root',
-  });
+  const { folders, files } = React.useMemo(() => groupNodes(nodes), [nodes]);
 
-  // Only show background if we are dragging a node AND we are hovering over the root
-  // OR if we are dragging and NOT hovering over any specific item (falling back to root)
-  const isDraggingSomething = !!active;
-  const showRootHighlight =
-    isDraggingSomething &&
-    isOver &&
-    active &&
-    active.data.current &&
-    active.data.current.parentId !== null;
-  // 1. Flatten all IDs across all levels
-  const allNodeIds = React.useMemo(() => flattenNodeIds(nData?.nodes || []), [nData?.nodes]);
-
-  if (nLoading) return <div>Loading...</div>;
-
-  const { folders, files } = groupNodes(nData?.nodes || []);
-  const isCreatingAtRoot = isCreating && isCreating.parentId === null;
-
-  return (
-    // 2. Pass the full node tree to the Provider for logic lookups
-
-    <div
-      ref={setNodeRef}
-      className={cn(
-        'h-full!',
-        showRootHighlight
-          ? 'bg-accent/30 ring-2 ring-inset ring-accent-foreground/10'
-          : 'bg-transparent'
-      )}
-    >
-      <SortableContext items={allNodeIds} strategy={verticalListSortingStrategy}>
-        <SidebarGroup className="p-0! h-auto">
-          {isCreatingAtRoot && isCreating.type === 'folder' && (
-            <SidebarCreateFolderItem depth={0} />
-          )}
-          {folders.map(item => (
-            <SidebarItem key={item._id} item={item} depth={0} />
-          ))}
-
-          {isCreatingAtRoot && isCreating.type === 'file' && <SidebarCreateFileItem depth={0} />}
-          {files.map(item => (
-            <SidebarItem key={item._id} item={item} depth={0} />
-          ))}
-        </SidebarGroup>
-      </SortableContext>
-    </div>
+  // Static tree content never sees drag state
+  const treeContent = React.useMemo(
+    () => (
+      <>
+        {isCreating && isCreating.parentId === null && isCreating.type === 'folder' && (
+          <SidebarCreateFolderItem depth={0} />
+        )}
+        {folders.map(item => (
+          <SidebarItem active={null} key={item._id} item={item} depth={0} />
+        ))}
+        {isCreating && isCreating.parentId === null && isCreating.type === 'file' && (
+          <SidebarCreateFileItem depth={0} />
+        )}
+        {files.map(item => (
+          <SidebarItem active={null} key={item._id} item={item} depth={0} />
+        ))}
+      </>
+    ),
+    [folders, files, isCreating]
   );
+
+  return <RootDroppableWrapper>{treeContent}</RootDroppableWrapper>;
+}
+
+// Small wrapper only for drag-over highlight
+function RootDroppableWrapper({ children }: { children: React.ReactNode }) {
+  // const { setNodeRef } = useDroppable({ id: 'root' });
+  console.log('asd');
+  // const highlightClass = React.useMemo(() => {
+  //   if (!active) return 'bg-transparent';
+  //   // return 'bg-accent/30 ring-2 ring-inset ring-accent-foreground/10';
+  //   return 'bg-transparent';
+  // }, [active]);
+
+  return <div>{children}</div>;
 }

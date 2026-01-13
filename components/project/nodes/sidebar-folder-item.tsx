@@ -2,12 +2,13 @@ import { INode } from '@/types';
 import { cn } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import Image from 'next/image';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { makeToastError } from '@/lib/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useDndContext } from '@dnd-kit/core';
 
 interface IProps {
   item: INode;
@@ -15,7 +16,7 @@ interface IProps {
   depth: number;
 }
 
-const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
+const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
   const {
     activeNode,
     isUpdatingNode,
@@ -27,6 +28,8 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
   } = useNodeStore();
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
+  const { active } = useDndContext();
+
   const handleNodeClick = (node: INode) => {
     setActiveNode(node);
     setIsCreating(null);
@@ -109,7 +112,8 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
           : 'hover:bg-accent/50! hover:text-accent-foreground',
         selectedNode?._id === item._id
           ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
-          : 'active:ring-0'
+          : 'active:ring-0',
+        active ? 'pointer-events-none' : 'pointer-events-auto'
       )}
       style={{
         paddingLeft: `${depth * 8}px`,
@@ -128,4 +132,5 @@ const SidebarFolderItem = ({ item, isOpen, depth }: IProps) => {
   );
 };
 
+const SidebarFolderItem = memo(SidebarFolderItemComponent);
 export default SidebarFolderItem;

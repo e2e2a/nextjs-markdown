@@ -71,7 +71,7 @@ export function AppSidebar() {
           </SidebarHeader>
 
           <div className="h-full overflow-y-auto">
-            <SidebarContent className="ml-0 p-0! space-y-0! h-full  overflow-y-hidden pb-20">
+            <SidebarContent className="ml-0 p-0! space-y-0! h-full  overflow-y-auto">
               <NavMain />
             </SidebarContent>
           </div>

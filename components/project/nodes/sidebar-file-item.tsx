@@ -1,7 +1,7 @@
 import { INode } from '@/types';
 import { cn } from '@/lib/utils';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import Image from 'next/image';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { makeToastError } from '@/lib/toast';
@@ -14,7 +14,7 @@ interface IProps {
   depth: number;
 }
 
-const SidebarFileItem = ({ item, depth }: IProps) => {
+const SidebarFileItemComponent = ({ item, depth }: IProps) => {
   const {
     activeNode,
     isUpdatingNode,
@@ -103,14 +103,14 @@ const SidebarFileItem = ({ item, depth }: IProps) => {
       onClick={() => handleNodeClick(item)}
       tabIndex={0}
       className={cn(
-        'transition-none gap-0 flex duration-0 h-auto leading-none py-0.5 rounded-none bg-transparent active:ring-0 text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
+        'transition-none gap-0 flex duration-0 h-auto  leading-none py-0.5 rounded-none bg-transparent active:ring-0 text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
         activeNode?._id === item._id
           ? 'bg-primary hover:bg-primary text-foreground focus:bg-primary focus:text-primary-foreground focus:hover:bg-primary!'
           : 'hover:bg-accent/50! hover:text-accent-foreground',
         selectedNode?._id === item._id
           ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
           : 'active:ring-0',
-        active && activeNode?._id !== item._id ? 'hover:bg-transparent! hover:text-inherit' : ''
+        active ? 'pointer-events-none' : 'pointer-events-auto'
       )}
       style={{
         paddingLeft: `${depth * 8}px`,
@@ -128,4 +128,5 @@ const SidebarFileItem = ({ item, depth }: IProps) => {
   );
 };
 
+const SidebarFileItem = memo(SidebarFileItemComponent);
 export default SidebarFileItem;

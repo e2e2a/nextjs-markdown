@@ -8,7 +8,6 @@ import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { makeToastError } from '@/lib/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useDndContext } from '@dnd-kit/core';
 
 interface IProps {
   item: INode;
@@ -28,7 +27,6 @@ const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
   } = useNodeStore();
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
-  const { active } = useDndContext();
 
   const handleNodeClick = (node: INode) => {
     setActiveNode(node);
@@ -105,6 +103,7 @@ const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
     <Button
       onClick={() => handleNodeClick(item)}
       tabIndex={0}
+      type="button"
       className={cn(
         'transition-none gap-0 flex duration-0 h-auto leading-none py-0.5 rounded-none bg-transparent active:ring-0 text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
         activeNode?._id === item._id
@@ -112,8 +111,7 @@ const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
           : 'hover:bg-accent/50! hover:text-accent-foreground',
         selectedNode?._id === item._id
           ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
-          : 'active:ring-0',
-        active ? 'pointer-events-none' : 'pointer-events-auto'
+          : 'active:ring-0'
       )}
       style={{
         paddingLeft: `${depth * 8}px`,

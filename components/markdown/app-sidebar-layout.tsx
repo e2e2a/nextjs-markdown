@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, memo, useState } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import { useParams } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -10,7 +10,6 @@ import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { TreeDndProvider } from '@/features/editor/components/tree-dnd-provider';
 import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 
 const MainContentArea = memo(function MainContentArea({ children }: { children: React.ReactNode }) {
@@ -68,58 +67,56 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
 
   return (
     <AppShell variant="sidebar">
-      <TreeDndProvider allNodes={nData?.nodes || []}>
-        <ResizablePanelGroup
-          direction="horizontal"
-          autoSaveId="sidebar-layout"
-          className="overflow-y-hidden rounded-none bg-white"
-          onMouseDownCapture={e => {
-            const target = e.target as HTMLElement;
-            if (target.closest('[data-sidebar-node]')) return;
-            if (e.button !== 2) {
-              setSelectedNode(activeNode ? activeNode : null);
-            }
+      <ResizablePanelGroup
+        direction="horizontal"
+        autoSaveId="sidebar-layout"
+        className="overflow-y-hidden rounded-none bg-white"
+        onMouseDownCapture={e => {
+          const target = e.target as HTMLElement;
+          if (target.closest('[data-sidebar-node]')) return;
+          if (e.button !== 2) {
+            setSelectedNode(activeNode ? activeNode : null);
+          }
+        }}
+      >
+        <MiniSidebarTemplate />
+
+        <ResizablePanel
+          ref={LeftSidebarRef}
+          minSize={14}
+          collapsedSize={0}
+          defaultSize={20}
+          collapsible
+          onResize={size => {
+            if (size <= 4 && LeftSidebarRef.current) LeftSidebarRef.current.collapse();
           }}
+          className="text-muted-foreground flex h-full flex-row p-0"
         >
-          <MiniSidebarTemplate />
+          <AppSidebar />
+        </ResizablePanel>
 
-          <ResizablePanel
-            ref={LeftSidebarRef}
-            minSize={14}
-            collapsedSize={0}
-            defaultSize={20}
-            collapsible
-            onResize={size => {
-              if (size <= 4 && LeftSidebarRef.current) LeftSidebarRef.current.collapse();
-            }}
-            className="text-muted-foreground flex h-full flex-row p-0"
-          >
-            <AppSidebar />
-          </ResizablePanel>
+        <ResizableHandle className="p-0" />
 
-          <ResizableHandle className="p-0" />
+        <ResizablePanel className="flex-1 h-full max-h-full p-0" minSize={8} defaultSize={60}>
+          {/* These components are now frozen during DND updates */}
+          <MainContentArea>{children}</MainContentArea>
+        </ResizablePanel>
 
-          <ResizablePanel className="flex-1 h-full max-h-full p-0" minSize={8} defaultSize={60}>
-            {/* These components are now frozen during DND updates */}
-            <MainContentArea>{children}</MainContentArea>
-          </ResizablePanel>
+        <ResizableHandle />
 
-          <ResizableHandle />
-
-          <ResizablePanel
-            ref={RightSidebarRef}
-            minSize={16}
-            defaultSize={20}
-            collapsible
-            onResize={size => {
-              if (size <= 1 && RightSidebarRef.current) RightSidebarRef.current.collapse();
-            }}
-            className="flex-1 h-full max-h-full p-0"
-          >
-            <RightSidebarArea />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </TreeDndProvider>
+        <ResizablePanel
+          ref={RightSidebarRef}
+          minSize={16}
+          defaultSize={20}
+          collapsible
+          onResize={size => {
+            if (size <= 1 && RightSidebarRef.current) RightSidebarRef.current.collapse();
+          }}
+          className="flex-1 h-full max-h-full p-0"
+        >
+          <RightSidebarArea />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </AppShell>
   );
 }

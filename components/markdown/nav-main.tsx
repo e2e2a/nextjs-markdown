@@ -8,12 +8,14 @@ import { SidebarGroup } from '@/components/ui/sidebar';
 import SidebarItem from '../project/nodes/sidebar-item';
 import { INode } from '@/types';
 import { cn } from '@/lib/utils';
+import SidebarCreateFolderItem from '../project/nodes/sidebar-create-folder-item';
+import SidebarCreateFileItem from '../project/nodes/sidebar-create-file-item';
 
 export function NavMain() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
-  const { activeDrag, activeOver, setActiveDrag, setActiveOver } = useNodeStore();
+  const { isCreating, activeDrag, setActiveDrag } = useNodeStore();
 
   // Ref for the final drop logic to avoid unnecessary re-renders
   const targetIdRef = useRef<string | null>(null);
@@ -26,11 +28,10 @@ export function NavMain() {
       console.log(`Moving ${dragged.title} -> ${targetIdRef.current}`);
       // API Call here
     }
-    setActiveOver(null);
     setActiveDrag(null);
     targetIdRef.current = null;
   };
-
+  const isCreatingAtRoot = isCreating && isCreating.parentId === null;
   return (
     <div
       data-id={'root'}
@@ -42,6 +43,7 @@ export function NavMain() {
       )}
     >
       <SidebarGroup className="p-0! h-auto">
+        {isCreatingAtRoot && isCreating.type === 'folder' && <SidebarCreateFolderItem depth={0} />}
         {folders.map(item => (
           <SidebarItem
             key={item._id}
@@ -49,20 +51,19 @@ export function NavMain() {
             depth={0}
             targetIdRef={targetIdRef}
             activeDrag={activeDrag}
-            activeOver={activeOver}
             onDragStart={setActiveDrag}
             onDragEnd={handleDragFinished}
           />
         ))}
         {/* Render Files */}
+        {isCreatingAtRoot && isCreating.type === 'file' && <SidebarCreateFileItem depth={2} />}
         {files.map(item => (
           <SidebarItem
             key={item._id}
             item={item}
-            depth={2}
+            depth={0}
             targetIdRef={targetIdRef}
             activeDrag={activeDrag}
-            activeOver={activeOver}
             onDragStart={setActiveDrag}
             onDragEnd={handleDragFinished}
           />

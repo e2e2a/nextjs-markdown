@@ -1,14 +1,16 @@
 'use client';
-import React, { useMemo, useState, DragEvent } from 'react';
+import React, { useEffect, useState, DragEvent } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
+import { SidebarGroupContent, SidebarMenu } from '../../ui/sidebar';
+import { SidebarContextMenu } from '../../markdown/sidebar-context-menu';
 import { cn } from '@/lib/utils';
 import { INode } from '@/types';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { groupNodes } from '@/utils/node-utils';
 import SidebarFileItem from './sidebar-file-item';
+import SidebarCreateFileItem from './sidebar-create-file-item';
+import { groupNodes } from '@/utils/node-utils';
+import SidebarCreateFolderItem from './sidebar-create-folder-item';
 import SidebarFolderItem from './sidebar-folder-item';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
-import { SidebarMenu, SidebarGroupContent } from '../../ui/sidebar';
-import { SidebarContextMenu } from '../../markdown/sidebar-context-menu';
 
 function clearAllFolderDragOver() {
   document.querySelectorAll('[data-drag-over]').forEach(el => el.removeAttribute('data-drag-over'));
@@ -27,29 +29,56 @@ interface IProps {
   depth: number;
   targetIdRef: React.RefObject<string | null>;
   activeDrag: INode | null;
-  activeOver: INode | null;
   isParentDragging?: boolean;
   onDragStart: (node: INode) => void;
   onDragEnd: (dragged: INode | null) => void;
+}
+interface IProps {
+  item: INode;
+  depth: number;
 }
 
 export default function SidebarItem({
   item,
   depth,
   activeDrag,
-  activeOver,
   targetIdRef,
   isParentDragging = false,
   onDragStart,
   onDragEnd,
 }: IProps) {
-  const { isUpdatingNode } = useNodeStore();
-  const [isOpen, setIsOpen] = useState(false);
+  const localStorageKey = `sidebar-folder-open-${item._id}`;
+  const { isCreating, collapseVersion, isUpdatingNode } = useNodeStore();
+  const [isOpen, setIsOpen] = useState(() => {
+    try {
+      return localStorage.getItem(localStorageKey) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [prevVersion, setPrevVersion] = useState(collapseVersion);
 
-  // 2. Relation Logic
+  if (collapseVersion !== prevVersion) {
+    setPrevVersion(collapseVersion);
+    setIsOpen(false);
+  }
+
+  useEffect(() => {
+    localStorage.setItem(localStorageKey, String(isOpen));
+  }, [localStorageKey, isOpen]);
+  const isCreatingHere = isCreating && isCreating.parentId === item._id;
+
   const isDirectTarget = activeDrag?._id === item._id;
   const isInForbiddenZone = isDirectTarget || isParentDragging;
 
+  useEffect(() => {
+    if (isCreatingHere)
+      requestAnimationFrame(() => {
+        setIsOpen(true);
+      });
+  }, [isCreatingHere]);
+
+  const { folders, files } = groupNodes(item.children);
   const handleDragStart = (e: DragEvent) => {
     e.dataTransfer.effectAllowed = 'move';
     onDragStart(item);
@@ -69,9 +98,6 @@ export default function SidebarItem({
       }
     }, 0);
   };
-
-  const { folders, files } = useMemo(() => groupNodes(item.children || []), [item.children]);
-
   const commonDragEvents = {
     onDragOver: (e: DragEvent) => {
       e.preventDefault();
@@ -97,6 +123,7 @@ export default function SidebarItem({
         clearAllFolderDragOver();
       }
     },
+
     onDragEnter: (e: DragEvent) => e.preventDefault(),
     onDrop: (e: DragEvent) => {
       e.preventDefault();
@@ -110,89 +137,91 @@ export default function SidebarItem({
     },
   };
 
-  // --- FILE RENDERING ---
   if (item.type === 'file') {
     return (
-      <div
-        draggable="true"
-        onDragStart={handleDragStart}
-        data-id={item._id}
-        {...commonDragEvents}
-        className={cn('relative w-full transition-colors duration-0 select-none ')}
-      >
-        <SidebarFileItem item={item} depth={depth} />
-      </div>
+      <SidebarContextMenu node={item}>
+        <div
+          onDragStart={handleDragStart}
+          draggable="true"
+          data-id={item._id}
+          {...commonDragEvents}
+          className={cn(
+            'flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0'
+          )}
+        >
+          <SidebarFileItem item={item} depth={!item.parentId ? depth + 2 : depth} />
+        </div>
+      </SidebarContextMenu>
     );
   }
 
-  // --- FOLDER RENDERING ---
   return (
-    <SidebarMenu className="gap-0 p-0">
-      <Collapsible
-        open={isOpen}
-        onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
-        data-id={item._id}
-        className={cn(
-          'transition-none',
-          !isInForbiddenZone && activeDrag?.parentId !== item._id
-            ? 'data-[drag-over=true]:bg-accent/50 data-[drag-over=true]:ring-1 data-[drag-over=true]:ring-inset data-[drag-over=true]:ring-accent'
-            : ''
-        )}
-      >
-        <CollapsibleTrigger asChild>
-          <div
-            className={cn(
-              'group/folder-row relative w-full transition-colors duration-0 cursor-pointer pointer-events-auto!'
-            )}
-            draggable="true"
-            onDragStart={handleDragStart}
-            {...commonDragEvents}
-          >
-            <SidebarContextMenu node={item}>
-              <SidebarFolderItem item={item} isOpen={isOpen} depth={depth} />
-            </SidebarContextMenu>
-          </div>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent className="relative transition-none">
-          <div
-            aria-hidden
-            className="absolute left-0 top-0 bottom-0 w-px bg-border"
-            style={{ left: (depth + 1) * 8 }}
-          />
-
-          <SidebarGroupContent className={cn('transition-none duration-0 gap-0! space-y-0! p-0!')}>
-            <SidebarMenu className={cn(' gap-0! space-y-0! p-0!')}>
-              {folders.map(child => (
-                <SidebarItem
-                  key={child._id}
-                  item={child}
-                  depth={depth + 1}
-                  activeDrag={activeDrag}
-                  activeOver={activeOver}
-                  targetIdRef={targetIdRef}
-                  isParentDragging={isInForbiddenZone}
-                  onDragStart={onDragStart}
-                  onDragEnd={onDragEnd}
-                />
-              ))}
-              {files.map(child => (
-                <SidebarItem
-                  key={child._id}
-                  item={child}
-                  depth={depth + 3}
-                  activeDrag={activeDrag}
-                  activeOver={activeOver}
-                  targetIdRef={targetIdRef}
-                  isParentDragging={isInForbiddenZone}
-                  onDragStart={onDragStart}
-                  onDragEnd={onDragEnd}
-                />
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </CollapsibleContent>
-      </Collapsible>
-    </SidebarMenu>
+    <>
+      <SidebarMenu className="gap-0! p-0! ">
+        <Collapsible
+          key={item.title}
+          open={isOpen}
+          onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
+          className={cn(
+            'transition-none leading-none',
+            !isInForbiddenZone && activeDrag?.parentId !== item._id
+              ? 'data-[drag-over=true]:bg-accent/50 data-[drag-over=true]:ring-1 data-[drag-over=true]:ring-inset data-[drag-over=true]:ring-accent'
+              : ''
+          )}
+        >
+          <CollapsibleTrigger disabled={isUpdatingNode?._id === item._id} asChild>
+            <div
+              className="w-full focus:outline-none gap-0 cursor-pointer"
+              onDragStart={handleDragStart}
+              draggable="true"
+              data-id={item._id}
+              {...commonDragEvents}
+            >
+              <SidebarContextMenu node={item}>
+                <div className="">
+                  <SidebarFolderItem item={item} isOpen={isOpen} depth={depth} />
+                </div>
+              </SidebarContextMenu>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-0! space-y-0! p-0!">
+                {isCreatingHere && isCreating.type === 'folder' && (
+                  <SidebarCreateFolderItem depth={depth + 2} />
+                )}
+                {folders.map(child => (
+                  <SidebarItem
+                    key={child._id}
+                    item={child}
+                    depth={depth + 1}
+                    activeDrag={activeDrag}
+                    targetIdRef={targetIdRef}
+                    isParentDragging={isInForbiddenZone}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                  />
+                ))}
+                {isCreatingHere && isCreating.type === 'file' && (
+                  <SidebarCreateFileItem depth={depth + 3} />
+                )}
+                {files.map(child => (
+                  <SidebarItem
+                    key={child._id}
+                    item={child}
+                    depth={depth + 3}
+                    activeDrag={activeDrag}
+                    targetIdRef={targetIdRef}
+                    isParentDragging={isInForbiddenZone}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </SidebarMenu>
+    </>
   );
 }

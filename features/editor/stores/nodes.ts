@@ -7,7 +7,6 @@ interface NodesState {
 
   /** Currently selected node (file or folder) in sidebar */
   activeDrag: INode | null;
-  activeOver: INode | null;
   activeNode: INode | null;
   selectedNode: INode | null;
 
@@ -33,7 +32,6 @@ interface NodesState {
   setCollapseAll(flag: boolean): void;
 
   setActiveDrag(node: INode | null): void;
-  setActiveOver(node: INode | null): void;
   setSelectedNode(node: INode | null): void;
   setActiveNode(node: INode | null): void;
 
@@ -44,7 +42,6 @@ interface NodesState {
 export const useNodeStore = create<NodesState>(set => ({
   // activeFile: null,
   activeNode: null,
-  activeOver: null,
   activeDrag: null,
   selectedNode: null,
   updatedNode: null,
@@ -60,7 +57,6 @@ export const useNodeStore = create<NodesState>(set => ({
   // },
   setActiveNode: node => set({ activeNode: node }),
   setActiveDrag: node => set({ activeDrag: node }),
-  setActiveOver: node => set({ activeOver: node }),
 
   // setActiveFile: file => set({ activeFile: file }),
   setIsCreating: flag => set({ isCreating: flag }),
@@ -81,7 +77,6 @@ export const useNodeStore = create<NodesState>(set => ({
     set({
       activeNode: null,
       activeDrag: null,
-      activeOver: null,
       isCreating: null,
       isUpdatingNode: null,
     }),

@@ -11,10 +11,8 @@ import SidebarCreateFileItem from './sidebar-create-file-item';
 import { groupNodes } from '@/utils/node-utils';
 import SidebarCreateFolderItem from './sidebar-create-folder-item';
 import SidebarFolderItem from './sidebar-folder-item';
+import { clearAllFolderDragOver } from '@/components/markdown/nav-main';
 
-function clearAllFolderDragOver() {
-  document.querySelectorAll('[data-drag-over]').forEach(el => el.removeAttribute('data-drag-over'));
-}
 function getHighlightTargetId(item: INode) {
   if (item.type === 'file') {
     if (!item.parentId) return 'root';
@@ -128,10 +126,11 @@ export default function SidebarItem({
 
     onDragLeave: (e: DragEvent) => {
       e.preventDefault();
+
+      clearOpenFolderTimeout();
       const relatedTarget = e.relatedTarget as HTMLElement | null;
       if (!relatedTarget || !relatedTarget.closest(`[data-id="${targetIdRef.current}"]`)) {
         targetIdRef.current = null;
-        clearOpenFolderTimeout();
         clearAllFolderDragOver();
       }
     },

@@ -70,7 +70,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
         id={`sidebar-edit-item-${item._id}`}
         className={cn(
           "[&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0",
-          'inline-flex items-center transition-none shrink-0 gap-0 duration-0 h-auto leading-none py-0.5 rounded-none bg-transparent active:ring-0 hover:bg-accent text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate'
+          'inline-flex items-center transition-none shrink-0 gap-0 duration-0 h-fit leading-none py-0.5 rounded-none bg-transparent active:ring-0 hover:bg-accent text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate'
         )}
         style={{
           paddingLeft: `${depth * 8}px`,
@@ -101,7 +101,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
       onClick={() => handleNodeClick(item)}
       tabIndex={0}
       className={cn(
-        'transition-none pointer-events-auto gap-0 flex duration-0 h-auto leading-none py-0.5 rounded-none bg-transparent active:ring-0 text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
+        'transition-none pointer-events-auto gap-0 flex duration-0 h-fit leading-none py-0.5 rounded-none bg-transparent active:ring-0 text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
         activeNode?._id === item._id
           ? 'bg-primary hover:bg-primary text-foreground focus:bg-primary focus:text-primary-foreground focus:hover:bg-primary!'
           : 'hover:bg-accent/50! hover:text-accent-foreground',

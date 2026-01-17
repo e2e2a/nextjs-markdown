@@ -11,6 +11,7 @@ import { ReactNode } from 'react';
 import { DangerConfirmDialog } from '../danger-confirm-dialog';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface ContainerProps {
   children: ReactNode;
@@ -52,7 +53,7 @@ export function SidebarContextMenu({ children, node }: ContainerProps) {
       }}
       modal={true}
     >
-      <ContextMenuTrigger className="min-h-full max-h-full h-full w-full contents" asChild>
+      <ContextMenuTrigger className={cn('h-auto w-full contents')} asChild>
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent

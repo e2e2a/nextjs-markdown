@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, DragEvent } from 'react';
+import React, { useEffect, useState, DragEvent, useRef } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
 import { SidebarGroupContent, SidebarMenu } from '../../ui/sidebar';
 import { SidebarContextMenu } from '../../markdown/sidebar-context-menu';
@@ -33,10 +33,6 @@ interface IProps {
   onDragStart: (node: INode) => void;
   onDragEnd: (dragged: INode | null) => void;
 }
-interface IProps {
-  item: INode;
-  depth: number;
-}
 
 export default function SidebarItem({
   item,
@@ -48,7 +44,9 @@ export default function SidebarItem({
   onDragEnd,
 }: IProps) {
   const localStorageKey = `sidebar-folder-open-${item._id}`;
-  const { isCreating, collapseVersion, isUpdatingNode } = useNodeStore();
+  const hoverTimeoutRef = useRef<number | null>(null);
+
+  const { isCreating, activeNode, collapseVersion, isUpdatingNode } = useNodeStore();
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return localStorage.getItem(localStorageKey) === 'true';
@@ -56,8 +54,8 @@ export default function SidebarItem({
       return false;
     }
   });
-  const [prevVersion, setPrevVersion] = useState(collapseVersion);
 
+  const [prevVersion, setPrevVersion] = useState(collapseVersion);
   if (collapseVersion !== prevVersion) {
     setPrevVersion(collapseVersion);
     setIsOpen(false);
@@ -78,7 +76,13 @@ export default function SidebarItem({
       });
   }, [isCreatingHere]);
 
-  const { folders, files } = groupNodes(item.children);
+  const clearOpenFolderTimeout = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
   const handleDragStart = (e: DragEvent) => {
     e.dataTransfer.effectAllowed = 'move';
     onDragStart(item);
@@ -106,20 +110,28 @@ export default function SidebarItem({
       const targetId = getHighlightTargetId(item);
       // Clear previous hover if it's a different node
       if (targetIdRef.current !== targetId) {
+        clearOpenFolderTimeout();
         clearAllFolderDragOver();
         targetIdRef.current = targetId;
       }
 
       const el = document.querySelector(`[data-id="${targetId}"]`) as HTMLElement | null;
       el?.setAttribute('data-drag-over', 'true');
+
+      if (!isOpen && item.type === 'folder' && !hoverTimeoutRef.current) {
+        hoverTimeoutRef.current = window.setTimeout(() => {
+          setIsOpen(true);
+          hoverTimeoutRef.current = null;
+        }, 1000);
+      }
     },
 
     onDragLeave: (e: DragEvent) => {
       e.preventDefault();
-
       const relatedTarget = e.relatedTarget as HTMLElement | null;
       if (!relatedTarget || !relatedTarget.closest(`[data-id="${targetIdRef.current}"]`)) {
         targetIdRef.current = null;
+        clearOpenFolderTimeout();
         clearAllFolderDragOver();
       }
     },
@@ -127,7 +139,7 @@ export default function SidebarItem({
     onDragEnter: (e: DragEvent) => e.preventDefault(),
     onDrop: (e: DragEvent) => {
       e.preventDefault();
-      e.stopPropagation();
+      // e.stopPropagation();
       if (!isInForbiddenZone) {
         onDragEnd(item);
       } else {
@@ -136,7 +148,7 @@ export default function SidebarItem({
       clearAllFolderDragOver();
     },
   };
-
+  const { folders, files } = groupNodes(item.children);
   if (item.type === 'file') {
     return (
       <SidebarContextMenu node={item}>
@@ -161,11 +173,12 @@ export default function SidebarItem({
         <Collapsible
           key={item.title}
           open={isOpen}
+          data-id={item._id}
           onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
           className={cn(
-            'transition-none leading-none',
+            'transition-none leading-none z-0',
             !isInForbiddenZone && activeDrag?.parentId !== item._id
-              ? 'data-[drag-over=true]:bg-accent/50 data-[drag-over=true]:ring-1 data-[drag-over=true]:ring-inset data-[drag-over=true]:ring-accent'
+              ? 'data-[drag-over=true]:bg-accent/50 data-[drag-over=true]:ring-1 data-[drag-over=true]:ring-inset data-[drag-over=true]:ring-accent '
               : ''
           )}
         >
@@ -174,7 +187,6 @@ export default function SidebarItem({
               className="w-full focus:outline-none gap-0 cursor-pointer"
               onDragStart={handleDragStart}
               draggable="true"
-              data-id={item._id}
               {...commonDragEvents}
             >
               <SidebarContextMenu node={item}>
@@ -184,7 +196,19 @@ export default function SidebarItem({
               </SidebarContextMenu>
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent>
+          <CollapsibleContent className="relative transition-none">
+            <div
+              aria-hidden
+              className={cn(
+                'absolute opacity-0 left-0 top-0 bottom-0 w-[0.5px] bg-foreground/10 z-5 group-hover/nodes-border-level:opacity-100',
+                activeNode &&
+                  ((activeNode.type === 'folder' && activeNode._id === item._id) ||
+                    (activeNode.type === 'file' && activeNode.parentId === item._id)) &&
+                  'opacity-100'
+              )}
+              style={{ left: (depth + 1) * 8 }}
+            />
+
             <SidebarGroupContent>
               <SidebarMenu className="gap-0! space-y-0! p-0!">
                 {isCreatingHere && isCreating.type === 'folder' && (

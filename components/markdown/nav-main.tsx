@@ -36,7 +36,7 @@ export function NavMain() {
     <div
       data-id={'root'}
       className={cn(
-        'h-full w-full',
+        'h-full w-full group/nodes-border-level',
         activeDrag &&
           activeDrag.parentId &&
           'data-[drag-over=true]:bg-accent/50 data-[drag-over=true]:ring-1 data-[drag-over=true]:ring-inset data-[drag-over=true]:ring-accent'

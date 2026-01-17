@@ -70,8 +70,8 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarHeader>
 
-          <div className="h-full overflow-y-auto">
-            <SidebarContent className="ml-0 p-0! space-y-0! h-full  overflow-y-auto">
+          <div className="h-full">
+            <SidebarContent className="ml-0 p-0! space-y-0! h-full overflow-y-hidden">
               <NavMain />
             </SidebarContent>
           </div>

@@ -14,8 +14,12 @@ interface OperationUpdate {
   prev: Partial<INode>;
   next: Partial<INode>;
 }
+interface OperationCreate {
+  type: 'create';
+  node: INode;
+}
 
-type NodeOperation = OperationMove | OperationUpdate;
+type NodeOperation = OperationMove | OperationUpdate | OperationCreate;
 
 function findNode(nodes: INode[], id: string): INode | null {
   for (const node of nodes) {
@@ -100,6 +104,7 @@ interface NodesState {
   setActiveNode(node: INode | null): void;
 
   setNodes(nodes: INode[] | null): void;
+  createNodeWithUndo(node: INode): void;
   moveNode(dragId: string, targetId: string): void;
 
   undo(): NodeOperation | null;
@@ -177,7 +182,18 @@ export const useNodeStore = create<NodesState>(set => ({
 
     set(state => ({ collapseVersion: state.collapseVersion + 1 }));
   },
+  createNodeWithUndo: (node: INode) => {
+    set(state => {
+      if (!state.nodes) state.nodes = [];
+      const nodes = structuredClone(state.nodes);
+      insertNode(nodes, node, node.parentId);
 
+      return {
+        nodes,
+        previousOperations: [...state.previousOperations, { type: 'create', node }],
+      };
+    });
+  },
   moveNode: (draggedId: string, targetId: string) => {
     set(state => {
       if (!state.nodes) return state;
@@ -191,10 +207,8 @@ export const useNodeStore = create<NodesState>(set => ({
       const fromParentId = dragged.parentId;
       const newParentId = targetId === 'root' ? null : targetId;
 
-      // 🚫 no-op guard
       if (fromParentId === newParentId) return state;
 
-      // 1️⃣ VALIDATE FIRST (no mutation yet)
       const siblings = getSiblings(nodes, newParentId);
 
       const siblingConflict = siblings.find(
@@ -310,7 +324,16 @@ export const useNodeStore = create<NodesState>(set => ({
 
         Object.assign(node, prev);
       }
+      // ================= CREATE UNDO =================
+      if (op.type === 'create') {
+        const createdNodeId = op.node._id;
+        const removed = removeNode(nodes, createdNodeId);
 
+        if (!removed) {
+          error = 'Cannot undo create: node missing';
+          return state;
+        }
+      }
       return {
         nodes,
         previousOperations: operations,

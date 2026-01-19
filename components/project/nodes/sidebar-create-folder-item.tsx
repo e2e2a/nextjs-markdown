@@ -37,10 +37,11 @@ const SidebarCreateFolderItem = ({ depth }: IProps) => {
       title: title as string,
     };
     mutation.create.mutate(payload, {
-      onSuccess: () => {
+      onSuccess: data => {
         setTimeout(() => {
           setIsCreating(null);
         }, 100);
+        useNodeStore.getState().createNodeWithUndo(data);
         return;
       },
       onError: err => {

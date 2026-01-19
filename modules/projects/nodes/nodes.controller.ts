@@ -33,7 +33,7 @@ export const nodeController = {
       throw new HttpError('BAD_INPUT', errorMessage);
     }
 
-    const updatedNode = await nodeService.create(session.user.email, validatedBody.data);
-    return updatedNode;
+    const node = await nodeService.create(session.user.email, validatedBody.data);
+    return node;
   },
 };

@@ -37,8 +37,12 @@ const SidebarCreateFileItem = ({ depth }: IProps) => {
     };
 
     mutation.create.mutate(payload, {
-      onSuccess: () => {
-        setIsCreating(null);
+      onSuccess: data => {
+        console.log('data', data);
+        useNodeStore.getState().createNodeWithUndo(data);
+        setTimeout(() => {
+          setIsCreating(null);
+        }, 100);
         return;
       },
       onError: err => {

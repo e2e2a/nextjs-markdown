@@ -36,7 +36,7 @@ export type INode = {
   _id: string;
   userId?: string;
   projectId: string;
-  parentId: string;
+  parentId: string | null;
   type: string;
   children: INode[];
   title?: string | null;

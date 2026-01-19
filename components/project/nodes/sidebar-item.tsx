@@ -154,10 +154,11 @@ export default function SidebarItem({
         <div
           onDragStart={handleDragStart}
           draggable="true"
-          data-id={item._id}
+          data-id={item.parentId ?? 'root'}
           {...commonDragEvents}
           className={cn(
-            'flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0'
+            'flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0',
+            activeDrag && '*:hover:bg-transparent!'
           )}
         >
           <SidebarFileItem item={item} depth={!item.parentId ? depth + 2 : depth} />
@@ -168,14 +169,15 @@ export default function SidebarItem({
 
   return (
     <>
-      <SidebarMenu className="gap-0! p-0! ">
+      <SidebarMenu className="gap-0! p-0!">
         <Collapsible
           key={item.title}
           open={isOpen}
-          data-id={item._id}
+          data-id={item._id ?? 'root'}
           onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
           className={cn(
             'transition-none leading-none z-0',
+            activeDrag && '*:hover:bg-transparent!',
             !isInForbiddenZone && activeDrag?.parentId !== item._id
               ? 'data-[drag-over=true]:bg-accent/50 data-[drag-over=true]:ring-1 data-[drag-over=true]:ring-inset data-[drag-over=true]:ring-accent '
               : ''

@@ -1,5 +1,5 @@
 'use client';
-import { useRef, DragEvent } from 'react';
+import { useRef, DragEvent, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { groupNodes } from '@/utils/node-utils';
@@ -17,21 +17,51 @@ export function NavMain() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
-  const { isCreating, activeDrag, setActiveDrag } = useNodeStore();
+  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode } = useNodeStore();
+
+  useEffect(() => {
+    setNodes(nData?.nodes);
+  }, [nData?.nodes, setNodes]);
 
   // Ref for the final drop logic to avoid unnecessary re-renders
   const targetIdRef = useRef<string | null>(null);
 
   if (nLoading) return <div>Loading...</div>;
-  const { folders, files } = groupNodes(nData?.nodes || []);
+  const { folders, files } = groupNodes(nodes || []);
 
-  const handleDragFinished = (dragged: INode | null) => {
-    if (dragged && targetIdRef.current) {
-      console.log(`Moving ${dragged.title} -> ${targetIdRef.current}`);
-      // API Call here
-    }
+  // const handleDragFinished = (dragged: INode | null) => {
+  //   if (dragged && targetIdRef.current) {
+  //     console.log(`Moving ${dragged.title} -> ${targetIdRef.current}`);
+  //     // API Call here
+  //   }
+  //   setActiveDrag(null);
+  //   targetIdRef.current = null;
+  // };
+
+  const handleDragFinished = (target: INode | null) => {
+    const dragged = activeDrag;
+    const targetId = targetIdRef.current;
+    console.log('dragged', dragged);
+    console.log('targetId', targetId);
+    console.log('target', target);
+    // always cleanup
     setActiveDrag(null);
     targetIdRef.current = null;
+
+    // invalid drop
+    if (!dragged || !targetId) return;
+
+    // prevent no-op
+    if (
+      (targetId === 'root' && dragged.parentId === null) ||
+      dragged.parentId === targetId ||
+      dragged._id === targetId
+    ) {
+      return;
+    }
+
+    // valid move
+    moveNode(dragged._id, targetId);
   };
 
   const isCreatingAtRoot = isCreating && isCreating.parentId === null;
@@ -53,7 +83,6 @@ export function NavMain() {
     },
 
     onDragLeave: (e: DragEvent) => {
-      console.log('asd');
       e.preventDefault();
       clearAllFolderDragOver();
     },
@@ -67,7 +96,6 @@ export function NavMain() {
 
   return (
     <div
-      // data-id="root" we remove this id. and rely to the children root id. if that root is drag-over=true this parent will have the style
       className={cn(
         'h-full w-full flex flex-col group/nodes-border-level',
         activeDrag &&
@@ -75,9 +103,7 @@ export function NavMain() {
           'has-[[data-id="root"][data-drag-over="true"]]:bg-accent/50 has-[[data-id="root"][data-drag-over="true"]]:ring-1 has-[[data-id="root"][data-drag-over="true"]]:ring-inset has-[[data-id="root"][data-drag-over="true"]]:ring-accent'
       )}
     >
-      {/* Scrollable sidebar content */}
       <SidebarGroup className="flex-1 flex flex-col p-0 overflow-y-auto">
-        {/* Items at root */}
         {isCreatingAtRoot && isCreating.type === 'folder' && <SidebarCreateFolderItem depth={0} />}
         {folders.map(item => (
           <SidebarItem

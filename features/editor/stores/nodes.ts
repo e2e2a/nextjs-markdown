@@ -1,6 +1,53 @@
 import { INode } from '@/types';
 import { create } from 'zustand';
 
+function findNode(nodes: INode[], id: string): INode | null {
+  for (const node of nodes) {
+    if (node._id === id) return node;
+    if (node.children?.length) {
+      const found = findNode(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function removeNode(nodes: INode[], id: string): boolean {
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (node._id === id) {
+      nodes.splice(i, 1);
+      return true;
+    }
+    if (node.children?.length) {
+      const removed = removeNode(node.children, id);
+      if (removed) return true;
+    }
+  }
+  return false;
+}
+
+function insertNode(nodes: INode[], nodeToInsert: INode, parentId: string | null) {
+  if (parentId === null || parentId === 'root') {
+    // insert at root
+    nodes.push(nodeToInsert);
+    return true;
+  }
+
+  for (const node of nodes) {
+    if (node._id === parentId) {
+      if (!node.children) node.children = [];
+      node.children.push(nodeToInsert);
+      return true;
+    }
+    if (node.children?.length) {
+      const inserted = insertNode(node.children, nodeToInsert, parentId);
+      if (inserted) return true;
+    }
+  }
+  return false;
+}
+
 interface NodesState {
   /** Currently active file for editing */
   // activeFile: INode | null;
@@ -9,6 +56,8 @@ interface NodesState {
   activeDrag: INode | null;
   activeNode: INode | null;
   selectedNode: INode | null;
+
+  nodes: INode[] | null;
 
   /** Currently updated node (file or folder) in sidebar */
   updatedNode: INode | null;
@@ -25,8 +74,6 @@ interface NodesState {
   collapseAll: boolean;
   collapseVersion: number;
 
-  /** Actions */
-  // setActiveFile(file: INode | null): void;
   setIsCreating(node: { type: 'file' | 'folder'; parentId: string | null } | null): void;
   setIsUpdatingNode(flag: INode | null): void;
   setCollapseAll(flag: boolean): void;
@@ -35,12 +82,14 @@ interface NodesState {
   setSelectedNode(node: INode | null): void;
   setActiveNode(node: INode | null): void;
 
+  setNodes(nodes: INode[] | null): void;
+  moveNode(dragId: string, targetId: string): void;
   /** Utility to reset editor state */
   resetEditor(): void;
 }
 
 export const useNodeStore = create<NodesState>(set => ({
-  // activeFile: null,
+  nodes: null,
   activeNode: null,
   activeDrag: null,
   selectedNode: null,
@@ -51,16 +100,13 @@ export const useNodeStore = create<NodesState>(set => ({
   collapseVersion: 0,
 
   setSelectedNode: node => set({ selectedNode: node }),
-  // setSelectedNode: node => {
-  //   console.log('Setting selectedNode to:', node);
-  //   set({ selectedNode: node });
-  // },
   setActiveNode: node => set({ activeNode: node }),
   setActiveDrag: node => set({ activeDrag: node }),
 
-  // setActiveFile: file => set({ activeFile: file }),
   setIsCreating: flag => set({ isCreating: flag }),
   setIsUpdatingNode: flag => set({ isUpdatingNode: flag }),
+
+  setNodes: nodes => set({ nodes }),
 
   setCollapseAll: () => {
     for (let i = localStorage.length - 1; i >= 0; i--) {
@@ -71,6 +117,26 @@ export const useNodeStore = create<NodesState>(set => ({
     }
 
     set(state => ({ collapseVersion: state.collapseVersion + 1 }));
+  },
+
+  moveNode(dragId: string, targetId: string) {
+    set(state => {
+      const nodes = structuredClone(state.nodes); // clone to avoid mutating previous state
+      if (!nodes || nodes.length === 0) return state;
+      const dragged = findNode(nodes, dragId);
+      if (!dragged) return state;
+      console.log('nodesdragged', dragged);
+      // remove from old parent
+      removeNode(nodes, dragId);
+
+      // update parentId
+      dragged.parentId = targetId === 'root' ? null : targetId;
+
+      // insert into new parent
+      insertNode(nodes, dragged, targetId);
+
+      return { nodes };
+    });
   },
 
   resetEditor: () =>

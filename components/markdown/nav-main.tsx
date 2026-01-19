@@ -10,6 +10,7 @@ import { INode } from '@/types';
 import { cn } from '@/lib/utils';
 import SidebarCreateFolderItem from '../project/nodes/sidebar-create-folder-item';
 import SidebarCreateFileItem from '../project/nodes/sidebar-create-file-item';
+import { makeToastError } from '@/lib/toast';
 export function clearAllFolderDragOver() {
   document.querySelectorAll('[data-drag-over]').forEach(el => el.removeAttribute('data-drag-over'));
 }
@@ -43,7 +44,7 @@ export function NavMain() {
   if (nLoading) return <div>Loading...</div>;
   const { folders, files } = groupNodes(nodes || []);
 
-  const handleDragFinished = (target: INode | null) => {
+  const handleDragFinished = () => {
     const dragged = activeDrag;
     const targetId = targetIdRef.current;
 
@@ -56,18 +57,28 @@ export function NavMain() {
 
     // prevent no-op
     // if ((targetId === 'root' && dragged.parentId === null) || dragged.parentId === targetId) return;
-    console.log('asd', !!(targetId === 'root' && dragged.parentId === null));
     if (targetId === 'root' && dragged.parentId === null) return;
     console.log('dragged', dragged);
-    console.log('targetId', targetId);
-    console.log('target', target);
-    moveNode(dragged._id, targetId);
-    requestAnimationFrame(() => {
-      document.getElementById('sidebar-tree-nodes')?.focus();
-    });
+    // console.log('targetId', targetId);
+    // console.log('target', target);
     try {
+      moveNode(dragged._id, targetId);
+
+      requestAnimationFrame(() => {
+        document.getElementById('sidebar-tree-nodes')?.focus();
+      });
+
       //for mutation and api responses
-    } catch {
+    } catch (err) {
+      let message = 'Unknown Error';
+      if (err instanceof Error) {
+        message = err.message;
+        console.log('Error message:', err.message); // -> "title Exist"
+      } else {
+        message = err as string;
+        console.log('Unknown error', err);
+      }
+      makeToastError(message);
       rollbackNodes();
     }
   };
@@ -100,7 +111,7 @@ export function NavMain() {
       e.preventDefault();
       // e.stopPropagation();
       clearAllFolderDragOver();
-      handleDragFinished(null);
+      handleDragFinished();
     },
   };
 

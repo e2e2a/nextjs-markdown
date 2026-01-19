@@ -41,27 +41,38 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
       setIsUpdatingNode(null);
       return;
     }
-
-    const payload = {
-      _id: item._id,
-      pid: item.projectId,
-      title: title as string,
-    };
-    mutation.update.mutate(payload, {
-      onSuccess: () => {
-        setTimeout(() => {
+    try {
+      useNodeStore.getState().updateNode(item._id, { title: trimmed });
+      setIsUpdatingNode(null);
+      const payload = {
+        _id: item._id,
+        pid: item.projectId,
+        title: title as string,
+      };
+      mutation.update.mutate(payload, {
+        onError: err => {
+          makeToastError(err.message);
+          return;
+        },
+        onSettled: () => {
           setIsUpdatingNode(null);
-        }, 100);
-        return;
-      },
-      onError: err => {
-        makeToastError(err.message);
-        return;
-      },
-      onSettled: () => {
-        setDisabled(false);
-      },
-    });
+          setDisabled(false);
+        },
+      });
+    } catch (err) {
+      console.log('err', err);
+      let message = 'Unknown Error';
+      if (err instanceof Error) {
+        message = err.message;
+        console.log('Error message:', err.message);
+      } else {
+        message = err as string;
+        console.log('Unknown error', err);
+      }
+      makeToastError(message);
+    } finally {
+      setIsUpdatingNode(null);
+    }
   };
 
   if (isUpdatingNode && isUpdatingNode._id === item._id)
@@ -70,7 +81,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
         id={`sidebar-edit-item-${item._id}`}
         className={cn(
           "[&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0",
-          'inline-flex items-center transition-none shrink-0 gap-0 duration-0 h-fit leading-none py-0.5 rounded-none bg-transparent active:ring-0 hover:bg-accent text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate'
+          'inline-flex items-center transition-none shrink-0 gap-0 duration-0 h-auto leading-none py-0.5 rounded-none bg-transparent active:ring-0 hover:bg-accent text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate'
         )}
         style={{
           paddingLeft: `${depth * 8}px`,

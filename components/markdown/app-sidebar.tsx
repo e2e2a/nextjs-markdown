@@ -8,12 +8,13 @@ import { useParams } from 'next/navigation';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { useEffect } from 'react';
+import { makeToastError } from '@/lib/toast';
 
 export function AppSidebar() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: pData, isLoading: pLoading } = useProjectByIdQuery(pid);
-  const { setCollapseAll, selectedNode, setIsCreating, undoMove } = useNodeStore();
+  const { setCollapseAll, selectedNode, setIsCreating, undo } = useNodeStore();
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isMac = navigator.platform.toUpperCase().includes('MAC');
@@ -36,22 +37,30 @@ export function AppSidebar() {
       e.preventDefault();
 
       // ✅ User intent undo
-      const op = undoMove();
-      if (op) {
-        // call API to move nodes back to previous state
-        // syncNodesToServer(snapshot);
+      // call API to move nodes back to previous state
+      // syncNodesToServer(snapshot);
 
-        try {
+      try {
+        const op = undo();
+        if (op) {
           console.log('op', op);
-        } catch (err) {
-          console.log('err', err);
         }
+      } catch (err) {
+        let message = 'Unknown Error';
+        if (err instanceof Error) {
+          message = err.message;
+          console.log('Error message:', err.message); // -> "title Exist"
+        } else {
+          message = err as string;
+          console.log('Unknown error', err);
+        }
+        makeToastError(message);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undoMove]);
+  }, [undo]);
 
   if (pLoading) return;
   let parentId: string | null = null;

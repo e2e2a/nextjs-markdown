@@ -34,7 +34,7 @@ export function SidebarContextMenu({ children, node }: ContainerProps) {
           // This allows the native browser context menu to appear.
         }}
         onMouseDown={e => e.stopPropagation()}
-        className="min-h-full max-h-full h-full"
+        className="h-auto w-full contents"
       >
         {children}
       </div>

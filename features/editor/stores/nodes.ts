@@ -1,12 +1,21 @@
 import { INode } from '@/types';
 import { create } from 'zustand';
 
-interface NodeOperation {
+interface OperationMove {
   type: 'move';
   draggedId: string;
-  oldParentId: string | null;
-  newParentId: string | null;
+  fromParentId: string | null;
+  toParentId: string | null;
 }
+
+interface OperationUpdate {
+  type: 'update';
+  nodeId: string;
+  prev: Partial<INode>;
+  next: Partial<INode>;
+}
+
+type NodeOperation = OperationMove | OperationUpdate;
 
 function findNode(nodes: INode[], id: string): INode | null {
   for (const node of nodes) {
@@ -55,27 +64,26 @@ function insertNode(nodes: INode[], nodeToInsert: INode, parentId: string | null
   return false;
 }
 
-interface NodesState {
-  /** Currently active file for editing */
-  // activeFile: INode | null;
+function getSiblings(nodes: INode[], parentId: string | null): INode[] {
+  if (parentId === null) {
+    return nodes; // root level
+  }
 
-  /** Currently selected node (file or folder) in sidebar */
+  const parent = findNode(nodes, parentId);
+  return parent?.children ?? [];
+}
+
+interface NodesState {
   activeDrag: INode | null;
   activeNode: INode | null;
   selectedNode: INode | null;
 
   nodes: INode[] | null;
   previousNodes: INode[][];
-  previousOperations: NodeOperation[]; // <<< add this
+  previousOperations: NodeOperation[];
 
-  /** Currently updated node (file or folder) in sidebar */
-  updatedNode: INode | null;
+  updateNode: (nodeId: string, changes: Partial<INode>) => void;
 
-  /** Flags for creating/updating files */
-  /**
-   * function {isCreating}
-   * type is used to display folder or file and parent is where the new node will be show visualy in the tree structure
-   */
   isCreating: { type: 'file' | 'folder'; parentId: string | null } | null;
   isUpdatingNode: INode | null;
 
@@ -94,7 +102,7 @@ interface NodesState {
   setNodes(nodes: INode[] | null): void;
   moveNode(dragId: string, targetId: string): void;
 
-  undoMove(): NodeOperation | null;
+  undo(): NodeOperation | null;
   /** Utility to reset editor state */
 
   rollbackNodes(): INode[] | null;
@@ -111,7 +119,40 @@ export const useNodeStore = create<NodesState>(set => ({
   activeNode: null,
   activeDrag: null,
   selectedNode: null,
-  updatedNode: null,
+  updateNode: (nodeId: string, changes: Partial<INode>) => {
+    set(state => {
+      if (!state.nodes) return state;
+      const nodes = structuredClone(state.nodes);
+
+      // const node = nodes.find(n => n._id === nodeId);
+      // if (!node) return state;
+      const node = findNode(nodes, nodeId);
+      if (!node) return state;
+
+      const siblings = getSiblings(nodes, node.parentId);
+
+      const siblingConflict = siblings.find(
+        n =>
+          n.parentId === node.parentId &&
+          n.type === node.type &&
+          n.title?.toLowerCase() === changes.title?.toLowerCase()
+      );
+
+      if (siblingConflict)
+        throw new Error(`A ${node.type} named "${changes.title}" already exists`);
+
+      const prev = { ...node };
+      Object.assign(node, changes);
+
+      return {
+        nodes,
+        previousOperations: [
+          ...state.previousOperations,
+          { type: 'update', nodeId, prev, next: changes },
+        ],
+      };
+    });
+  },
   isCreating: null,
   isUpdatingNode: null,
   collapseAll: false,
@@ -137,62 +178,150 @@ export const useNodeStore = create<NodesState>(set => ({
     set(state => ({ collapseVersion: state.collapseVersion + 1 }));
   },
 
-  moveNode: (dragId: string, targetId: string) => {
+  moveNode: (draggedId: string, targetId: string) => {
     set(state => {
-      if (!state.nodes || state.nodes.length === 0) return state;
+      if (!state.nodes) return state;
+
+      // deep clone → safe sandbox
       const nodes = structuredClone(state.nodes);
-      const dragged = findNode(nodes, dragId);
+
+      const dragged = findNode(nodes, draggedId);
       if (!dragged) return state;
 
-      const oldParentId = dragged.parentId;
+      const fromParentId = dragged.parentId;
+      const newParentId = targetId === 'root' ? null : targetId;
 
-      removeNode(nodes, dragId);
-      dragged.parentId = targetId === 'root' ? null : targetId;
-      insertNode(nodes, dragged, targetId);
+      // 🚫 no-op guard
+      if (fromParentId === newParentId) return state;
 
+      // 1️⃣ VALIDATE FIRST (no mutation yet)
+      const siblings = getSiblings(nodes, newParentId);
+
+      const siblingConflict = siblings.find(
+        n =>
+          n._id !== draggedId &&
+          n.type === dragged.type &&
+          n.title?.toLowerCase() === dragged.title?.toLowerCase()
+      );
+
+      if (siblingConflict) {
+        throw new Error(`Cannot move: ${dragged.type} named "${dragged.title}" already exists.`);
+      }
+
+      // 2️⃣ MUTATE AFTER VALIDATION
+      removeNode(nodes, draggedId);
+
+      const movedNode: INode = {
+        ...dragged,
+        parentId: newParentId,
+      };
+
+      insertNode(nodes, movedNode, newParentId);
+
+      // 3️⃣ PUSH UNDO OP (order matters)
       return {
         nodes,
         previousOperations: [
           ...state.previousOperations,
-          { type: 'move', draggedId: dragId, oldParentId, newParentId: targetId },
+          {
+            type: 'move',
+            draggedId,
+            fromParentId,
+            toParentId: newParentId,
+          },
         ],
       };
     });
   },
 
-  undoMove: () => {
-    let op: NodeOperation | null = null;
+  undo: () => {
+    let undone: NodeOperation | null = null;
+    let error: string | null = null;
 
-    try {
-      set(state => {
-        if (state.previousOperations.length === 0) return state;
+    set(state => {
+      if (!state.nodes || state.previousOperations.length === 0) {
+        return state;
+      }
 
-        const operations = [...state.previousOperations];
-        op = operations.pop()!;
+      const operations = [...state.previousOperations];
+      const op = operations.pop()!;
+      undone = op;
 
-        const nodes = structuredClone(state.nodes);
-        if (!nodes) return state;
+      const nodes = structuredClone(state.nodes);
 
-        if (op.type === 'move') {
-          const dragged = findNode(nodes, op.draggedId);
-          if (!dragged) return state;
-
-          removeNode(nodes, op.draggedId);
-          dragged.parentId = op.oldParentId;
-          insertNode(nodes, dragged, op.oldParentId);
+      // ================= MOVE UNDO =================
+      if (op.type === 'move') {
+        const dragged = findNode(nodes, op.draggedId);
+        if (!dragged) {
+          error = 'Cannot undo: node missing';
+          return state;
         }
 
-        return {
-          nodes,
-          previousOperations: operations,
-        };
-      });
-    } catch (err) {
-      console.error('[undoMove] rollback failed', err);
-      // UI still attempted rollback; we do not rethrow
+        const targetParentId = op.fromParentId;
+
+        // parent must exist (or root)
+        if (targetParentId !== null && !findNode(nodes, targetParentId)) {
+          error = 'Cannot undo: original parent missing';
+          return state;
+        }
+
+        const siblings = getSiblings(nodes, targetParentId);
+        const conflict = siblings.find(
+          n =>
+            n._id !== dragged._id &&
+            n.type === dragged.type &&
+            n.title?.toLowerCase() === dragged.title?.toLowerCase()
+        );
+
+        if (conflict) {
+          error = 'Cannot undo: title conflict';
+          return state;
+        }
+
+        removeNode(nodes, dragged._id);
+        insertNode(nodes, { ...dragged, parentId: targetParentId }, targetParentId);
+      }
+
+      // ================= UPDATE UNDO =================
+      if (op.type === 'update') {
+        const node = findNode(nodes, op.nodeId);
+        if (!node) {
+          error = 'Cannot undo update: node missing';
+          return state;
+        }
+
+        const prev = op.prev;
+        const rollbackParentId = prev.parentId ?? node.parentId;
+        const rollbackTitle = prev.title ?? node.title;
+        const rollbackType = prev.type ?? node.type;
+
+        const siblings = getSiblings(nodes, rollbackParentId);
+        const conflict = siblings.find(
+          n =>
+            n._id !== node._id &&
+            n.type === rollbackType &&
+            n.title?.toLowerCase() === rollbackTitle?.toLowerCase()
+        );
+
+        if (conflict) {
+          error = 'Cannot undo update: title conflict';
+          return state;
+        }
+
+        Object.assign(node, prev);
+      }
+
+      return {
+        nodes,
+        previousOperations: operations,
+      };
+    });
+
+    if (error) {
+      throw new Error(error);
     }
 
-    return op;
+    return undone;
   },
 
   rollbackNodes: () => {

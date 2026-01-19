@@ -43,27 +43,43 @@ const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
       setIsUpdatingNode(null);
       return;
     }
-
-    const payload = {
-      _id: item._id,
-      pid: item.projectId,
-      title: title as string,
-    };
-    mutation.update.mutate(payload, {
-      onSuccess: () => {
-        setTimeout(() => {
-          setIsUpdatingNode(null);
-        }, 100);
-        return;
-      },
-      onError: err => {
-        makeToastError(err.message);
-        return;
-      },
-      onSettled: () => {
-        setDisabled(false);
-      },
-    });
+    try {
+      useNodeStore.getState().updateNode(item._id, { title: trimmed });
+      setIsUpdatingNode(null);
+      const payload = {
+        _id: item._id,
+        pid: item.projectId,
+        title: title as string,
+      };
+      mutation.update.mutate(payload, {
+        onSuccess: () => {
+          setTimeout(() => {
+            setIsUpdatingNode(null);
+          }, 100);
+          return;
+        },
+        onError: err => {
+          makeToastError(err.message);
+          return;
+        },
+        onSettled: () => {
+          setDisabled(false);
+        },
+      });
+    } catch (err) {
+      console.log('err', err);
+      let message = 'Unknown Error';
+      if (err instanceof Error) {
+        message = err.message;
+        console.log('Error message:', err.message);
+      } else {
+        message = err as string;
+        console.log('Unknown error', err);
+      }
+      makeToastError(message);
+    } finally {
+      setIsUpdatingNode(null);
+    }
   };
 
   if (isUpdatingNode && isUpdatingNode._id === item._id)

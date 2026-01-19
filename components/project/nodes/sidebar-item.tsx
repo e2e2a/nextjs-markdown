@@ -41,7 +41,7 @@ interface IProps {
   activeDrag: INode | null;
   isParentDragging?: boolean;
   onDragStart: (node: INode) => void;
-  onDragEnd: (dragged: INode | null) => void;
+  onDragEnd: () => void;
 }
 
 export default function SidebarItem({
@@ -160,7 +160,7 @@ export default function SidebarItem({
           return;
         }
         if (!isOpen && item.type === 'folder') setIsOpen(true);
-        onDragEnd(item);
+        onDragEnd();
       }
     },
   };
@@ -171,7 +171,7 @@ export default function SidebarItem({
       <SidebarContextMenu node={item}>
         <div
           onDragStart={handleDragStart}
-          draggable="true"
+          draggable={isUpdatingNode || isCreating ? 'false' : 'true'}
           data-id={item.parentId ?? 'root'}
           {...commonDragEvents}
           className={cn(

@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef, memo } from 'react';
-import { useParams } from 'next/navigation';
+// import { useParams } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { AppContent } from './app-content';
@@ -10,7 +10,7 @@ import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
+// import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 
 const MainContentArea = memo(function MainContentArea({ children }: { children: React.ReactNode }) {
   return (
@@ -38,9 +38,9 @@ const RightSidebarArea = memo(function RightSidebarArea() {
 });
 
 export default function AppSidebarLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams();
-  const pid = params.pid as string;
-  const { data: nData } = useNodesProjectIdQuery(pid);
+  // const params = useParams();
+  // const pid = params.pid as string;
+  // const { data: nData } = useNodesProjectIdQuery(pid);
   const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode } = useNodeStore();
 
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);

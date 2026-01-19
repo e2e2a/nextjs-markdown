@@ -1,5 +1,5 @@
 'use client';
-import { useRef, DragEvent, useEffect } from 'react';
+import { useRef, DragEvent, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { groupNodes } from '@/utils/node-utils';
@@ -17,7 +17,21 @@ export function NavMain() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
-  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode } = useNodeStore();
+  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode, rollbackNodes } =
+    useNodeStore();
+
+  const nodesById = useMemo(() => {
+    const map: Record<string, INode> = {};
+    const walk = (list?: INode[]) => {
+      if (!list) return;
+      for (const n of list) {
+        map[n._id] = n;
+        walk(n.children);
+      }
+    };
+    walk(nodes ?? []);
+    return map;
+  }, [nodes]);
 
   useEffect(() => {
     setNodes(nData?.nodes);
@@ -29,21 +43,10 @@ export function NavMain() {
   if (nLoading) return <div>Loading...</div>;
   const { folders, files } = groupNodes(nodes || []);
 
-  // const handleDragFinished = (dragged: INode | null) => {
-  //   if (dragged && targetIdRef.current) {
-  //     console.log(`Moving ${dragged.title} -> ${targetIdRef.current}`);
-  //     // API Call here
-  //   }
-  //   setActiveDrag(null);
-  //   targetIdRef.current = null;
-  // };
-
   const handleDragFinished = (target: INode | null) => {
     const dragged = activeDrag;
     const targetId = targetIdRef.current;
-    console.log('dragged', dragged);
-    console.log('targetId', targetId);
-    console.log('target', target);
+
     // always cleanup
     setActiveDrag(null);
     targetIdRef.current = null;
@@ -52,16 +55,21 @@ export function NavMain() {
     if (!dragged || !targetId) return;
 
     // prevent no-op
-    if (
-      (targetId === 'root' && dragged.parentId === null) ||
-      dragged.parentId === targetId ||
-      dragged._id === targetId
-    ) {
-      return;
-    }
-
-    // valid move
+    // if ((targetId === 'root' && dragged.parentId === null) || dragged.parentId === targetId) return;
+    console.log('asd', !!(targetId === 'root' && dragged.parentId === null));
+    if (targetId === 'root' && dragged.parentId === null) return;
+    console.log('dragged', dragged);
+    console.log('targetId', targetId);
+    console.log('target', target);
     moveNode(dragged._id, targetId);
+    requestAnimationFrame(() => {
+      document.getElementById('sidebar-tree-nodes')?.focus();
+    });
+    try {
+      //for mutation and api responses
+    } catch {
+      rollbackNodes();
+    }
   };
 
   const isCreatingAtRoot = isCreating && isCreating.parentId === null;
@@ -91,6 +99,8 @@ export function NavMain() {
     onDrop: (e: DragEvent) => {
       e.preventDefault();
       // e.stopPropagation();
+      clearAllFolderDragOver();
+      handleDragFinished(null);
     },
   };
 
@@ -109,6 +119,7 @@ export function NavMain() {
           <SidebarItem
             key={item._id}
             item={item}
+            nodesById={nodesById}
             depth={0}
             targetIdRef={targetIdRef}
             activeDrag={activeDrag}
@@ -122,6 +133,7 @@ export function NavMain() {
           <SidebarItem
             key={item._id}
             item={item}
+            nodesById={nodesById}
             depth={0}
             targetIdRef={targetIdRef}
             activeDrag={activeDrag}

@@ -1,6 +1,13 @@
 import { INode } from '@/types';
 import { create } from 'zustand';
 
+interface NodeOperation {
+  type: 'move';
+  draggedId: string;
+  oldParentId: string | null;
+  newParentId: string | null;
+}
+
 function findNode(nodes: INode[], id: string): INode | null {
   for (const node of nodes) {
     if (node._id === id) return node;
@@ -58,6 +65,8 @@ interface NodesState {
   selectedNode: INode | null;
 
   nodes: INode[] | null;
+  previousNodes: INode[][];
+  previousOperations: NodeOperation[]; // <<< add this
 
   /** Currently updated node (file or folder) in sidebar */
   updatedNode: INode | null;
@@ -84,12 +93,21 @@ interface NodesState {
 
   setNodes(nodes: INode[] | null): void;
   moveNode(dragId: string, targetId: string): void;
+
+  undoMove(): NodeOperation | null;
   /** Utility to reset editor state */
+
+  rollbackNodes(): INode[] | null;
+  // rollbackNodes(): void;
+
+  clearHistory(): void;
   resetEditor(): void;
 }
 
 export const useNodeStore = create<NodesState>(set => ({
   nodes: null,
+  previousNodes: [],
+  previousOperations: [],
   activeNode: null,
   activeDrag: null,
   selectedNode: null,
@@ -119,25 +137,83 @@ export const useNodeStore = create<NodesState>(set => ({
     set(state => ({ collapseVersion: state.collapseVersion + 1 }));
   },
 
-  moveNode(dragId: string, targetId: string) {
+  moveNode: (dragId: string, targetId: string) => {
     set(state => {
-      const nodes = structuredClone(state.nodes); // clone to avoid mutating previous state
-      if (!nodes || nodes.length === 0) return state;
+      if (!state.nodes || state.nodes.length === 0) return state;
+      const nodes = structuredClone(state.nodes);
       const dragged = findNode(nodes, dragId);
       if (!dragged) return state;
-      console.log('nodesdragged', dragged);
-      // remove from old parent
+
+      const oldParentId = dragged.parentId;
+
       removeNode(nodes, dragId);
-
-      // update parentId
       dragged.parentId = targetId === 'root' ? null : targetId;
-
-      // insert into new parent
       insertNode(nodes, dragged, targetId);
 
-      return { nodes };
+      return {
+        nodes,
+        previousOperations: [
+          ...state.previousOperations,
+          { type: 'move', draggedId: dragId, oldParentId, newParentId: targetId },
+        ],
+      };
     });
   },
+
+  undoMove: () => {
+    let op: NodeOperation | null = null;
+
+    try {
+      set(state => {
+        if (state.previousOperations.length === 0) return state;
+
+        const operations = [...state.previousOperations];
+        op = operations.pop()!;
+
+        const nodes = structuredClone(state.nodes);
+        if (!nodes) return state;
+
+        if (op.type === 'move') {
+          const dragged = findNode(nodes, op.draggedId);
+          if (!dragged) return state;
+
+          removeNode(nodes, op.draggedId);
+          dragged.parentId = op.oldParentId;
+          insertNode(nodes, dragged, op.oldParentId);
+        }
+
+        return {
+          nodes,
+          previousOperations: operations,
+        };
+      });
+    } catch (err) {
+      console.error('[undoMove] rollback failed', err);
+      // UI still attempted rollback; we do not rethrow
+    }
+
+    return op;
+  },
+
+  rollbackNodes: () => {
+    let snapshot: INode[] | null = null;
+
+    set(state => {
+      if (state.previousNodes.length === 0) return state;
+
+      const history = [...state.previousNodes];
+      snapshot = history.pop()!;
+
+      return {
+        nodes: snapshot,
+        previousNodes: history,
+      };
+    });
+
+    return snapshot;
+  },
+
+  clearHistory: () => set({ previousNodes: [] }),
 
   resetEditor: () =>
     set({

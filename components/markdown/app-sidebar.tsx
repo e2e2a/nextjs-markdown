@@ -7,25 +7,68 @@ import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 import { useParams } from 'next/navigation';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
+import { useEffect } from 'react';
 
 export function AppSidebar() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: pData, isLoading: pLoading } = useProjectByIdQuery(pid);
-  const { setCollapseAll, selectedNode, setIsCreating } = useNodeStore();
+  const { setCollapseAll, selectedNode, setIsCreating, undoMove } = useNodeStore();
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const isUndo =
+        (isMac && e.metaKey && e.key === 'z') || (!isMac && e.ctrlKey && e.key === 'z');
+
+      if (!isUndo) return;
+
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      console.log(document.activeElement);
+      const sidebarRoot = document.querySelector('[data-sidebar-node="true"]');
+      // if (!sidebarRoot || !sidebarRoot.contains(target)) return;
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || !sidebarRoot || !sidebarRoot.contains(active)) return;
+      // ignore inputs
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+        return;
+
+      e.preventDefault();
+
+      // ✅ User intent undo
+      const op = undoMove();
+      if (op) {
+        // call API to move nodes back to previous state
+        // syncNodesToServer(snapshot);
+
+        try {
+          console.log('op', op);
+        } catch (err) {
+          console.log('err', err);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undoMove]);
 
   if (pLoading) return;
   let parentId: string | null = null;
   if (selectedNode)
     parentId = selectedNode.type === 'folder' ? selectedNode._id : selectedNode.parentId;
+
   return (
     <Sidebar
+      id="sidebar-tree-nodes"
+      data-sidebar-node="true"
+      tabIndex={-1}
       className="group left-12 w-full border-r bg-none p-0 text-neutral-400"
       collapsible="none"
       variant="inset"
     >
       <SidebarContextMenu node={null}>
-        <div data-sidebar-node="true" className="h-screen overflow-hidden flex flex-col">
+        <div className="h-screen overflow-hidden flex flex-col">
           <SidebarHeader className="h-6 p-0">
             <SidebarMenu className="h-6 flex w-full flex-row items-center justify-center px-1 border-b border-border">
               <div className="font-bold truncate uppercase text-sm w-full text-accent-foreground ">

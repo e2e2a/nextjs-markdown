@@ -13,6 +13,17 @@ import SidebarCreateFolderItem from './sidebar-create-folder-item';
 import SidebarFolderItem from './sidebar-folder-item';
 import { clearAllFolderDragOver } from '@/components/markdown/nav-main';
 
+function isDescendant(draggedId: string, targetId: string, nodesById: Record<string, INode>) {
+  let current = nodesById[targetId];
+
+  while (current?.parentId) {
+    if (current.parentId === draggedId) return true;
+    current = nodesById[current.parentId];
+  }
+
+  return false;
+}
+
 function getHighlightTargetId(item: INode) {
   if (item.type === 'file') {
     if (!item.parentId) return 'root';
@@ -25,6 +36,7 @@ function getHighlightTargetId(item: INode) {
 interface IProps {
   item: INode;
   depth: number;
+  nodesById: Record<string, INode>;
   targetIdRef: React.RefObject<string | null>;
   activeDrag: INode | null;
   isParentDragging?: boolean;
@@ -35,6 +47,7 @@ interface IProps {
 export default function SidebarItem({
   item,
   depth,
+  nodesById,
   activeDrag,
   targetIdRef,
   isParentDragging = false,
@@ -100,6 +113,7 @@ export default function SidebarItem({
       }
     }, 0);
   };
+
   const commonDragEvents = {
     onDragOver: (e: DragEvent) => {
       e.preventDefault();
@@ -139,14 +153,18 @@ export default function SidebarItem({
     onDrop: (e: DragEvent) => {
       e.preventDefault();
       // e.stopPropagation();
-      if (!isInForbiddenZone) {
-        onDragEnd(item);
-      } else {
-        onDragEnd(null);
-      }
+      clearOpenFolderTimeout();
       clearAllFolderDragOver();
+      if (activeDrag?._id !== item.parentId && activeDrag?._id !== item._id) {
+        if (isDescendant(activeDrag?._id as string, item._id, nodesById)) {
+          return;
+        }
+        if (!isOpen && item.type === 'folder') setIsOpen(true);
+        onDragEnd(item);
+      }
     },
   };
+
   const { folders, files } = groupNodes(item.children);
   if (item.type === 'file') {
     return (
@@ -219,6 +237,7 @@ export default function SidebarItem({
                   <SidebarItem
                     key={child._id}
                     item={child}
+                    nodesById={nodesById}
                     depth={depth + 1}
                     activeDrag={activeDrag}
                     targetIdRef={targetIdRef}
@@ -234,6 +253,7 @@ export default function SidebarItem({
                   <SidebarItem
                     key={child._id}
                     item={child}
+                    nodesById={nodesById}
                     depth={depth + 3}
                     activeDrag={activeDrag}
                     targetIdRef={targetIdRef}

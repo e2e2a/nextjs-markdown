@@ -40,6 +40,9 @@ export const nodeRepository = {
   updateOne: (dataToFind: { _id: string }, dataToUpdate: Partial<INode>): Promise<INode | null> =>
     Node.findOneAndUpdate(dataToFind, dataToUpdate, updateOptions).lean<INode>().exec(),
 
+  deleteOne: (dataToFind: { _id: string }): Promise<INode | null> =>
+    Node.findOneAndDelete(dataToFind).lean<INode>().exec(),
+
   pushChild(parentId: string, childId: string): Promise<INode | null> {
     return Node.findByIdAndUpdate(parentId, { $push: { children: childId } }, updateOptions)
       .lean<INode>()

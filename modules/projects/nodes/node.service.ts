@@ -2,6 +2,8 @@ import { HttpError } from '@/utils/errors';
 import { nodeRepository } from '@/modules/projects/nodes/node.repository';
 import { ObjectId } from 'mongoose';
 import { projectService } from '../project.service';
+import { ensureWorkspaceMember } from '@/modules/workspaces/workspace.context';
+import { ensureProjectMember } from '../project.context';
 
 interface FlatNode {
   _id: ObjectId;
@@ -130,5 +132,17 @@ export const nodeService = {
     if (data.title) await checkNodeExistence({ ...node, title: data.title });
 
     return await nodeRepository.updateOne({ _id: id }, data);
+  },
+
+  delete: async (id: string, email: string) => {
+    const node = await nodeRepository.findOne({ _id: id });
+    if (!node) throw new HttpError('NOT_FOUND', 'Node not found');
+    console.log('node', node);
+    await Promise.all([
+      ensureWorkspaceMember(node.workspaceId, email), // wCtx
+      ensureProjectMember(node.projectId, email), // pCtx
+    ]);
+
+    return await nodeRepository.deleteOne({ _id: id });
   },
 };

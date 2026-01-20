@@ -46,7 +46,7 @@ const DropdownActions = ({ item, workspaceId }: IProps) => {
         <DropdownMenuSeparator />
         <Button
           variant={'ghost'}
-          className="w-full text-red-600 hover:text-red-500 justify-start px-2 font-normal cursor-pointer"
+          className="w-full text-destructive-text font-bold hover:text-destructive justify-start px-2 cursor-pointer"
         >
           Leave Project
         </Button>

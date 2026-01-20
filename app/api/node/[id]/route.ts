@@ -15,3 +15,14 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     return handleError(err);
   }
 }
+
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  try {
+    await connectDb();
+    const { id } = await context.params;
+    const res = await nodeController.delete(id);
+    return NextResponse.json(res, { status: 201 });
+  } catch (err) {
+    return handleError(err);
+  }
+}

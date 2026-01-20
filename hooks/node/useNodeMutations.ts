@@ -1,5 +1,5 @@
+import { nodeClient } from '@/lib/api/nodeClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createNode, updateNode } from '@/lib/api/nodeClient';
 
 export function useNodeMutations() {
   const queryClient = useQueryClient();
@@ -10,7 +10,7 @@ export function useNodeMutations() {
       parentId: string | null;
       type: 'file' | 'folder';
       title: string;
-    }) => createNode(data),
+    }) => nodeClient.create(data),
     onSuccess: (_data, variables) => {
       if (!variables) return;
       queryClient.invalidateQueries({ queryKey: ['nodesByProjectId', variables.projectId] });
@@ -19,7 +19,7 @@ export function useNodeMutations() {
 
   const update = useMutation({
     mutationFn: (data: { _id: string; pid?: string; title?: string; content?: string }) =>
-      updateNode(data),
+      nodeClient.update(data),
     onSuccess: (_data, variables) => {
       if (!variables) return;
       // condition for title only sidebar to rerender
@@ -29,5 +29,15 @@ export function useNodeMutations() {
     },
   });
 
-  return { create, update };
+  const trash = useMutation({
+    mutationFn: (data: { _id: string; pid: string }) => nodeClient.trash(data),
+    onSuccess: (_data, variables) => {
+      if (!variables) return;
+      if (variables.pid)
+        queryClient.invalidateQueries({ queryKey: ['nodesByProjectId', variables.pid] });
+      return;
+    },
+  });
+
+  return { create, update, trash };
 }

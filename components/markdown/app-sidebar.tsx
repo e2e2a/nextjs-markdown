@@ -44,15 +44,21 @@ export function AppSidebar() {
         const op = undo();
         if (op) {
           console.log('op', op);
+          switch (op.type) {
+            case 'create':
+              break;
+            case 'move':
+              break;
+            case 'update':
+              break;
+          }
         }
       } catch (err) {
         let message = 'Unknown Error';
         if (err instanceof Error) {
           message = err.message;
-          console.log('Error message:', err.message); // -> "title Exist"
         } else {
           message = err as string;
-          console.log('Unknown error', err);
         }
         makeToastError(message);
       }

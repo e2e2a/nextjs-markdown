@@ -12,6 +12,7 @@ import { DangerConfirmDialog } from '../danger-confirm-dialog';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 
 interface ContainerProps {
   children: ReactNode;
@@ -120,17 +121,17 @@ export function SidebarContextMenu({ children, node }: ContainerProps) {
             >
               Rename
             </ContextMenuItem>
-            <ContextMenuItem
+            {/* <ContextMenuItem
               className="hover:bg-red-200 focus:bg-red-300 cursor-pointer p-0 px-0 w-full"
               onClick={e => e.preventDefault()}
-            >
-              <DangerConfirmDialog
-                triggerTitle="Trash"
-                title="Are you absolutely sure?"
-                description="This item will be moved to the Trash and kept for 30 days. You can restore it anytime before permanent deletion."
-                node={node}
-              />
-            </ContextMenuItem>
+            > */}
+            <DangerConfirmDialog
+              triggerTitle="Trash"
+              title="Are you absolutely sure?"
+              description="This item will be moved to the Trash and kept for 30 days. You can restore it anytime before permanent deletion."
+              node={node}
+            />
+            {/* </ContextMenuItem> */}
           </>
         )}
       </ContextMenuContent>

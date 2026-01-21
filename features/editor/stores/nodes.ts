@@ -19,7 +19,13 @@ interface OperationCreate {
   node: INode;
 }
 
-type NodeOperation = OperationMove | OperationUpdate | OperationCreate;
+interface OperationDelete {
+  type: 'delete';
+  node: INode;
+  parentId: string | null;
+}
+
+type NodeOperation = OperationMove | OperationUpdate | OperationCreate | OperationDelete;
 
 function findNode(nodes: INode[], id: string): INode | null {
   for (const node of nodes) {
@@ -104,7 +110,10 @@ interface NodesState {
   setActiveNode(node: INode | null): void;
 
   setNodes(nodes: INode[] | null): void;
+
   createNodeWithUndo(node: INode): void;
+  deleteNodeWithUndo: (nodeId: string) => void;
+
   moveNode(dragId: string, targetId: string): void;
 
   undo(): NodeOperation | null;
@@ -182,6 +191,7 @@ export const useNodeStore = create<NodesState>(set => ({
 
     set(state => ({ collapseVersion: state.collapseVersion + 1 }));
   },
+
   createNodeWithUndo: (node: INode) => {
     set(state => {
       if (!state.nodes) state.nodes = [];
@@ -194,6 +204,28 @@ export const useNodeStore = create<NodesState>(set => ({
       };
     });
   },
+
+  deleteNodeWithUndo: (nodeId: string) => {
+    set(state => {
+      if (!state.nodes) return state;
+      const nodes = structuredClone(state.nodes);
+
+      const nodeToDelete = findNode(nodes, nodeId);
+      if (!nodeToDelete) return state;
+
+      const parentId = nodeToDelete.parentId;
+      removeNode(nodes, nodeId);
+
+      return {
+        nodes,
+        previousOperations: [
+          ...state.previousOperations,
+          { type: 'delete', node: nodeToDelete, parentId },
+        ],
+      };
+    });
+  },
+
   moveNode: (draggedId: string, targetId: string) => {
     set(state => {
       if (!state.nodes) return state;
@@ -254,6 +286,7 @@ export const useNodeStore = create<NodesState>(set => ({
 
     set(state => {
       if (!state.nodes || state.previousOperations.length === 0) {
+        console.log('running123');
         return state;
       }
 
@@ -324,6 +357,7 @@ export const useNodeStore = create<NodesState>(set => ({
 
         Object.assign(node, prev);
       }
+
       // ================= CREATE UNDO =================
       if (op.type === 'create') {
         const createdNodeId = op.node._id;
@@ -334,6 +368,42 @@ export const useNodeStore = create<NodesState>(set => ({
           return state;
         }
       }
+      console.log('running', op);
+      // ================= DELETE UNDO =================
+      if (op.type === 'delete') {
+        const nodeToRestore = op.node;
+        const targetParentId = op.parentId;
+
+        // 1. Structural Integrity: Verify parent still exists if not root
+        if (targetParentId !== null && !findNode(nodes, targetParentId)) {
+          error = 'Cannot undo delete: original parent folder no longer exists';
+          return state;
+        }
+
+        // 2. Collision Detection: Get siblings at the target level
+        // Your getSiblings helper handles parentId === null correctly by returning root nodes
+        const siblings = getSiblings(nodes, targetParentId);
+
+        const nameConflict = siblings.find(
+          n =>
+            n.type === nodeToRestore.type &&
+            n.title?.toLowerCase() === nodeToRestore.title?.toLowerCase()
+        );
+
+        if (nameConflict) {
+          error = `Cannot undo: a ${nodeToRestore.type} named "${nodeToRestore.title}" already exists in that location`;
+          return state;
+        }
+
+        if (findNode(nodes, nodeToRestore._id)) {
+          error = 'Cannot undo: a node with this internal ID already exists';
+          return state;
+        }
+
+        // 4. Perform Restoration
+        insertNode(nodes, nodeToRestore, targetParentId);
+      }
+
       return {
         nodes,
         previousOperations: operations,

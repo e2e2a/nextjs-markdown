@@ -14,6 +14,7 @@ import { makeToastError } from '@/lib/toast';
 import { INode } from '@/types';
 import { useState } from 'react';
 import { ContextMenuItem } from './ui/context-menu';
+import { useNodeStore } from '@/features/editor/stores/nodes';
 interface IProps {
   triggerTitle: string;
   title: string;
@@ -23,48 +24,29 @@ interface IProps {
 export function DangerConfirmDialog({ triggerTitle, title, description, node }: IProps) {
   const [isOpen, setIsOpen] = useState(false);
   const mutation = useNodeMutations();
-  // const updateArchived = useCallback(
-  //   (node: INode) => {
-  //     const payload = {
-  //       _id: node?._id as string,
-  //       type: node?.type,
-  //       archived: {
-  //         isArchived: true,
-  //         archivedAt: new Date(),
-  //       },
-  //     };
-
-  //     mutation.update.mutate(payload, {
-  //       onSuccess: () => {
-  //         return;
-  //       },
-  //       onError: err => {
-  //         makeToastError(err.message);
-  //         return;
-  //       },
-  //     });
-  //   },
-  //   [mutation]
-  // );
-
   const onTrash = async () => {
     mutation.trash.mutate(
       { _id: node._id as string, pid: node.projectId },
       {
         onSuccess: () => {
+          console.log('running in frontedn');
+          useNodeStore.getState().deleteNodeWithUndo(node._id);
           setIsOpen(false);
           return;
         },
         onError: err => {
+          console.log('running in frontedn2');
           makeToastError(err.message);
           return;
         },
         onSettled: () => {
+          console.log('running in frontedn3');
           setIsOpen(false);
         },
       }
     );
   };
+
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger
@@ -83,9 +65,10 @@ export function DangerConfirmDialog({ triggerTitle, title, description, node }: 
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             className="bg-blue-500 hover:bg-blue-500/90"
-            onClick={() => {
-              setIsOpen(false);
+            onClick={e => {
+              e.preventDefault();
               onTrash();
+              // setIsOpen(false);
             }}
             asChild
           >

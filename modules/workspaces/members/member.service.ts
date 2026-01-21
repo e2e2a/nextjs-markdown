@@ -1,4 +1,4 @@
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import { ensureWorkspaceMember } from '../workspace.context';
 import { UnitOfWork } from '@/common/UnitOfWork';
@@ -64,8 +64,7 @@ export const workspaceMemberService = {
   leave: async (data: { workspaceId: string; email: string }) => {
     return await UnitOfWork.run(async () => {
       const context = await ensureWorkspaceMember(data.workspaceId, data.email);
-      if (!context.canLeave)
-        throw new HttpError('FORBIDDEN', 'Cannot leave the workspace while you are the only owner');
+      if (!context.canLeave) throw new HttpError('FORBIDDEN', 'Cannot leave the workspace while you are the only owner');
       /**
        * @todo
        * 1. Notify admins user leaving in the workspace
@@ -99,8 +98,7 @@ export const workspaceMemberService = {
 
       const res = await workspaceMemberRepository.findById(mid);
       if (!res) throw new HttpError('NOT_FOUND', 'No workspace member to be deleted');
-      if (res.role === 'owner' && context.ownerCount <= 1)
-        throw new HttpError('FORBIDDEN', 'Ownership of workspace should remain atleast 1');
+      if (res.role === 'owner' && context.ownerCount <= 1) throw new HttpError('FORBIDDEN', 'Ownership of workspace should remain atleast 1');
       /**
        * @todo
        * 1. Notify admins user deleting member

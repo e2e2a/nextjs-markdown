@@ -2,7 +2,7 @@
 import { useRef, DragEvent, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { groupNodes } from '@/utils/node-utils';
+import { groupNodes } from '@/utils/client/node-utils';
 import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import SidebarItem from '../project/nodes/sidebar-item';
@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils';
 import SidebarCreateFolderItem from '../project/nodes/sidebar-create-folder-item';
 import SidebarCreateFileItem from '../project/nodes/sidebar-create-file-item';
 import { makeToastError } from '@/lib/toast';
+import { useNodeMutations } from '@/hooks/node/useNodeMutations';
+import { sortNodeTree } from '@/utils/client/sortNode';
+// import { sortNodeTree } from '@/modules/projects/nodes/node.service';
 export function clearAllFolderDragOver() {
   document.querySelectorAll('[data-drag-over]').forEach(el => el.removeAttribute('data-drag-over'));
 }
@@ -18,8 +21,9 @@ export function NavMain() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
-  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode, rollbackNodes } =
-    useNodeStore();
+  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode, undo } = useNodeStore();
+
+  const mutation = useNodeMutations();
 
   const nodesById = useMemo(() => {
     const map: Record<string, INode> = {};
@@ -35,8 +39,15 @@ export function NavMain() {
   }, [nodes]);
 
   useEffect(() => {
+    if (!nData && (!nData?.nodes || nData?.nodes?.length <= 0)) return;
     setNodes(nData?.nodes);
-  }, [nData?.nodes, setNodes]);
+  }, [nData, setNodes]);
+
+  useEffect(() => {
+    if (!nodes || nodes?.length <= 0) return;
+    const result = sortNodeTree(nodes);
+    setNodes(result);
+  }, [nodes, setNodes]);
 
   // Ref for the final drop logic to avoid unnecessary re-renders
   const targetIdRef = useRef<string | null>(null);
@@ -48,19 +59,12 @@ export function NavMain() {
     const dragged = activeDrag;
     const targetId = targetIdRef.current;
 
-    // always cleanup
     setActiveDrag(null);
     targetIdRef.current = null;
 
-    // invalid drop
-    if (!dragged || !targetId) return;
+    if (!dragged || !targetId) return; // invalid drop
+    if (targetId === 'root' && dragged.parentId === null) return; // invalid drop
 
-    // prevent no-op
-    // if ((targetId === 'root' && dragged.parentId === null) || dragged.parentId === targetId) return;
-    if (targetId === 'root' && dragged.parentId === null) return;
-    console.log('dragged', dragged);
-    // console.log('targetId', targetId);
-    // console.log('target', target);
     try {
       moveNode(dragged._id, targetId);
 
@@ -68,18 +72,29 @@ export function NavMain() {
         document.getElementById('sidebar-tree-nodes')?.focus();
       });
 
-      //for mutation and api responses
+      mutation.move.mutate(
+        { _id: dragged._id, pid: dragged.projectId, parentId: targetId === 'root' ? null : targetId },
+        {
+          onError: async err => {
+            try {
+              undo();
+              makeToastError(err.message);
+            } catch {}
+            return;
+          },
+        }
+      );
     } catch (err) {
       let message = 'Unknown Error';
       if (err instanceof Error) {
         message = err.message;
-        console.log('Error message:', err.message); // -> "title Exist"
       } else {
         message = err as string;
-        console.log('Unknown error', err);
       }
       makeToastError(message);
-      rollbackNodes();
+      try {
+        undo();
+      } catch {}
     }
   };
 

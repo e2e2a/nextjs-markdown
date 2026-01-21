@@ -1,4 +1,4 @@
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { projectRepository } from '@/modules/projects/project.repository';
 import { ProjectPushNodeDTO } from '@/types';
 import { User } from 'next-auth';
@@ -91,8 +91,7 @@ export const projectService = {
     return await UnitOfWork.run(async () => {
       const project = await projectRepository.findOne({ _id: projectId });
       if (!project) throw new HttpError('NOT_FOUND', 'No project to be updated');
-      if (project.workspaceId === data.workspaceId)
-        throw new HttpError('BAD_INPUT', 'Project is already in the target workspace');
+      if (project.workspaceId === data.workspaceId) throw new HttpError('BAD_INPUT', 'Project is already in the target workspace');
 
       const [sourceCtx, targetCtx] = await Promise.all([
         ensureWorkspaceMember(project.workspaceId, email),
@@ -104,11 +103,7 @@ export const projectService = {
       await projectService.checkTitleExist(data.workspaceId, project.title);
       await projectRepository.updateOne({ _id: projectId }, data);
 
-      const PMembers = await projectMemberService.move(
-        project.workspaceId,
-        data.workspaceId,
-        project._id
-      );
+      const PMembers = await projectMemberService.move(project.workspaceId, data.workspaceId, project._id);
       const PEmails = PMembers.map(m => m.email);
       await workspaceMemberService.move(project.workspaceId, data.workspaceId, PEmails);
       // update nodes workspaceId
@@ -117,8 +112,7 @@ export const projectService = {
   },
 
   deleteProject: async (projectId: string, user: User) => {
-    if (!mongoose.Types.ObjectId.isValid(projectId))
-      throw new HttpError('BAD_INPUT', 'Invalid project ID.');
+    if (!mongoose.Types.ObjectId.isValid(projectId)) throw new HttpError('BAD_INPUT', 'Invalid project ID.');
 
     await projectMemberService.getMembership({ projectId, email: user.email });
 

@@ -41,6 +41,17 @@ export const nodeClient = {
     return json;
   },
 
+  async move(data: { _id: string; parentId: string | null }) {
+    const res = await fetch(`${BASE_URL}/move`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+    return json;
+  },
+
   async trash(data: { _id: string }) {
     const res = await fetch(`${BASE_URL}/${data._id}`, {
       method: 'DELETE',

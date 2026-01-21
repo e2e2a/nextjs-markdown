@@ -23,12 +23,7 @@ export const workspaceMemberRepository = {
     return await WorkspaceMember.insertMany(members, { ...updateOptions, session });
   },
 
-  create: async (data: {
-    role: 'owner' | 'editor' | 'viewer';
-    email: string;
-    status: 'pending' | 'accepted';
-    workspaceId: string;
-  }) => {
+  create: async (data: { role: 'owner' | 'editor' | 'viewer'; email: string; status: 'pending' | 'accepted'; workspaceId: string }) => {
     const session = UnitOfWork.getSession();
     const [newMember] = await WorkspaceMember.create(data, { session });
     return newMember;
@@ -85,10 +80,7 @@ export const workspaceMemberRepository = {
           {
             $match: {
               $expr: {
-                $and: [
-                  { $eq: ['$email', '$$memberEmail'] },
-                  { $eq: ['$workspaceId', '$$workspaceId'] },
-                ],
+                $and: [{ $eq: ['$email', '$$memberEmail'] }, { $eq: ['$workspaceId', '$$workspaceId'] }],
               },
             },
           },
@@ -122,10 +114,7 @@ export const workspaceMemberRepository = {
     return result ?? [];
   },
 
-  findByEmailAndStatus: async (
-    data: { email: string; status: 'pending' | 'accepted' },
-    populate?: IPopulateWorkspaceMember
-  ) => {
+  findByEmailAndStatus: async (data: { email: string; status: 'pending' | 'accepted' }, populate?: IPopulateWorkspaceMember) => {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: data });
     addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);

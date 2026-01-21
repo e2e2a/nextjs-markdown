@@ -1,5 +1,5 @@
-import { HttpError } from '@/utils/errors';
-import { resolveWorkspacePermissions, WorkspacePermissions } from '@/utils/permissions';
+import { HttpError } from '@/utils/server/errors';
+import { resolveWorkspacePermissions, WorkspacePermissions } from '@/utils/server/permissions';
 import { workspaceMemberRepository } from './members/member.repository';
 import { IWorkspaceMember } from '@/types';
 
@@ -13,10 +13,7 @@ export interface WorkspaceContext {
 /**
  * Builds the security and logic context for a specific user within a workspace.
  */
-export async function getWorkspaceContext(
-  workspaceId: string,
-  email: string
-): Promise<WorkspaceContext> {
+export async function getWorkspaceContext(workspaceId: string, email: string): Promise<WorkspaceContext> {
   // 1. Fetch the member record from the sub-module repository
   const membership = await workspaceMemberRepository.getMembershipForWorkspace({
     workspaceId,
@@ -49,8 +46,7 @@ export async function getWorkspaceContext(
  */
 export async function ensureWorkspaceMember(wid: string, email: string) {
   const context = await getWorkspaceContext(wid, email);
-  if (!context.membership)
-    throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
+  if (!context.membership) throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
 
   return {
     membership: context.membership,

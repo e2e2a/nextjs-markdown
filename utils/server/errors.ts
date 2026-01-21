@@ -1,4 +1,4 @@
-import { ERRORS, ErrorKey } from './error-map';
+import { ErrorKey, ERRORS } from './error-map';
 
 export class HttpError extends Error {
   status: number;

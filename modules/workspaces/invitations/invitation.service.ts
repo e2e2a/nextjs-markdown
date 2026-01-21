@@ -1,4 +1,4 @@
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { workspaceMemberRepository } from '@/modules/workspaces/members/member.repository';
 import { workspaceMemberService } from '../members/member.service';
 import { User } from 'next-auth';
@@ -38,8 +38,7 @@ export const invitationServices = {
       if (members.length <= 0) throw new HttpError('BAD_INPUT', 'No Members to be invited.');
 
       const context = await ensureWorkspaceMember(data.workspaceId, user.email);
-      if (!context.permissions.canInvite)
-        throw new HttpError('FORBIDDEN', 'You do not have permission to invite members');
+      if (!context.permissions.canInvite) throw new HttpError('FORBIDDEN', 'You do not have permission to invite members');
 
       const initialMembersData = members.map(member => ({ ...member, workspaceId }));
 
@@ -62,10 +61,7 @@ export const invitationServices = {
   },
 
   getPendingInvitations: async (data: { email: string }) => {
-    const docs = await workspaceMemberRepository.findByEmailAndStatus(
-      { email: data.email, status: 'pending' },
-      { invitedBy: true }
-    );
+    const docs = await workspaceMemberRepository.findByEmailAndStatus({ email: data.email, status: 'pending' }, { invitedBy: true });
     const invitations = docs.map(doc => {
       return {
         role: doc.role,
@@ -106,8 +102,7 @@ export const invitationServices = {
       if (!invitation) throw new HttpError('NOT_FOUND', 'No Invitation to be deleted');
 
       const context = await ensureWorkspaceMember(invitation.workspaceId, data.email);
-      if (!context.permissions.canDeleteInvite)
-        throw new HttpError('FORBIDDEN', 'You do not have permission');
+      if (!context.permissions.canDeleteInvite) throw new HttpError('FORBIDDEN', 'You do not have permission');
       return invitation;
     });
   },

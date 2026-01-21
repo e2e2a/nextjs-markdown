@@ -89,7 +89,6 @@ interface NodesState {
   selectedNode: INode | null;
 
   nodes: INode[] | null;
-  previousNodes: INode[][];
   previousOperations: NodeOperation[];
 
   updateNode: (nodeId: string, changes: Partial<INode>) => void;
@@ -119,16 +118,12 @@ interface NodesState {
   undo(): NodeOperation | null;
   /** Utility to reset editor state */
 
-  rollbackNodes(): INode[] | null;
-  // rollbackNodes(): void;
-
   clearHistory(): void;
   resetEditor(): void;
 }
 
 export const useNodeStore = create<NodesState>(set => ({
   nodes: null,
-  previousNodes: [],
   previousOperations: [],
   activeNode: null,
   activeDrag: null,
@@ -146,24 +141,17 @@ export const useNodeStore = create<NodesState>(set => ({
       const siblings = getSiblings(nodes, node.parentId);
 
       const siblingConflict = siblings.find(
-        n =>
-          n.parentId === node.parentId &&
-          n.type === node.type &&
-          n.title?.toLowerCase() === changes.title?.toLowerCase()
+        n => n.parentId === node.parentId && n.type === node.type && n.title?.toLowerCase() === changes.title?.toLowerCase()
       );
 
-      if (siblingConflict)
-        throw new Error(`A ${node.type} named "${changes.title}" already exists`);
+      if (siblingConflict) throw new Error(`A ${node.type} named "${changes.title}" already exists`);
 
       const prev = { ...node };
       Object.assign(node, changes);
 
       return {
         nodes,
-        previousOperations: [
-          ...state.previousOperations,
-          { type: 'update', nodeId, prev, next: changes },
-        ],
+        previousOperations: [...state.previousOperations, { type: 'update', nodeId, prev, next: changes }],
       };
     });
   },
@@ -218,10 +206,7 @@ export const useNodeStore = create<NodesState>(set => ({
 
       return {
         nodes,
-        previousOperations: [
-          ...state.previousOperations,
-          { type: 'delete', node: nodeToDelete, parentId },
-        ],
+        previousOperations: [...state.previousOperations, { type: 'delete', node: nodeToDelete, parentId }],
       };
     });
   },
@@ -244,17 +229,11 @@ export const useNodeStore = create<NodesState>(set => ({
       const siblings = getSiblings(nodes, newParentId);
 
       const siblingConflict = siblings.find(
-        n =>
-          n._id !== draggedId &&
-          n.type === dragged.type &&
-          n.title?.toLowerCase() === dragged.title?.toLowerCase()
+        n => n._id !== draggedId && n.type === dragged.type && n.title?.toLowerCase() === dragged.title?.toLowerCase()
       );
 
-      if (siblingConflict) {
-        throw new Error(`Cannot move: ${dragged.type} named "${dragged.title}" already exists.`);
-      }
+      if (siblingConflict) throw new Error(`Cannot move: ${dragged.type} named "${dragged.title}" already exists.`);
 
-      // 2️⃣ MUTATE AFTER VALIDATION
       removeNode(nodes, draggedId);
 
       const movedNode: INode = {
@@ -285,10 +264,7 @@ export const useNodeStore = create<NodesState>(set => ({
     let error: string | null = null;
 
     set(state => {
-      if (!state.nodes || state.previousOperations.length === 0) {
-        console.log('running123');
-        return state;
-      }
+      if (!state.nodes || state.previousOperations.length === 0) return state;
 
       const operations = [...state.previousOperations];
       const op = operations.pop()!;
@@ -313,12 +289,7 @@ export const useNodeStore = create<NodesState>(set => ({
         }
 
         const siblings = getSiblings(nodes, targetParentId);
-        const conflict = siblings.find(
-          n =>
-            n._id !== dragged._id &&
-            n.type === dragged.type &&
-            n.title?.toLowerCase() === dragged.title?.toLowerCase()
-        );
+        const conflict = siblings.find(n => n._id !== dragged._id && n.type === dragged.type && n.title?.toLowerCase() === dragged.title?.toLowerCase());
 
         if (conflict) {
           error = 'Cannot undo: title conflict';
@@ -343,12 +314,7 @@ export const useNodeStore = create<NodesState>(set => ({
         const rollbackType = prev.type ?? node.type;
 
         const siblings = getSiblings(nodes, rollbackParentId);
-        const conflict = siblings.find(
-          n =>
-            n._id !== node._id &&
-            n.type === rollbackType &&
-            n.title?.toLowerCase() === rollbackTitle?.toLowerCase()
-        );
+        const conflict = siblings.find(n => n._id !== node._id && n.type === rollbackType && n.title?.toLowerCase() === rollbackTitle?.toLowerCase());
 
         if (conflict) {
           error = 'Cannot undo update: title conflict';
@@ -368,7 +334,7 @@ export const useNodeStore = create<NodesState>(set => ({
           return state;
         }
       }
-      console.log('running', op);
+
       // ================= DELETE UNDO =================
       if (op.type === 'delete') {
         const nodeToRestore = op.node;
@@ -384,11 +350,7 @@ export const useNodeStore = create<NodesState>(set => ({
         // Your getSiblings helper handles parentId === null correctly by returning root nodes
         const siblings = getSiblings(nodes, targetParentId);
 
-        const nameConflict = siblings.find(
-          n =>
-            n.type === nodeToRestore.type &&
-            n.title?.toLowerCase() === nodeToRestore.title?.toLowerCase()
-        );
+        const nameConflict = siblings.find(n => n.type === nodeToRestore.type && n.title?.toLowerCase() === nodeToRestore.title?.toLowerCase());
 
         if (nameConflict) {
           error = `Cannot undo: a ${nodeToRestore.type} named "${nodeToRestore.title}" already exists in that location`;
@@ -404,10 +366,7 @@ export const useNodeStore = create<NodesState>(set => ({
         insertNode(nodes, nodeToRestore, targetParentId);
       }
 
-      return {
-        nodes,
-        previousOperations: operations,
-      };
+      return { nodes, previousOperations: operations };
     });
 
     if (error) {
@@ -417,31 +376,7 @@ export const useNodeStore = create<NodesState>(set => ({
     return undone;
   },
 
-  rollbackNodes: () => {
-    let snapshot: INode[] | null = null;
+  clearHistory: () => set({ previousOperations: [] }),
 
-    set(state => {
-      if (state.previousNodes.length === 0) return state;
-
-      const history = [...state.previousNodes];
-      snapshot = history.pop()!;
-
-      return {
-        nodes: snapshot,
-        previousNodes: history,
-      };
-    });
-
-    return snapshot;
-  },
-
-  clearHistory: () => set({ previousNodes: [] }),
-
-  resetEditor: () =>
-    set({
-      activeNode: null,
-      activeDrag: null,
-      isCreating: null,
-      isUpdatingNode: null,
-    }),
+  resetEditor: () => set({ activeNode: null, activeDrag: null, isCreating: null, isUpdatingNode: null }),
 }));

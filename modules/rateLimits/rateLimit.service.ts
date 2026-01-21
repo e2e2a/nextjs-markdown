@@ -1,4 +1,4 @@
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { getHeaders } from '@/lib/getHeaders';
 import { rateLimitRepository } from '@/modules/rateLimits/rateLimit.repository';
 import { CreateIRateLimitDTO, IRateLimit, IRateLimitType } from '@/types';
@@ -32,8 +32,7 @@ export const rateLimitService = {
       if (accessRecord.retryResetAt < now) accessRecord.retryCount = 0;
 
       // Enforce retry limit
-      if (accessRecord.retryCount >= MAX_RETRY)
-        throw new HttpError('TOO_MANY_REQUEST', 'Too many attempts. Try again in a couple minutes');
+      if (accessRecord.retryCount >= MAX_RETRY) throw new HttpError('TOO_MANY_REQUEST', 'Too many attempts. Try again in a couple minutes');
 
       accessRecord.retryResetAt = new Date(now.getTime() + RETRY_WINDOW);
       accessRecord.retryCount += 1;
@@ -42,13 +41,7 @@ export const rateLimitService = {
     return accessRecord;
   },
 
-  create: async (data: {
-    type: string;
-    email: string;
-    retryCount: number;
-    retryResetAt: Date | null;
-    userId?: string;
-  }) => {
+  create: async (data: { type: string; email: string; retryCount: number; retryResetAt: Date | null; userId?: string }) => {
     const getHead = await getHeaders();
     const payload = {
       ...data,

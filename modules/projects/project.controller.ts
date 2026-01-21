@@ -3,7 +3,7 @@ import { projectService } from './project.service';
 import { NextRequest } from 'next/server';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
 import { projectSchema } from '@/lib/validators/project';
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 
 export const projectController = {
   create: async (req: NextRequest) => {

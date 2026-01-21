@@ -1,4 +1,4 @@
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { userRepository } from '@/modules/users/user.repository';
 import { IOnboard } from '@/types';
 import { Step1Schema, Step2Schema } from '@/lib/validators/onboard';
@@ -12,8 +12,7 @@ export const userServices = {
     const result1 = Step1Schema.safeParse(data.step1);
     const result2 = Step2Schema.safeParse(data.step2);
     const result3 = workspaceSchema.safeParse(data.step3);
-    if (!result1.success || !result2.success || !result3.success)
-      throw new HttpError('NOT_FOUND', 'Invalid fields.');
+    if (!result1.success || !result2.success || !result3.success) throw new HttpError('NOT_FOUND', 'Invalid fields.');
 
     const user = userRepository.updateUserById(authUser._id!, {
       ...result1.data,

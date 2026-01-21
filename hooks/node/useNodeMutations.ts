@@ -29,6 +29,16 @@ export function useNodeMutations() {
     },
   });
 
+  const move = useMutation({
+    mutationFn: (data: { _id: string; pid: string; parentId: string | null }) =>
+      nodeClient.move(data),
+    onSuccess: (_data, variables) => {
+      if (!variables) return;
+      queryClient.invalidateQueries({ queryKey: ['nodesByProjectId', variables.pid] });
+      return;
+    },
+  });
+
   const trash = useMutation({
     mutationFn: (data: { _id: string; pid: string }) => nodeClient.trash(data),
     onSuccess: (_data, variables) => {
@@ -39,5 +49,5 @@ export function useNodeMutations() {
     },
   });
 
-  return { create, update, trash };
+  return { create, update, move, trash };
 }

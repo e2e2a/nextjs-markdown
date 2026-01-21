@@ -1,18 +1,10 @@
 'use client';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { INode } from '@/types';
 import { ReactNode } from 'react';
 import { DangerConfirmDialog } from '../danger-confirm-dialog';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import React from 'react';
 import { cn } from '@/lib/utils';
-import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 
 interface ContainerProps {
   children: ReactNode;
@@ -20,8 +12,7 @@ interface ContainerProps {
 }
 
 export function SidebarContextMenu({ children, node }: ContainerProps) {
-  const { isUpdatingNode, selectedNode, setIsUpdatingNode, setSelectedNode, setIsCreating } =
-    useNodeStore();
+  const { isUpdatingNode, selectedNode, setIsUpdatingNode, setSelectedNode, setIsCreating } = useNodeStore();
   const isUpdatingSelf = !!isUpdatingNode && isUpdatingNode._id === node?._id;
   if (isUpdatingSelf) {
     return (
@@ -70,9 +61,7 @@ export function SidebarContextMenu({ children, node }: ContainerProps) {
             e.stopPropagation();
             setIsCreating({ type: 'file', parentId });
             setTimeout(() => {
-              const input = document.querySelector<HTMLInputElement>(
-                '#sidebar-creating-file-item input'
-              );
+              const input = document.querySelector<HTMLInputElement>('#sidebar-creating-file-item input');
               input?.focus();
             }, 0);
           }}
@@ -87,9 +76,7 @@ export function SidebarContextMenu({ children, node }: ContainerProps) {
             e.stopPropagation();
             setIsCreating({ type: 'folder', parentId });
             setTimeout(() => {
-              const input = document.querySelector<HTMLInputElement>(
-                '#sidebar-creating-folder-item input'
-              );
+              const input = document.querySelector<HTMLInputElement>('#sidebar-creating-folder-item input');
               input?.focus();
             }, 0);
           }}

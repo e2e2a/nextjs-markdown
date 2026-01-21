@@ -3,11 +3,7 @@ import { ensureAuthenticated } from '@/lib/auth-utils';
 import { IWorkspaceMemberCreateDTO } from '@/types';
 
 export const invitationController = {
-  create: async (data: {
-    workspaceId: string;
-    projectId: string;
-    members: IWorkspaceMemberCreateDTO[];
-  }) => {
+  create: async (data: { workspaceId: string; projectId: string; members: IWorkspaceMemberCreateDTO[] }) => {
     const session = await ensureAuthenticated();
     await invitationServices.create(session.user, data);
     return null;

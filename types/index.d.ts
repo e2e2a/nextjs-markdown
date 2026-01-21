@@ -39,7 +39,7 @@ export type INode = {
   parentId: string | null;
   type: string;
   children: INode[];
-  title?: string | null;
+  title: string;
   content?: string | null;
   archived?: IArchived;
   updatedAt?: Date;

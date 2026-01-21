@@ -1,4 +1,4 @@
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
 import { UnitOfWork } from '@/common/UnitOfWork';
 
@@ -43,11 +43,7 @@ export const projectMemberService = {
     }[]
   ) => {
     const emails = members.map(m => m.email);
-    return await projectMemberRepository.findExistingEmails(
-      members[0].workspaceId,
-      members[0].projectId,
-      emails
-    );
+    return await projectMemberRepository.findExistingEmails(members[0].workspaceId, members[0].projectId, emails);
   },
 
   getMembership: async (data: { projectId: string; email: string }) => {
@@ -56,6 +52,5 @@ export const projectMemberService = {
     return membership;
   },
 
-  addOwner: (data: { projectId: string; workspaceId: string; email: string }) =>
-    projectMemberRepository.create({ ...data, role: 'owner' }),
+  addOwner: (data: { projectId: string; workspaceId: string; email: string }) => projectMemberRepository.create({ ...data, role: 'owner' }),
 };

@@ -1,6 +1,6 @@
 import { ensureAuthenticated } from '@/lib/auth-utils';
 import { workspaceMemberService } from './member.service';
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { isValidMemberRole } from '@/utils/validators/workspace-member-roles';
 import { ensureWorkspaceMember } from '../workspace.context';
 
@@ -40,10 +40,7 @@ export const workspaceMemberController = {
     const session = await ensureAuthenticated();
     await ensureWorkspaceMember(workspaceId, session.user.email);
 
-    const members = await workspaceMemberService.getMemberships({
-      workspaceId,
-      email: session.user.email,
-    });
+    const members = await workspaceMemberService.getMemberships({ workspaceId });
 
     return { members };
   },

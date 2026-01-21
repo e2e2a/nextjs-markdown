@@ -1,4 +1,4 @@
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { nodeService } from './node.service';
 import { NodeDTO } from './node.dto';
 import { ensureAuthenticated } from '@/lib/auth-utils';
@@ -14,14 +14,14 @@ export const nodeController = {
   update: async (nid: string, rawBody: { title?: string; content?: string }) => {
     const session = await ensureAuthenticated();
     if (!nid) throw new HttpError('BAD_INPUT');
-    const validatedBody = NodeDTO.update.safeParse(rawBody);
+    const validatedBody = NodeDTO.update.safeParse({ ...rawBody, _id: nid });
 
     if (!validatedBody.success) {
       const errorMessage = validatedBody.error.issues[0].message;
       throw new HttpError('BAD_INPUT', errorMessage);
     }
 
-    const updatedNode = await nodeService.update(nid, validatedBody.data);
+    const updatedNode = await nodeService.update(validatedBody.data);
     return updatedNode;
   },
 
@@ -48,6 +48,19 @@ export const nodeController = {
     // }
 
     const updatedNode = await nodeService.delete(nid, session.user.email);
+    return updatedNode;
+  },
+
+  move: async (rawBody: { _id: string; parentId: string }) => {
+    const session = await ensureAuthenticated();
+    const validatedBody = NodeDTO.move.safeParse(rawBody);
+
+    if (!validatedBody.success) {
+      const errorMessage = validatedBody.error.issues[0].message;
+      throw new HttpError('BAD_INPUT', errorMessage);
+    }
+
+    const updatedNode = await nodeService.move(session.user.email, validatedBody.data);
     return updatedNode;
   },
 };

@@ -8,7 +8,7 @@ import { INode } from '@/types';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import SidebarFileItem from './sidebar-file-item';
 import SidebarCreateFileItem from './sidebar-create-file-item';
-import { groupNodes } from '@/utils/node-utils';
+import { groupNodes } from '@/utils/client/node-utils';
 import SidebarCreateFolderItem from './sidebar-create-folder-item';
 import SidebarFolderItem from './sidebar-folder-item';
 import { clearAllFolderDragOver } from '@/components/markdown/nav-main';
@@ -44,16 +44,7 @@ interface IProps {
   onDragEnd: () => void;
 }
 
-export default function SidebarItem({
-  item,
-  depth,
-  nodesById,
-  activeDrag,
-  targetIdRef,
-  isParentDragging = false,
-  onDragStart,
-  onDragEnd,
-}: IProps) {
+export default function SidebarItem({ item, depth, nodesById, activeDrag, targetIdRef, isParentDragging = false, onDragStart, onDragEnd }: IProps) {
   const localStorageKey = `sidebar-folder-open-${item._id}`;
   const hoverTimeoutRef = useRef<number | null>(null);
 
@@ -202,12 +193,7 @@ export default function SidebarItem({
           )}
         >
           <CollapsibleTrigger disabled={isUpdatingNode?._id === item._id} asChild>
-            <div
-              className="w-full focus:outline-none gap-0 cursor-pointer"
-              onDragStart={handleDragStart}
-              draggable="true"
-              {...commonDragEvents}
-            >
+            <div className="w-full focus:outline-none gap-0 cursor-pointer" onDragStart={handleDragStart} draggable="true" {...commonDragEvents}>
               <SidebarContextMenu node={item}>
                 <div className="">
                   <SidebarFolderItem item={item} isOpen={isOpen} depth={depth} />
@@ -221,8 +207,7 @@ export default function SidebarItem({
               className={cn(
                 'absolute opacity-0 left-0 top-0 bottom-0 w-[0.5px] bg-foreground/10 z-5 group-hover/nodes-border-level:opacity-100',
                 activeNode &&
-                  ((activeNode.type === 'folder' && activeNode._id === item._id) ||
-                    (activeNode.type === 'file' && activeNode.parentId === item._id)) &&
+                  ((activeNode.type === 'folder' && activeNode._id === item._id) || (activeNode.type === 'file' && activeNode.parentId === item._id)) &&
                   'opacity-100'
               )}
               style={{ left: (depth + 1) * 8 }}
@@ -230,9 +215,7 @@ export default function SidebarItem({
 
             <SidebarGroupContent>
               <SidebarMenu className="gap-0! space-y-0! p-0!">
-                {isCreatingHere && isCreating.type === 'folder' && (
-                  <SidebarCreateFolderItem depth={depth + 2} />
-                )}
+                {isCreatingHere && isCreating.type === 'folder' && <SidebarCreateFolderItem depth={depth + 2} />}
                 {folders.map(child => (
                   <SidebarItem
                     key={child._id}
@@ -246,9 +229,7 @@ export default function SidebarItem({
                     onDragEnd={onDragEnd}
                   />
                 ))}
-                {isCreatingHere && isCreating.type === 'file' && (
-                  <SidebarCreateFileItem depth={depth + 3} />
-                )}
+                {isCreatingHere && isCreating.type === 'file' && <SidebarCreateFileItem depth={depth + 3} />}
                 {files.map(child => (
                   <SidebarItem
                     key={child._id}

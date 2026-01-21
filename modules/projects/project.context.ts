@@ -1,6 +1,6 @@
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
-import { HttpError } from '@/utils/errors';
-import { resolveWorkspacePermissions, WorkspacePermissions } from '@/utils/permissions';
+import { resolveWorkspacePermissions, WorkspacePermissions } from '@/utils/server/permissions';
+import { HttpError } from '@/utils/server/errors';
 
 export interface WorkspaceContext {
   membership: object | null;
@@ -13,10 +13,7 @@ export interface WorkspaceContext {
 /**
  * Builds the security and logic context for a specific user within a project.
  */
-export async function getProjectContext(
-  projectId: string,
-  email: string
-): Promise<WorkspaceContext> {
+export async function getProjectContext(projectId: string, email: string): Promise<WorkspaceContext> {
   const membership = await projectMemberRepository.findOne({
     projectId,
     email,
@@ -49,8 +46,7 @@ export async function getProjectContext(
  */
 export async function ensureProjectMember(pid: string, email: string) {
   const context = await getProjectContext(pid, email);
-  if (!context.membership)
-    throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
+  if (!context.membership) throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
   return context;
 }
 

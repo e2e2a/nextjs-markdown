@@ -1,5 +1,5 @@
 import connectDb from '@/lib/db/connection';
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { handleError } from '@/lib/handleError';
 import { projectService } from '@/modules/projects/project.service';
 import { getServerSession } from 'next-auth';
@@ -35,7 +35,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     await connectDb();
 
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) throw new HttpError('Unauthorized', 401);
+    if (!session || !session.user) throw new HttpError('UNAUTHORIZED');
 
     const deletedP = await projectService.deleteProject(pid, session.user);
     return NextResponse.json({ success: true, workspaceId: deletedP.workspaceId }, { status: 201 });

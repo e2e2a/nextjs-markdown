@@ -1,9 +1,9 @@
-import { HttpError } from '@/utils/errors';
 import { nodeRepository } from '@/modules/projects/nodes/node.repository';
 import { ObjectId } from 'mongoose';
 import { projectService } from '../project.service';
 import { ensureWorkspaceMember } from '@/modules/workspaces/workspace.context';
 import { ensureProjectMember } from '../project.context';
+import { HttpError } from '@/utils/server/errors';
 
 interface FlatNode {
   _id: ObjectId;
@@ -87,12 +87,7 @@ export function buildTree(nodes: FlatNode[]): TreeNode[] {
   return roots;
 }
 
-async function checkNodeExistence(params: {
-  projectId: string;
-  parentId: string | null;
-  title: string;
-  type: 'file' | 'folder';
-}) {
+async function checkNodeExistence(params: { projectId: string; parentId: string | null; title: string; type: 'file' | 'folder' }) {
   const { projectId, parentId, title, type } = params;
 
   const existingNode = await nodeRepository.findConflict({
@@ -126,18 +121,39 @@ export const nodeService = {
     return await nodeRepository.create({ ...data, workspaceId: resP.project.workspaceId });
   },
 
-  update: async (id: string, data: { title?: string; content?: string }) => {
-    const node = await nodeRepository.findOne({ _id: id });
+  update: async (data: { _id: string; title?: string; content?: string }) => {
+    const node = await nodeRepository.findOne({ _id: data._id });
     if (!node) throw new HttpError('NOT_FOUND', 'Node not found');
     if (data.title) await checkNodeExistence({ ...node, title: data.title });
 
-    return await nodeRepository.updateOne({ _id: id }, data);
+    return await nodeRepository.updateOne({ _id: data._id }, data);
+  },
+
+  move: async (email: string, data: { _id: string; parentId: string | null }) => {
+    const node = await nodeRepository.findOne({ _id: data._id });
+    if (!node) throw new HttpError('NOT_FOUND', 'Node not found');
+    if (node.parentId?.toString() === data?.parentId) throw new HttpError('BAD_INPUT', 'Node is already in the parent node');
+    if (node._id.toString() === data?.parentId) throw new HttpError('BAD_INPUT', 'Node cannot be moved to itself');
+
+    await Promise.all([
+      ensureWorkspaceMember(node.workspaceId, email), // wCtx
+      ensureProjectMember(node.projectId, email), // pCtx
+    ]);
+
+    if (data?.parentId) {
+      const parentNode = await nodeRepository.findOne({ _id: data.parentId });
+      if (!parentNode) throw new HttpError('NOT_FOUND', 'Parent node not found');
+      if (parentNode.type !== 'folder') throw new HttpError('BAD_INPUT', 'Parent node is not a folder');
+    }
+
+    await checkNodeExistence({ ...node, parentId: data.parentId });
+    return await nodeRepository.updateOne({ _id: data._id }, { parentId: data?.parentId });
   },
 
   delete: async (id: string, email: string) => {
     const node = await nodeRepository.findOne({ _id: id });
     if (!node) throw new HttpError('NOT_FOUND', 'Node not found');
-    console.log('node', node);
+
     await Promise.all([
       ensureWorkspaceMember(node.workspaceId, email), // wCtx
       ensureProjectMember(node.projectId, email), // pCtx

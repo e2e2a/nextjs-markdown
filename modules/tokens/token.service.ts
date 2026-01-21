@@ -1,16 +1,12 @@
 import { tokenRepository } from '@/modules/tokens/token.repository';
-import { generateRandomString } from '@/utils/generateRandomString';
+import { generateRandomString } from '@/utils/server/generateRandomString';
 import jwt from 'jsonwebtoken';
 import { rateLimitService } from '../rateLimits/rateLimit.service';
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { hashText } from '@/lib/bcrypt';
 
 export const tokenService = {
-  generateToken: async (
-    email: string,
-    type: 'EmailVerification' | 'ChangeEmailVerification',
-    emailToChange?: string
-  ) => {
+  generateToken: async (email: string, type: 'EmailVerification' | 'ChangeEmailVerification', emailToChange?: string) => {
     const now = new Date();
     const TOKEN_LIFETIME = 24 * 60 * 60 * 1000; // 24h
     const CODE_LIFETIME = 5 * 60 * 1000; // 5min

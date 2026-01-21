@@ -6,11 +6,7 @@ import { workspaceMemberRepository } from '@/modules/workspaces/members/member.r
 import { UnitOfWork } from '@/common/UnitOfWork';
 
 export const workspaceService = {
-  initializeWorkspace: async (
-    user: User,
-    workspaceDTO: { ownerUserId: string; title: string },
-    members: IWorkspaceMemberCreateDTO[]
-  ) => {
+  initializeWorkspace: async (user: User, workspaceDTO: { ownerUserId: string; title: string }, members: IWorkspaceMemberCreateDTO[]) => {
     return await UnitOfWork.run(async () => {
       const workspace = await workspaceRepository.store(workspaceDTO);
       await workspaceMemberService.initializeOwnership({

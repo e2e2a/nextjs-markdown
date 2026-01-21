@@ -1,5 +1,5 @@
 import { IWorkspaceMember } from '@/types';
-import { WorkspacePermissions } from '@/utils/permissions';
+import { WorkspacePermissions } from '@/utils/server/permissions';
 
 const BASE_URL_WORKSPACES = `${process.env.NEXT_PUBLIC_BASE_URL}/api/workspaces`;
 

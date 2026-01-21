@@ -22,14 +22,21 @@ export const NodeDTO = {
   // DTO for partial updates (your specific requirement)
   update: z
     .object({
+      _id: objectIdSchema('Node id'),
       title: z.string().min(1).optional(),
       content: z.string().min(1).optional(),
     })
     .refine(data => data.title || data.content, {
       message: 'At least one field (title or content) must be provided',
     }),
+
+  move: z.object({
+    _id: objectIdSchema('Node id'),
+    parentId: objectIdSchema('Parent id').nullable(),
+  }),
 };
 
 // Type inference (Optional, but highly recommended for TS environments)
 export type CreateNodeInput = z.infer<typeof NodeDTO.create>;
 export type UpdateNodeInput = z.infer<typeof NodeDTO.update>;
+export type MoveNodeInput = z.infer<typeof NodeDTO.move>;

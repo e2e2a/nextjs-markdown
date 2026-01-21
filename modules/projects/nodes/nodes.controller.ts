@@ -2,6 +2,7 @@ import { HttpError } from '@/utils/server/errors';
 import { nodeService } from './node.service';
 import { NodeDTO } from './node.dto';
 import { ensureAuthenticated } from '@/lib/auth-utils';
+import { INode } from '@/types';
 
 export const nodeController = {
   getProjectTree: async (pid: string) => {
@@ -34,6 +35,21 @@ export const nodeController = {
     }
 
     const node = await nodeService.create(session.user.email, validatedBody.data);
+    return node;
+  },
+
+  restore: async (rawBody: { nodes: INode[] }) => {
+    const session = await ensureAuthenticated();
+    if (!rawBody || rawBody.nodes.length === 0) throw new HttpError('BAD_INPUT', 'No nodes to insert');
+
+    const validatedBody = NodeDTO.restore.safeParse(rawBody.nodes);
+    if (!validatedBody.success) {
+      const errorMessage = validatedBody.error.issues[0].message;
+      console.log('errorMessage', errorMessage);
+      throw new HttpError('BAD_INPUT', errorMessage);
+    }
+
+    const node = await nodeService.restore(session.user.email, validatedBody.data);
     return node;
   },
 

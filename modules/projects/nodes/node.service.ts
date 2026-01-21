@@ -121,6 +121,30 @@ export const nodeService = {
     return await nodeRepository.create({ ...data, workspaceId: resP.project.workspaceId });
   },
 
+  restore: async (
+    email: string,
+    data: {
+      _id: string;
+      projectId: string;
+      workspaceId: string;
+      parentId: string | null;
+      type: 'file' | 'folder';
+      title: string;
+    }[]
+  ) => {
+    for (const node of data) {
+      const resP = await projectService.findProject(email, node.projectId);
+      if (node.parentId) {
+        const parentNode = await nodeRepository.findOne({ _id: node.parentId });
+        if (!parentNode) throw new HttpError('NOT_FOUND', `Parent node ${node.parentId} not found`);
+      }
+      await checkNodeExistence(node);
+      node.workspaceId = resP.project.workspaceId;
+    }
+    console.log('data', data);
+    return await nodeRepository.insertMany(data);
+  },
+
   update: async (data: { _id: string; title?: string; content?: string }) => {
     const node = await nodeRepository.findOne({ _id: data._id });
     if (!node) throw new HttpError('NOT_FOUND', 'Node not found');

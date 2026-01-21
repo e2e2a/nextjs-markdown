@@ -18,6 +18,8 @@ export const nodeRepository = {
   findNodeByProject: (projectId: string) => Node.find({ projectId, parentId: null }).populate('children'),
 
   create: (data: { projectId: string; parentId: string | null | undefined; workspaceId: string; type: string; title: string }) => new Node(data).save(),
+  insertMany: (data: { _id: string; projectId: string; parentId: string | null; workspaceId: string; type: 'file' | 'folder'; title: string }[]) =>
+    Node.insertMany(data),
 
   findOne: (data: { _id?: string }) => Node.findOne(data),
 

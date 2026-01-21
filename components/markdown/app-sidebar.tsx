@@ -57,6 +57,9 @@ export function AppSidebar() {
             case 'move':
               mutation.move.mutate({ _id: op.draggedId, pid, parentId: op.fromParentId });
               break;
+            case 'delete':
+              mutation.restore.mutate([op.node]);
+              break;
             case 'update':
               break;
           }

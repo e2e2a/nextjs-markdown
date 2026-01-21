@@ -19,6 +19,17 @@ export const NodeDTO = {
     title: z.string().max(50, { message: 'Title must be at most 50 characters' }),
   }),
 
+  restore: z.array(
+    z.object({
+      _id: objectIdSchema('Node id'),
+      projectId: objectIdSchema('Project id'),
+      workspaceId: objectIdSchema('Workspace id'),
+      parentId: objectIdSchema('Parent id').nullable(),
+      type: z.enum(['file', 'folder']),
+      title: z.string().max(50, { message: 'Title must be at most 50 characters' }),
+    })
+  ),
+
   // DTO for partial updates (your specific requirement)
   update: z
     .object({

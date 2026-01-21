@@ -1,3 +1,5 @@
+import { INode } from '@/types';
+
 const BASE_URL = '/api/node';
 const BASE_URL_PROJECT = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
 
@@ -14,16 +16,22 @@ export const nodeClient = {
     return res.json();
   },
 
-  async create(data: {
-    projectId: string;
-    parentId: string | null;
-    type: 'file' | 'folder';
-    title: string;
-  }) {
+  async create(data: { projectId: string; parentId: string | null; type: 'file' | 'folder'; title: string }) {
     const res = await fetch(BASE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+    return json;
+  },
+
+  async restore(nodes: INode[]) {
+    const res = await fetch(`${BASE_URL}/restore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nodes }),
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || '');

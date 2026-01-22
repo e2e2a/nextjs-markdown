@@ -62,12 +62,12 @@ export function NavMain() {
     setActiveDrag(null);
     targetIdRef.current = null;
 
+    console.log('dragged', dragged);
     if (!dragged || !targetId) return; // invalid drop
     if (targetId === 'root' && dragged.parentId === null) return; // invalid drop
 
     try {
       moveNode(dragged._id, targetId);
-
       requestAnimationFrame(() => {
         document.getElementById('sidebar-tree-nodes')?.focus();
       });

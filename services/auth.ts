@@ -1,5 +1,5 @@
 import { compareText, hashText } from '@/lib/bcrypt';
-import { HttpError } from '@/utils/errors';
+import { HttpError } from '@/utils/server/errors';
 import { loginSchema } from '@/lib/validators/login';
 import { validateRegisterSchema } from '@/lib/validators/register';
 import { userRepository } from '@/modules/users/user.repository';
@@ -10,12 +10,7 @@ import { verificationTemplate } from '@/components/email-template/verification-c
 import { rateLimitService } from '../modules/rateLimits/rateLimit.service';
 import { tokenRepository } from '@/modules/tokens/token.repository';
 
-const sendEmail = async (
-  email: string,
-  subject: string,
-  type: 'EmailVerification' | 'ChangeEmailVerification',
-  code: string
-) => {
+const sendEmail = async (email: string, subject: string, type: 'EmailVerification' | 'ChangeEmailVerification', code: string) => {
   try {
     const html = await verificationTemplate(code, type);
 
@@ -58,8 +53,7 @@ export const authServices = {
     user = await userRepository.findUserByEmail(result.data.email, false);
     const hashedPassword = await hashText(result.data.password);
     if (user) {
-      if (user.email_verified)
-        throw new HttpError('CONFLICT', 'Email already exists in this level');
+      if (user.email_verified) throw new HttpError('CONFLICT', 'Email already exists in this level');
       user.password = hashedPassword;
       await user.save();
     } else {

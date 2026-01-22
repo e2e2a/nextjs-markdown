@@ -132,8 +132,13 @@ export const nodeService = {
       title: string;
     }[]
   ) => {
+    const { projectId, workspaceId } = data[0];
+
+    await Promise.all([ensureWorkspaceMember(workspaceId, email), ensureProjectMember(projectId, email)]);
+    const resP = await projectService.findProject(email, projectId);
+
     for (const node of data) {
-      const resP = await projectService.findProject(email, node.projectId);
+      if (node.projectId !== projectId) throw new HttpError('BAD_INPUT', 'All nodes must belong to the same project');
       if (node.parentId) {
         const parentNode = await nodeRepository.findOne({ _id: node.parentId });
         if (!parentNode) throw new HttpError('NOT_FOUND', `Parent node ${node.parentId} not found`);
@@ -141,7 +146,7 @@ export const nodeService = {
       await checkNodeExistence(node);
       node.workspaceId = resP.project.workspaceId;
     }
-    console.log('data', data);
+
     return await nodeRepository.insertMany(data);
   },
 

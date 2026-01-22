@@ -61,6 +61,7 @@ export function AppSidebar() {
               mutation.restore.mutate([op.node]);
               break;
             case 'update':
+              mutation.update.mutate({ _id: op.nodeId as string, pid: op.prev.projectId, title: op.prev.title });
               break;
           }
         }

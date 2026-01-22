@@ -109,9 +109,9 @@ export default function SidebarItem({ item, depth, nodesById, activeDrag, target
     onDragOver: (e: DragEvent) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
-
+      if (!activeDrag) return;
       const targetId = getHighlightTargetId(item);
-      // Clear previous hover if it's a different node
+
       if (targetIdRef.current !== targetId) {
         clearOpenFolderTimeout();
         clearAllFolderDragOver();

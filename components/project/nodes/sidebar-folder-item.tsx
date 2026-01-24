@@ -16,20 +16,12 @@ interface IProps {
 }
 
 const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
-  const {
-    activeNode,
-    isUpdatingNode,
-    setActiveNode,
-    setIsCreating,
-    setIsUpdatingNode,
-    selectedNode,
-    setSelectedNode,
-  } = useNodeStore();
+  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, selectedNode, setSelectedNode } = useNodeStore();
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
 
   const handleNodeClick = (node: INode) => {
-    setActiveNode(node);
+    setActiveNode(node._id);
     setIsCreating(null);
     setSelectedNode(node);
   };
@@ -95,13 +87,7 @@ const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
         }}
       >
         <ChevronRight className={`${isOpen ? 'rotate-90' : 'rotate-0'}`} />
-        <Image
-          src={isOpen ? '/images/opened-folder.svg' : '/images/closed-folder.svg'}
-          alt="Folder Icon"
-          className="w-4.5 h-4.5"
-          width={20}
-          height={20}
-        />
+        <Image src={isOpen ? '/images/opened-folder.svg' : '/images/closed-folder.svg'} alt="Folder Icon" className="w-4.5 h-4.5" width={20} height={20} />
         <div className="truncate bg-transparent w-full">
           <Input
             onBlur={update}
@@ -125,22 +111,14 @@ const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
         activeNode?._id === item._id
           ? 'bg-accent hover:bg-accent text-foreground focus:bg-primary focus:text-primary-foreground focus:hover:bg-primary'
           : 'hover:bg-accent/50! hover:text-accent-foreground',
-        selectedNode?._id === item._id
-          ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
-          : 'active:ring-0'
+        selectedNode?._id === item._id ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20' : 'active:ring-0'
       )}
       style={{
         paddingLeft: `${depth * 8}px`,
       }}
     >
       <ChevronRight className={`${isOpen ? 'rotate-90' : 'rotate-0'}`} />
-      <Image
-        src={isOpen ? '/images/opened-folder.svg' : '/images/closed-folder.svg'}
-        alt="Folder Icon"
-        className="w-4.5 h-4.5"
-        width={20}
-        height={20}
-      />
+      <Image src={isOpen ? '/images/opened-folder.svg' : '/images/closed-folder.svg'} alt="Folder Icon" className="w-4.5 h-4.5" width={20} height={20} />
       <p className="truncate">{title || item.title}</p>
     </Button>
   );

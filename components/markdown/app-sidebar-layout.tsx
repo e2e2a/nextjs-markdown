@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, memo } from 'react';
+import React, { useEffect, useRef, memo, useState } from 'react';
 // import { useParams } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -8,22 +8,20 @@ import { AppShell } from './app-shell';
 import { AppSidebar } from './app-sidebar';
 import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
-import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-// import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
+import { useParams } from 'next/navigation';
+import { TabsHeader } from '../project/tabs/tab-header';
 
 const MainContentArea = memo(function MainContentArea({ children }: { children: React.ReactNode }) {
+  const params = useParams();
+  const pid = params.pid as string;
+
   return (
-    <AppContent variant="sidebar" className="text-muted-foreground">
-      <div className="flex-1">
-        <header className="flex h-6 p-0 items-center border-b">
-          <div className="flex flex-row h-full items-center overflow-x-auto overflow-y-hidden">
-            <Button className="bg-transparent rounded-none border border-border border-b-background z-10 h-full text-xs px-3">
-              File 1
-            </Button>
-          </div>
-        </header>
-        {children}
+    <AppContent variant="sidebar" className="text-muted-foreground h-screen overflow-hidden">
+      <div className="flex flex-col h-full w-full">
+        <TabsHeader pid={pid} />
+
+        <div className="flex-1 min-h-0 w-full overflow-hidden">{children}</div>
       </div>
     </AppContent>
   );

@@ -1,165 +1,119 @@
 'use client';
+
+import React, { useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { EditorView } from '@codemirror/view';
-import CodeMirror from '@uiw/react-codemirror';
-import { basicSetup } from 'codemirror';
 import { yCollab } from 'y-codemirror.next';
-import { setupMarkdownSupabase } from '@/lib/setup-markdown-supabase';
-import { Awareness } from 'y-protocols/awareness.js';
-import { INode } from '@/types';
-import { Session } from 'next-auth';
-import { useMarkdownEditorConfig } from '@/lib/useMarkdownEditorConfig';
-import ReactMarkdown from 'react-markdown';
-import { useNodeMutations } from '@/hooks/node/useNodeMutations';
-import { UseMutationResult } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
-import { timeAgo } from '@/utils/timeAgo';
+import CodeMirror from '@uiw/react-codemirror';
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { EditorView, Decoration, DecorationSet, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import { RangeSetBuilder } from '@codemirror/state';
+import { syntaxTree } from '@codemirror/language';
 
-interface MarkdownSectionProps {
-  node: INode;
-  session: Session;
-}
-
-interface EditorDependencies {
-  ytext: Y.Text;
-  awareness: Awareness;
-  key: string;
-  initialContent: string;
-}
-
-const docsCache = new Map<string, ReturnType<typeof setupMarkdownSupabase>>();
-
-function getOrCreateNodeDoc(
-  node: INode,
-  session: Session,
-  update: UseMutationResult,
-  setLoading: React.Dispatch<boolean>
-) {
-  if (!docsCache.has(node._id)) {
-    const created = setupMarkdownSupabase(node, session, node?.content || '', update);
-    docsCache.set(node._id, created);
-    setTimeout(() => {
-      setLoading(false);
-    }, 250);
-  } else {
-    setLoading(false);
-  }
-  return docsCache.get(node._id)!;
-}
-
-export function MarkdownSection({ node, session }: MarkdownSectionProps) {
-  const mutation = useNodeMutations();
-
-  // Keep 'content' ONLY for the preview
-  const [content, setContent] = useState(node?.content || '');
-  const editorRef = useRef<EditorView | null>(null);
-  const [deps, setDeps] = useState<EditorDependencies | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isPreview, setIsPreview] = useState(false);
-  const handleSelectionComment = useCallback((selection: string) => {
-    if (!selection) {
-      alert('Select text first.');
-      return;
+// --- THE OBSIDIAN "HIDE SYMBOLS" PLUGIN ---
+const obsidianLivePreview = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+    constructor(view: EditorView) {
+      this.decorations = this.getDeco(view);
     }
-    alert(`Added comment to: "${selection}"`);
-  }, []);
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.selectionSet) this.decorations = this.getDeco(update.view);
+    }
+    getDeco(view: EditorView) {
+      const builder = new RangeSetBuilder<Decoration>();
+      const selection = view.state.selection.main;
+      const line = view.state.doc.lineAt(selection.from);
 
-  const { extensions: markdownExtensions } = useMarkdownEditorConfig(
-    handleSelectionComment,
-    setIsPreview
+      for (const { from, to } of view.visibleRanges) {
+        syntaxTree(view.state).iterate({
+          from,
+          to,
+          enter: node => {
+            // Hide symbols if the cursor is NOT on this line
+            if (node.from < line.from || node.to > line.to) {
+              const marks = ['HeaderMark', 'EmphasisMark', 'StrongMark', 'LinkMark', 'CodeMark', 'FencedCode'];
+              if (marks.includes(node.name)) {
+                builder.add(node.from, node.to, Decoration.replace({}));
+              }
+            }
+          },
+        });
+      }
+      return builder.finish();
+    }
+  },
+  { decorations: v => v.decorations }
+);
+
+export function MarkdownSection({ node }: { node: any }) {
+  const { data: session } = useSession();
+
+  // 1. Initialize Yjs types
+  const ydoc = useMemo(() => new Y.Doc(), [node._id]);
+  const yText = useMemo(() => ydoc.getText('codemirror'), [ydoc]);
+
+  // 2. Initialize Hocuspocus Provider
+  const provider = useMemo(() => {
+    return new HocuspocusProvider({
+      url: 'ws://localhost:1234',
+      name: node._id,
+      document: ydoc,
+    });
+  }, [node._id, ydoc]);
+
+  // 3. User Identity & Cleanup (Prevents Ghost Cursors)
+  useEffect(() => {
+    if (session?.user) {
+      provider.awareness.setLocalStateField('user', {
+        name: session.user.name || session.user.email,
+        color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+      });
+    }
+    return () => {
+      // Standard Practice: Total cleanup on unmount
+      provider.destroy();
+      ydoc.destroy();
+    };
+  }, [session, provider, ydoc]);
+
+  // 4. CodeMirror Extensions
+  const extensions = useMemo(
+    () => [
+      markdown({ base: markdownLanguage }),
+      yCollab(yText, provider.awareness),
+      obsidianLivePreview,
+      EditorView.lineWrapping,
+      EditorView.theme({
+        '&': { height: '100%', backgroundColor: 'transparent' },
+        '.cm-content': { padding: '24px', fontFamily: 'inherit' },
+        '.cm-ySelectionInfo': {
+          // Cursor labels
+          padding: '2px 4px',
+          fontSize: '10px',
+          borderRadius: '4px',
+          color: 'white',
+          fontWeight: 'bold',
+        },
+      }),
+    ],
+    [yText, provider]
   );
 
-  useEffect(() => {
-    if (!node) return;
-    const docObj = getOrCreateNodeDoc(
-      node,
-      session,
-      mutation.update as UseMutationResult,
-      setLoading
-    );
-
-    const { ytext, awareness, checkConnection } = docObj;
-
-    checkConnection();
-
-    const currentContent = ytext.toString();
-
-    const onYtextUpdate = () => {
-      setContent(ytext.toString());
-    };
-    ytext.observe(onYtextUpdate);
-
-    const animationFrameId = requestAnimationFrame(() => {
-      setDeps({
-        ytext,
-        awareness,
-        key: node._id,
-        initialContent: currentContent,
-      });
-      setContent(currentContent);
-    });
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      ytext.unobserve(onYtextUpdate);
-      editorRef.current = null;
-      setDeps(null);
-      setContent('');
-      setIsPreview(false);
-    };
-  }, [node, session]);
-
-  if (!deps) {
-    return <div className="p-4 text-sm text-gray-500">Loading editor...</div>;
-  }
-
-  if (loading) return <div className="p-4 text-sm text-gray-500">Loading editor...</div>;
-
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1 }} className="min-w-full overflow-hidden">
-        {!isPreview && (
-          <CodeMirror
-            key={deps.key}
-            // value={deps.initialContent}
-            value={content}
-            className=" overflow-hidden min-w-full"
-            basicSetup={false}
-            extensions={[
-              ...markdownExtensions,
-              basicSetup,
-              yCollab(deps.ytext, deps.awareness),
-              EditorView.lineWrapping,
-            ]}
-            onChange={val => setContent(val)}
-            onCreateEditor={view => (editorRef.current = view)}
-          />
-        )}
-
-        {isPreview && (
-          <div
-            className="prose max-w-none overflow-auto px-2 bg-white text-black"
-            style={{ height: '100%' }}
-          >
-            <div className="h-5 flex justify-between items-center my-2">
-              <div className="text-black">Changed: {timeAgo(node.updatedAt!)}</div>
-              <div className="">
-                <Button
-                  onClick={() => setIsPreview(false)}
-                  className="bg-transparent text-black hover:bg-transparent focus:bg-none drop-shadow-none focus-visible:ring-0 border-none cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="editor-preview">
-              <ReactMarkdown>{content}</ReactMarkdown>
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="h-full w-full bg-background border-none outline-none">
+      <CodeMirror
+        height="100%"
+        extensions={extensions}
+        basicSetup={{
+          lineNumbers: false,
+          foldGutter: false,
+          highlightActiveLine: false,
+        }}
+        // NOTE: No 'value' or 'onChange' prop here.
+        // yCollab handles the sync automatically.
+      />
     </div>
   );
 }

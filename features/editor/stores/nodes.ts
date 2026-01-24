@@ -75,9 +75,7 @@ function insertNode(nodes: INode[], nodeToInsert: INode, parentId: string | null
 }
 
 function getSiblings(nodes: INode[], parentId: string | null): INode[] {
-  if (parentId === null) {
-    return nodes; // root level
-  }
+  if (parentId === null) return nodes; // root level
 
   const parent = findNode(nodes, parentId);
   return parent?.children ?? [];
@@ -106,7 +104,7 @@ interface NodesState {
 
   setActiveDrag(node: INode | null): void;
   setSelectedNode(node: INode | null): void;
-  setActiveNode(node: INode | null): void;
+  setActiveNode(nodeId: string | null): void;
 
   setNodes(nodes: INode[] | null): void;
 
@@ -161,7 +159,17 @@ export const useNodeStore = create<NodesState>(set => ({
   collapseVersion: 0,
 
   setSelectedNode: node => set({ selectedNode: node }),
-  setActiveNode: node => set({ activeNode: node }),
+  // setActiveNode: node => set({ activeNode: node }),
+  setActiveNode: nodeId => {
+    set(state => {
+      if (!nodeId) return { activeNode: null };
+      if (!state.nodes) return state;
+
+      // Reuse your existing recursive findNode function
+      const node = findNode(state.nodes, nodeId);
+      return { activeNode: node };
+    });
+  },
   setActiveDrag: node => set({ activeDrag: node }),
 
   setIsCreating: flag => set({ isCreating: flag }),

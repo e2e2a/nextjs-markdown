@@ -7,6 +7,7 @@ import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { makeToastError } from '@/lib/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useTabStore } from '@/features/editor/stores/tabs';
 
 interface IProps {
   item: INode;
@@ -14,20 +15,14 @@ interface IProps {
 }
 
 const SidebarFileItemComponent = ({ item, depth }: IProps) => {
-  const {
-    activeNode,
-    isUpdatingNode,
-    setActiveNode,
-    setIsCreating,
-    setIsUpdatingNode,
-    setSelectedNode,
-    selectedNode,
-  } = useNodeStore();
+  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, setSelectedNode, selectedNode } = useNodeStore();
+  const { openTab } = useTabStore();
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
 
   const handleNodeClick = (node: INode) => {
-    setActiveNode(node);
+    openTab(node.projectId, node, true);
+    setActiveNode(node._id);
     setIsCreating(null);
     setSelectedNode(node);
   };
@@ -87,13 +82,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
           paddingLeft: `${depth * 8}px`,
         }}
       >
-        <Image
-          src={'/images/file.svg'}
-          alt="File Icon"
-          className="w-4.5! h-4.5"
-          width={5}
-          height={5}
-        />
+        <Image src={'/images/file.svg'} alt="File Icon" className="w-4.5! h-4.5" width={5} height={5} />
         <div className="truncate bg-transparent w-full">
           <Input
             onBlur={update}
@@ -110,27 +99,35 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
   return (
     <Button
       onClick={() => handleNodeClick(item)}
-      tabIndex={0}
+      // tabIndex={0}
       className={cn(
         'transition-none pointer-events-auto gap-0 flex duration-0 h-fit leading-none py-0.5 rounded-none bg-transparent active:ring-0 text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
         activeNode?._id === item._id
-          ? 'bg-primary hover:bg-primary text-foreground focus:bg-primary focus:text-primary-foreground focus:hover:bg-primary!'
+          ? 'bg-accent hover:bg-accent! text-foreground focus:bg-primary focus:text-primary-foreground focus:hover:bg-primary!'
           : 'hover:bg-accent/50! hover:text-accent-foreground',
-        selectedNode?._id === item._id
+        !activeNode && selectedNode?._id === item._id
           ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
           : 'active:ring-0'
       )}
+      tabIndex={1} // Prevents browser focus from stealing the highlight look
+      // className={cn(
+      //   'transition-none flex h-7 w-full justify-start truncate rounded-none border-none outline-none ring-0',
+
+      //   // 2. ACTIVE: The file is open in the current tab (Subtle look)
+      //   activeNode
+      //     ? 'bg-accent/50 text-foreground'
+      //     : 'text-muted-foreground hover:bg-accent/30 hover:text-foreground',
+
+      //   // 3. SELECTED: The user last clicked this specific item in the sidebar (Primary look)
+      //   selectedNode
+      //     ? 'bg-primary! text-primary-foreground'
+      //     : ''
+      // )}
       style={{
         paddingLeft: `${depth * 8}px`,
       }}
     >
-      <Image
-        src={'/images/file.svg'}
-        alt="File Icon"
-        className="w-4.5! h-4.5"
-        width={5}
-        height={5}
-      />
+      <Image src={'/images/file.svg'} alt="File Icon" className="w-4.5! h-4.5" width={5} height={5} />
       <p className="truncate">{item.title}</p>
     </Button>
   );

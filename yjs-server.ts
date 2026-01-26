@@ -1,48 +1,55 @@
 import { Server } from '@hocuspocus/server';
 import { Logger } from '@hocuspocus/extension-logger';
-
-// ⚠️ Fake DB — replace with real DB later
-const FakeDB = {
-  async get(documentName: string) {
-    console.log(`📥 DB read: ${documentName}`);
-    return {
-      content: '# Hello from database\n\nThis is initial content.',
-    };
-  },
-
-  async save(documentName: string, content: string) {
-    console.log(`💾 DB save: ${documentName} (${content.length} chars)`);
-  },
-};
+import Node from './modules/projects/nodes/node.model';
 
 const server = new Server({
   port: 1234,
+  unloadImmediately: false, // Prevents document evaporation on tab switch
 
-  // 1. SEEDING (Only for User 1)
-  async onLoadDocument({ document, documentName }) {
-    const yText = document.getText('codemirror');
+  extensions: [new Logger()],
 
-    // If yText.length > 0, User 1 already seeded it, and we just
-    // give User 2 the current memory state.
-    if (yText.length === 0) {
-      console.log(`🆕 Doc ${documentName} is fresh. Fetching DB seed...`);
-      const node = await FakeDB.get(documentName);
+  /**
+   * Cold Start: Triggered when the first user joins a room that isn't in RAM.
+   */
+  async onLoadDocument({ documentName, document }) {
+    const ytext = document.getText('codemirror');
+
+    // If the doc is already in server RAM, return it immediately.
+    if (ytext.length > 0) return document;
+
+    try {
+      // documentName is the nodeId passed from the client
+      const node = await Node.findById(documentName);
+
       if (node?.content) {
         document.transact(() => {
-          yText.insert(0, node.content);
-        });
+          // 'initial-load' origin prevents unnecessary triggers elsewhere
+          ytext.insert(0, node.content);
+        }, 'initial-load');
       }
-    } else {
-      console.log(`⚡ Doc ${documentName} already in memory. Fast-syncing User...`);
+    } catch (error) {
+      console.error(`[DB Error] Failed to load node ${documentName}:`, error);
     }
+
     return document;
   },
 
-  // 2. SAVING (Background task)
-  // This saves the collaborative state back to the DB so it's ready for the next cold start.
-  async onStoreDocument({ document, documentName }) {
-    const content = document.getText('codemirror').toString();
-    await FakeDB.save(documentName, content);
-    console.log(`💾 Synced memory to DB for ${documentName}`);
+  /**
+   * Persistence: Automatically debounced by Hocuspocus.
+   */
+  async onStoreDocument({ documentName, document }) {
+    const currentContent = document.getText('codemirror').toString();
+
+    try {
+      await Node.findByIdAndUpdate(documentName, {
+        content: currentContent,
+        updatedAt: new Date(),
+      });
+      console.log(`✅ Saved ${documentName} to DB`);
+    } catch (error) {
+      console.error(`[DB Error] Failed to save node ${documentName}:`, error);
+    }
   },
 });
+
+server.listen();

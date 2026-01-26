@@ -1,6 +1,5 @@
 'use client';
-import React, { useEffect, useRef, memo, useState } from 'react';
-// import { useParams } from 'next/navigation';
+import React, { useEffect, useRef, memo } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { AppContent } from './app-content';
@@ -19,7 +18,9 @@ const MainContentArea = memo(function MainContentArea({ children }: { children: 
   return (
     <AppContent variant="sidebar" className="text-muted-foreground h-screen overflow-hidden">
       <div className="flex flex-col h-full w-full">
-        <TabsHeader pid={pid} />
+        <div className="h-10 bg-sidebar">
+          <TabsHeader pid={pid} />
+        </div>
 
         <div className="flex-1 min-h-0 w-full overflow-hidden">{children}</div>
       </div>
@@ -73,7 +74,8 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           const target = e.target as HTMLElement;
           if (target.closest('[data-sidebar-node]')) return;
           if (e.button !== 2) {
-            setSelectedNode(activeNode ? activeNode : null);
+            // setSelectedNode(activeNode ? activeNode : null);
+            setSelectedNode(null);
           }
         }}
       >

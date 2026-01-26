@@ -31,12 +31,7 @@ interface EditorDependencies {
 
 const docsCache = new Map<string, ReturnType<typeof setupMarkdownSupabase>>();
 
-function getOrCreateNodeDoc(
-  node: INode,
-  session: Session,
-  update: UseMutationResult,
-  setLoading: React.Dispatch<boolean>
-) {
+function getOrCreateNodeDoc(node: INode, session: Session, update: UseMutationResult, setLoading: React.Dispatch<boolean>) {
   if (!docsCache.has(node._id)) {
     const created = setupMarkdownSupabase(node, session, node?.content || '', update);
     docsCache.set(node._id, created);
@@ -66,19 +61,11 @@ export function MarkdownSection({ node, session }: MarkdownSectionProps) {
     alert(`Added comment to: "${selection}"`);
   }, []);
 
-  const { extensions: markdownExtensions } = useMarkdownEditorConfig(
-    handleSelectionComment,
-    setIsPreview
-  );
+  const { extensions: markdownExtensions } = useMarkdownEditorConfig(handleSelectionComment, setIsPreview);
 
   useEffect(() => {
     if (!node) return;
-    const docObj = getOrCreateNodeDoc(
-      node,
-      session,
-      mutation.update as UseMutationResult,
-      setLoading
-    );
+    const docObj = getOrCreateNodeDoc(node, session, mutation.update as UseMutationResult, setLoading);
 
     const { ytext, awareness, checkConnection } = docObj;
 
@@ -127,22 +114,14 @@ export function MarkdownSection({ node, session }: MarkdownSectionProps) {
             value={content}
             className=" overflow-hidden min-w-full"
             basicSetup={false}
-            extensions={[
-              ...markdownExtensions,
-              basicSetup,
-              yCollab(deps.ytext, deps.awareness),
-              EditorView.lineWrapping,
-            ]}
+            extensions={[...markdownExtensions, basicSetup, yCollab(deps.ytext, deps.awareness), EditorView.lineWrapping]}
             onChange={val => setContent(val)}
             onCreateEditor={view => (editorRef.current = view)}
           />
         )}
 
         {isPreview && (
-          <div
-            className="prose max-w-none overflow-auto px-2 bg-white text-black"
-            style={{ height: '100%' }}
-          >
+          <div className="prose max-w-none overflow-auto px-2 bg-white text-black" style={{ height: '100%' }}>
             <div className="h-5 flex justify-between items-center my-2">
               <div className="text-black">Changed: {timeAgo(node.updatedAt!)}</div>
               <div className="">

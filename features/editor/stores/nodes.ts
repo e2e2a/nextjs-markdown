@@ -27,7 +27,7 @@ interface OperationDelete {
 
 type NodeOperation = OperationMove | OperationUpdate | OperationCreate | OperationDelete;
 
-function findNode(nodes: INode[], id: string): INode | null {
+export function findNode(nodes: INode[], id: string): INode | null {
   for (const node of nodes) {
     if (node._id === id) return node;
     if (node.children?.length) {

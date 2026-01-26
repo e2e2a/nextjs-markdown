@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { INode } from '@/types';
+import { useNodeStore } from './nodes';
 
 export interface Tab {
   nodeId: string;
@@ -87,7 +88,7 @@ export const useTabStore = create<TabsState>()(
         });
       },
 
-      closeTab(projectId, nodeId) {
+      closeTab(projectId: string, nodeId: string) {
         set(state => {
           const tabs = state.projectTabs[projectId] || [];
           const index = tabs.findIndex(t => t.nodeId === nodeId);
@@ -97,8 +98,18 @@ export const useTabStore = create<TabsState>()(
           const currentActive = state.activeTabs[projectId];
 
           let nextActive = currentActive;
+
           if (currentActive === nodeId) {
-            nextActive = updatedTabs[index - 1]?.nodeId ?? updatedTabs[index]?.nodeId ?? null;
+            // prefer left tab, else right
+            if (index - 1 >= 0) {
+              nextActive = updatedTabs[index - 1]?.nodeId ?? null;
+            } else {
+              nextActive = updatedTabs[0]?.nodeId ?? null;
+            }
+
+            // Update activeNode in node store
+            const nodeStore = useNodeStore.getState();
+            nodeStore.setActiveNode(nextActive);
           }
 
           return {

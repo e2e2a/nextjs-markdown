@@ -16,14 +16,13 @@ interface IProps {
 }
 
 const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
-  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, selectedNode, setSelectedNode } = useNodeStore();
+  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, selectedNode } = useNodeStore();
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
 
   const handleNodeClick = (node: INode) => {
     setActiveNode(node._id);
     setIsCreating(null);
-    setSelectedNode(node);
   };
 
   const mutation = useNodeMutations();

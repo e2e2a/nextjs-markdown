@@ -13,14 +13,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { loginSchema } from '@/lib/validators/login';
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-  Form,
-} from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from '@/components/ui/form';
 import { useAuthMutations } from '@/hooks/auth/useAuthMutations';
 import OauthField from '@/components/oauth-field';
 
@@ -62,7 +55,7 @@ export function LoginForm({ className, ...props }: IProps) {
               email: data.email,
               callbackUrl: '/login',
             });
-            makeToastSucess('Redirecting To Workspace');
+            makeToastSucess('Login Successfully');
           }
         },
         onError: err => {
@@ -99,12 +92,7 @@ export function LoginForm({ className, ...props }: IProps) {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="johndoe@domain.com"
-                            {...field}
-                            disabled={loading}
-                          />
+                          <Input type="email" placeholder="johndoe@domain.com" {...field} disabled={loading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -118,31 +106,19 @@ export function LoginForm({ className, ...props }: IProps) {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="******"
-                            {...field}
-                            disabled={loading}
-                          />
+                          <Input type="password" placeholder="******" {...field} disabled={loading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <div className="w-full text-center">
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      variant={'default'}
-                      className="w-full cursor-pointer"
-                    >
+                    <Button type="submit" disabled={loading} variant={'default'} className="w-full cursor-pointer">
                       Login
                     </Button>
                   </div>
                 </Field>
-                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                  Or continue with
-                </FieldSeparator>
+                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">Or continue with</FieldSeparator>
                 <OauthField callbackUrl="/login" loading={loading} setLoading={setLoading} />
               </FieldGroup>
             </form>
@@ -150,8 +126,7 @@ export function LoginForm({ className, ...props }: IProps) {
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking above, you agree to our <Link href="/terms">Terms of Service</Link> and{' '}
-        <Link href="/privacy">Privacy Policy</Link>.
+        By clicking above, you agree to our <Link href="/terms">Terms of Service</Link> and <Link href="/privacy">Privacy Policy</Link>.
       </FieldDescription>
     </div>
   );

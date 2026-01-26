@@ -15,7 +15,7 @@ interface IProps {
 }
 
 const SidebarFileItemComponent = ({ item, depth }: IProps) => {
-  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, setSelectedNode, selectedNode } = useNodeStore();
+  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, selectedNode } = useNodeStore();
   const { openTab } = useTabStore();
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
@@ -24,7 +24,6 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
     openTab(node.projectId, node, true);
     setActiveNode(node._id);
     setIsCreating(null);
-    setSelectedNode(node);
   };
 
   const mutation = useNodeMutations();
@@ -109,20 +108,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
           ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
           : 'active:ring-0'
       )}
-      tabIndex={1} // Prevents browser focus from stealing the highlight look
-      // className={cn(
-      //   'transition-none flex h-7 w-full justify-start truncate rounded-none border-none outline-none ring-0',
-
-      //   // 2. ACTIVE: The file is open in the current tab (Subtle look)
-      //   activeNode
-      //     ? 'bg-accent/50 text-foreground'
-      //     : 'text-muted-foreground hover:bg-accent/30 hover:text-foreground',
-
-      //   // 3. SELECTED: The user last clicked this specific item in the sidebar (Primary look)
-      //   selectedNode
-      //     ? 'bg-primary! text-primary-foreground'
-      //     : ''
-      // )}
+      tabIndex={0}
       style={{
         paddingLeft: `${depth * 8}px`,
       }}

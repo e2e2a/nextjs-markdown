@@ -11,7 +11,7 @@ interface TabsHeaderProps {
 
 export const TabsHeader = ({ pid }: TabsHeaderProps) => {
   const { projectTabs, activeTabs, openTab, setActiveTab } = useTabStore();
-  const { activeDrag, setActiveNode, setSelectedNode } = useNodeStore();
+  const { activeDrag, setActiveNode } = useNodeStore();
 
   const tabs = projectTabs[pid] || [];
   const activeTabId = activeTabs[pid];
@@ -82,7 +82,7 @@ export const TabsHeader = ({ pid }: TabsHeaderProps) => {
       openTab(pid, activeDrag, true, dropIndex);
       setActiveTab(pid, activeDrag._id);
       setActiveNode(activeDrag._id);
-      setSelectedNode(null);
+      // setSelectedNode(null);
     }
 
     setDropIndex(null);
@@ -92,11 +92,11 @@ export const TabsHeader = ({ pid }: TabsHeaderProps) => {
   return (
     <header
       ref={headerRef}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      onDragEnter={e => e.preventDefault()}
-      className={cn('flex p-0 items-center overflow-x-auto overflow-y-hidden w-full relative')}
+      // onDragOver={handleDragOver}
+      // onDragLeave={handleDragLeave}
+      // onDrop={handleDrop}
+      // onDragEnter={e => e.preventDefault()}
+      className={cn('flex flex-row p-0 items-center h-full overflow-x-auto overflow-y-hidden w-full relative')}
     >
       {tabs.map((tab, i) => {
         const isActive = activeTabId === tab.nodeId;
@@ -113,6 +113,7 @@ export const TabsHeader = ({ pid }: TabsHeaderProps) => {
           />
         );
       })}
+      <div className="flex-1 w-full h-full border-b border-border" />
     </header>
   );
 };

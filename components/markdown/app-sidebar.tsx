@@ -15,7 +15,7 @@ export function AppSidebar() {
   const params = useParams();
   const pid = params.pid as string;
   const { data: pData, isLoading: pLoading } = useProjectByIdQuery(pid);
-  const { setCollapseAll, selectedNode, setIsCreating, undo, clearHistory } = useNodeStore();
+  const { setCollapseAll, selectedNode, activeNode, setIsCreating, undo, clearHistory } = useNodeStore();
   const mutation = useNodeMutations();
   useEffect(() => {
     if (!pid) return;
@@ -82,6 +82,7 @@ export function AppSidebar() {
 
   if (pLoading) return;
   let parentId: string | null = null;
+  if (activeNode) parentId = activeNode.type === 'folder' ? activeNode._id : activeNode.parentId;
   if (selectedNode) parentId = selectedNode.type === 'folder' ? selectedNode._id : selectedNode.parentId;
 
   return (

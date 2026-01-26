@@ -6,7 +6,7 @@ import { yCollab } from 'y-codemirror.next';
 import { markdown } from '@codemirror/lang-markdown';
 import { getSyncProvider } from '@/lib/client/sync-provider';
 import { INode } from '@/types';
-import { tags } from '@codemirror/highlight';
+import { tags as t } from '@lezer/highlight';
 import { createTheme } from '@uiw/codemirror-themes';
 
 const myOwnDarkTheme = createTheme({
@@ -21,15 +21,13 @@ const myOwnDarkTheme = createTheme({
     lineHighlight: '#ffffff0f', // Highlighted line background
   },
   styles: [
-    { tag: [tags.keyword], color: '#569cd6' },
-    { tag: [tags.string], color: '#ce9178' },
-    { tag: [tags.comment], color: '#6a9955', fontStyle: 'italic' },
-    { tag: [tags.variableName], color: '#9cdcfe' },
-    { tag: [tags.typeName], color: '#4ec9b0' },
-    { tag: [tags.heading], color: '#dcdcaa', fontWeight: 'bold' },
-    // You can also group multiple tags with the same style:
-    { tag: [tags.atom, tags.bool, tags.number], color: '#b5cea8' },
-    // Add more tag customizations as needed
+    { tag: [t.keyword], color: '#569cd6' },
+    { tag: [t.string], color: '#ce9178' },
+    { tag: [t.comment], color: '#6a9955', fontStyle: 'italic' },
+    { tag: [t.variableName], color: '#9cdcfe' },
+    { tag: [t.typeName], color: '#4ec9b0' },
+    { tag: [t.heading], color: '#dcdcaa', fontWeight: 'bold' },
+    { tag: [t.atom, t.bool, t.number], color: '#b5cea8' },
   ],
 });
 

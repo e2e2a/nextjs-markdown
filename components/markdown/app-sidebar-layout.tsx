@@ -37,9 +37,6 @@ const RightSidebarArea = memo(function RightSidebarArea() {
 });
 
 export default function AppSidebarLayout({ children }: { children: React.ReactNode }) {
-  // const params = useParams();
-  // const pid = params.pid as string;
-  // const { data: nData } = useNodesProjectIdQuery(pid);
   const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode } = useNodeStore();
 
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
@@ -47,14 +44,14 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'F2' && selectedNode) {
-        setIsUpdatingNode(selectedNode);
+      if (e.key === 'F2' && (activeNode || selectedNode)) {
+        setIsUpdatingNode(selectedNode || activeNode);
         e.preventDefault();
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [selectedNode, setIsUpdatingNode]);
+  }, [activeNode, selectedNode, setIsUpdatingNode]);
 
   // const handlePanelMouseDown = (e: React.MouseEvent) => {
   //   const target = e.target as HTMLElement;
@@ -74,7 +71,6 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           const target = e.target as HTMLElement;
           if (target.closest('[data-sidebar-node]')) return;
           if (e.button !== 2) {
-            // setSelectedNode(activeNode ? activeNode : null);
             setSelectedNode(null);
           }
         }}

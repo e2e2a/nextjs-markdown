@@ -164,6 +164,7 @@ export default function SidebarItem({ item, depth, nodesById, activeDrag, target
           onDragStart={handleDragStart}
           draggable={isUpdatingNode || isCreating ? 'false' : 'true'}
           data-id={item.parentId ?? 'root'}
+          data-node-id={item._id}
           {...commonDragEvents}
           className={cn(
             'flex text-sidebar-foreground/70 font-medium text-sm rounded-none focus:outline-none outline-none focus:ring-0',

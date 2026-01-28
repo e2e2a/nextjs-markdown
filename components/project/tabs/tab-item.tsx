@@ -28,6 +28,11 @@ export const TabItem = ({ tab, isActive, draggedTabId, isDropBefore, pid, onDrag
       onMouseDown={() => {
         setActiveTab(pid, tab.nodeId);
         setActiveNode(tab.nodeId);
+        // scroll the tab into view
+        const elTab = document.querySelector(`[data-tab-id="${tab.nodeId}"]`);
+        elTab?.scrollIntoView({ behavior: 'smooth', inline: 'nearest' });
+        const elNode = document.querySelector(`[data-node-id="${tab.nodeId}"]`);
+        elNode?.scrollIntoView({ behavior: 'smooth', inline: 'nearest' });
       }}
       onDoubleClick={() => pinTab(pid, tab.nodeId)}
       onDragEnter={e => e.preventDefault()}

@@ -89,13 +89,22 @@ export const TabsHeader = ({ pid }: TabsHeaderProps) => {
     setDraggedTabId(null);
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!headerRef.current) return;
+    // Only horizontal scroll
+    if (e.deltaY !== 0) {
+      e.preventDefault(); // prevent vertical scroll
+      headerRef.current.scrollLeft += e.deltaY; // move horizontally
+    }
+  };
   return (
     <header
       ref={headerRef}
-      // onDragOver={handleDragOver}
-      // onDragLeave={handleDragLeave}
-      // onDrop={handleDrop}
-      // onDragEnter={e => e.preventDefault()}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onDragEnter={e => e.preventDefault()}
+      onWheel={handleWheel}
       className={cn('flex flex-row p-0 items-center h-full overflow-x-auto overflow-y-hidden w-full relative')}
     >
       {tabs.map((tab, i) => {

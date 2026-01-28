@@ -47,11 +47,12 @@ export function MarkdownSection({ node }: { node: INode }) {
     };
   }, [ytext, provider, ydoc]);
 
+  // const editorExtensions = useMemo(() => [markdown(), EditorView.lineWrapping, yCollab(ytext, provider.awareness)], [ytext, provider]);
   const editorExtensions = useMemo(() => [markdown(), EditorView.lineWrapping, yCollab(ytext, provider.awareness)], [ytext, provider]);
 
   return (
     <div className="h-screen flex flex-col">
-      <CodeMirror value={content} height="100%" theme={myOwnDarkTheme} basicSetup={true} extensions={editorExtensions} className="" />
+      <CodeMirror value={content} height="100%" theme={myOwnDarkTheme} basicSetup={false} extensions={editorExtensions} className="" />
     </div>
   );
 }

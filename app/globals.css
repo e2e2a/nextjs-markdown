@@ -245,208 +245,401 @@ body {
       no-repeat center center;
   }
 
-  .EasyMDEContainer,
-  .EasyMDEContainer .CodeMirror {
-    border: none !important;
-    box-shadow: none !important;
-  }
-
   .CodeMirror-scroll {
-    min-height: calc(100vh - 140px) !important;
-    max-height: calc(100vh - 140px);
-    overflow: hidden !important;
-    overflow-y: scroll !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 500px;
   }
 
-  .EasyMDEContainer .editor-toolbar {
-    border: none !important;
-    border-bottom: 1px solid var(--border-color, #e5e7eb) !important;
-    box-shadow: none !important;
-  }
-
-  /* ------------------------------ */
-  /* FIX SimpleMDE preview styling  */
-  /* ------------------------------ */
-  /* .cm-scroller {
-    overflow: hidden !important;
-    overflow-y: scroll !important;
+  /* .cm-editor {
+    height: auto !important;
+    overflow: visible !important;
+    @apply outline-none!;
   } */
-  .editor-preview,
-  .editor-preview-side {
-    font-size: 1rem;
-    line-height: 1.65;
-    color: var(--foreground);
+  .cm-selectionBackground {
+    display: none !important;
+  }
+  .cm-scroller {
+    height: auto !important; /* grow with content */
+    overflow: visible !important; /* let parent scroll */
+  }
+  .cm-content::selection,
+  .cm-content *::selection {
+    background-color: var(--primary) !important;
+  }
+  .cm-content {
+    height: auto !important; /* grow with text */
+  }
+  .cm-cursor {
+    border-left: 0.5px solid #ffffff !important;
+    /* Ensure it doesn't have any 'thickness' from a width property */
+    width: 0 !important;
   }
 
-  /* HEADINGS */
-  .editor-preview h1,
-  .editor-preview-side h1 {
+  /* IMAGES */
+  .markdown-preview img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    /* margin: 1rem 0; */
+  }
+
+  .cm-h1 {
     font-size: 2rem;
     font-weight: 700;
-    margin: 1.4rem 0 0.8rem;
+    vertical-align: bottom;
     border-bottom: 1px solid var(--border);
-    padding-bottom: 0.3rem;
+    font-weight: 700;
   }
 
-  .editor-preview h2,
-  .editor-preview-side h2 {
+  .cm-h2 {
     font-size: 1.75rem;
+    vertical-align: bottom;
     font-weight: 600;
-    margin: 1.2rem 0 0.7rem;
+    pointer-events: auto;
+    padding: 0 !important;
     border-bottom: 1px solid var(--border);
     padding-bottom: 0.25rem;
   }
 
-  .editor-preview h3,
-  .editor-preview-side h3 {
+  .cm-h3 {
     font-size: 1.45rem;
+    vertical-align: bottom;
     font-weight: 600;
-    margin: 1rem 0 0.6rem;
   }
 
-  .editor-preview h4,
-  .editor-preview-side h4 {
+  .cm-h4 {
     font-size: 1.25rem;
     font-weight: 600;
-    margin: 0.9rem 0 0.5rem;
   }
 
-  .editor-preview h5,
-  .editor-preview-side h5 {
+  .cm-h5 {
     font-size: 1.1rem;
     font-weight: 600;
-    margin: 0.8rem 0 0.5rem;
   }
 
-  .editor-preview h6,
-  .editor-preview-side h6 {
+  .cm-h6 {
     font-size: 1rem;
     font-weight: 600;
     opacity: 0.8;
-    margin: 0.7rem 0 0.5rem;
   }
 
-  /* PARAGRAPHS */
-  .editor-preview p,
-  .editor-preview-side p {
-    margin: 0.75rem 0;
+  .cm-h1,
+  .cm-h2,
+  .cm-h3,
+  .cm-h4,
+  .cm-h5,
+  .cm-h6,
+  .cm-line {
+    @apply min-h-fit m-0! p-0!;
   }
 
-  /* LINKS */
-  .editor-preview a,
-  .editor-preview-side a {
-    color: var(--color-blue-500);
-    text-decoration: underline;
-    font-weight: 500;
-  }
-
-  /* LISTS */
-  .editor-preview ul,
-  .editor-preview ol,
-  .editor-preview-side ul,
-  .editor-preview-side ol {
-    padding-left: 1.5rem;
-    margin: 0.75rem 0;
-  }
-
-  /* BULLETS */
-  .editor-preview ul li,
-  .editor-preview-side ul li {
-    list-style-type: disc;
-    margin: 0.3rem 0;
-  }
-
-  /* NUMBERS */
-  .editor-preview ol li,
-  .editor-preview-side ol li {
-    list-style-type: decimal;
-    margin: 0.3rem 0;
-  }
-
-  /* NESTED LISTS */
-  .editor-preview ul ul,
-  .editor-preview ol ul,
-  .editor-preview ul ol,
-  .editor-preview ol ol,
-  .editor-preview-side ul ul,
-  .editor-preview-side ol ul,
-  .editor-preview-side ul ol,
-  .editor-preview-side ol ol {
-    margin-left: 1.2rem;
-  }
-
-  /* BLOCKQUOTE */
-  .editor-preview blockquote,
-  .editor-preview-side blockquote {
-    border-left: 4px solid var(--border);
-    padding-left: 1rem;
-    margin: 1rem 0;
-    color: var(--muted-foreground);
+  .cm-italic-text {
     font-style: italic;
   }
 
-  /* INLINE CODE */
-  .editor-preview code,
-  .editor-preview-side code {
-    background: var(--muted);
-    padding: 0.2rem 0.35rem;
-    border-radius: 0.25rem;
-    font-size: 0.95rem;
+  .cm-numbered-list {
+    padding-left: 2ch;
+    counter-increment: list-item;
   }
 
-  /* CODE BLOCKS */
-  .editor-preview pre,
-  .editor-preview-side pre {
-    background: var(--muted);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin: 1rem 0;
+  /** Start Table preview **/
+  .cm-table-widget-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+    box-sizing: border-box;
+    z-index: 11;
+    user-select: none;
   }
 
-  .editor-preview pre code,
-  .editor-preview-side pre code {
-    background: transparent;
-    padding: 0;
-    font-size: 0.95rem;
-    line-height: 1.6;
+  .cm-table-widget-container:focus,
+  .cm-table-widget-container:focus-visible,
+  .cm-table-widget-container:active {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
-  /* HR */
-  .editor-preview hr,
-  .editor-preview-side hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 1.5rem 0;
+  .cm-table-scroll-wrapper {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    position: relative;
+    contain: inline-size;
   }
 
-  /* IMAGES */
-  .editor-preview img,
-  .editor-preview-side img {
-    max-width: 100%;
-    border-radius: 0.5rem;
-    margin: 1rem 0;
+  .cm-interactive-table.is-dragging-active {
+    cursor: move !important;
   }
 
-  /* TABLES */
-  .editor-preview table,
-  .editor-preview-side table {
-    width: 100%;
+  .cm-interactive-table {
     border-collapse: collapse;
-    margin: 1rem 0;
+    border-spacing: 0;
+    margin: 5px;
+    isolation: isolate;
+    line-height: 0;
   }
 
-  .editor-preview table th,
-  .editor-preview table td,
-  .editor-preview-side table th,
-  .editor-preview-side table td {
-    border: 1px solid var(--border);
-    padding: 0.5rem 0.75rem;
+  .cm-table-inner {
+    position: relative;
+    display: inline-block;
+    padding-right: 30px;
+    padding-bottom: 30px;
+  }
+  .cm-interactive-table th.cm-table-col-selected,
+  .cm-interactive-table td.cm-table-col-selected {
+    background-color: rgba(93, 0, 255, 0.1) !important;
+  }
+  .cm-interactive-table th,
+  .cm-interactive-table td {
+    border: 1px solid var(--border) !important;
+    position: relative;
+    min-width: 50px;
   }
 
-  .editor-preview table th,
-  .editor-preview-side table th {
-    background: var(--muted);
-    font-weight: 600;
+  .cm-table-col-selected {
+    background-color: rgba(93, 0, 255, 0.1) !important;
+    border-top-color: transparent !important;
+    border-bottom-color: transparent !important;
+    position: relative;
+  }
+
+  .cm-table-col-selected::after {
+    content: '';
+    position: absolute;
+    /* Stretch to cover the cell and overlap the horizontal borders */
+    top: 0;
+    bottom: -2px;
+    left: -1px;
+    right: -1px;
+    /* Draw the side borders here */
+    border-left: 2px solid #5d00ff;
+    border-right: 2px solid #5d00ff;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  tr:first-child .cm-table-col-selected::after {
+    top: -2;
+    border-top: 2px solid #5d00ff;
+  }
+
+  /* 4. Close the "box" at the very bottom of the column */
+  tr:last-child .cm-table-col-selected::after {
+    bottom: -2;
+    border-bottom: 2px solid #5d00ff;
+  }
+
+  .cm-editor:has(.cm-table-cell-editor:focus) .cm-cursorLayer {
+    display: none !important;
+  }
+  .cm-table-cell-editor {
+    padding: 8px;
+    outline: none;
+    min-height: 1.2em;
+    @apply w-full max-w-full text-nowrap text-start;
+  }
+
+  /* --- The Unified Handles --- */
+  .cm-table-unified-col-trigger,
+  .cm-table-unified-row-trigger {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: 0.2s;
+    z-index: 10;
+    line-height: 0;
+  }
+
+  .cm-table-unified-col-trigger {
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: calc(100% - 30px);
+  }
+
+  .cm-table-unified-row-trigger {
+    bottom: 0;
+    left: 0;
+    width: calc(100% - 30px);
+    height: 30px;
+  }
+
+  .cm-table-unified-col-trigger:hover,
+  .cm-table-unified-row-trigger:hover {
+    opacity: 1;
+  }
+
+  .cm-table-unified-col-trigger span,
+  .cm-table-unified-row-trigger span {
+    background: #0078d7;
+    color: white;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+  }
+
+  .cm-content > .cm-line:has(.cm-table-widget-container) ::selection {
+    background-color: transparent;
+  }
+  .cm-table-widget-container ::selection {
+    background-color: transparent;
+  }
+
+  .cm-interactive-table.is-selected {
+    outline: 1px solid #5d00ff;
+    border-radius: 2px;
+    transition: outline 0.1s ease-in-out;
+  }
+
+  .cm-table-widget-container.is-selected *::selection {
+    background-color: transparent;
+    color: inherit !important;
+    outline: none !important;
+    border: none !important;
+  }
+  .cm-interactive-table.is-selected .cm-interactive-table {
+    background-color: transparent !important;
+  }
+
+  .cm-interactive-table:has(input:focus),
+  .cm-interactive-table:has(.cm-table-cell-editor:focus) {
+    outline: none;
+  }
+
+  .cm-table-col-grip {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    margin: auto;
+    cursor: grabbing;
+  }
+
+  /** End Table preview **/
+
+  /* Paragraphs (default text) */
+  .cm-paragraph {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .cm-code-block-start,
+  .cm-code-block-end {
+    @apply bg-neutral-800/60;
+    font-family: monospace;
+    min-height: 1rem !important;
+    /* height: fit-content; */
+  }
+
+  .cm-code-block-line:last-child {
+    padding-bottom: 0.25em; /* tiny buffer to prevent collapsing at bottom */
+  }
+
+  .cm-code-block-start {
+    border-radius: 8px 8px 0 0;
+    padding: 12px 12px 0 12px;
+  }
+
+  .cm-code-block-line {
+    padding: 0 12px;
+  }
+
+  .cm-code-block-end {
+    border-radius: 0 0 8px 8px;
+    padding: 0 12px 12px 12px;
+  }
+
+  .cm-bold-text {
+    font-weight: bold;
+  }
+
+  .cm-syntax-hide {
+    font-size: 1px;
+    letter-spacing: -1px;
+    opacity: 0;
+    pointer-events: auto;
+  }
+
+  .cm-inline {
+    pointer-events: none;
+  }
+
+  .cm-inline-code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #e2e8f0;
+  }
+
+  .cm-bold-text {
+    font-weight: bold !important;
+    cursor: text;
+  }
+
+  .cm-syntax-hide {
+    font-size: 0 !important;
+    opacity: 0 !important;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 0;
+  }
+
+  .cm-code-header-container {
+    position: absolute;
+    right: 10px;
+    top: 2px;
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    pointer-events: auto; /* Let clicks pass through to editor unless on button */
+  }
+
+  .cm-code-header-lang {
+    color: #666;
+    font-size: 11px;
+    font-family: sans-serif;
+    text-transform: uppercase;
+  }
+
+  .cm-code-copy-btn {
+    pointer-events: auto;
+    /* opacity: 0; Hidden by default */
+    /* background: #333; */
+    color: #eee;
+    /* border: 1px solid #555; */
+    border-radius: 4px;
+    font-size: 10px;
+    padding: 2px 6px;
+    cursor: pointer;
+    @apply hover:bg-accent/60;
+  }
+
+  .cm-code-block-fence.cm-line,
+  .cm-code-block-line.cm-line {
+    background-color: #1e1e1e !important;
+    position: relative; /* Needed for absolute positioning of widget */
+  }
+
+  .markdown-render-inline {
+    height: 100%;
+    display: inline-block; /* Changed from inline-block */
+    pointer-events: none;
+    vertical-align: baseline;
   }
 }

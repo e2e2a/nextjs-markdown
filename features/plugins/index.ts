@@ -1,0 +1,115 @@
+import { EditorView, Decoration, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import { StateField, RangeSet, Range as StateRange, EditorState, StateEffect } from '@codemirror/state';
+import {
+  getHeadingDecos,
+  getBoldDecos,
+  getInlineCodeDecos,
+  getItalicDecos,
+  getNumberedListDecos,
+  getBulletListDecos,
+  getTableDecos,
+  getFenceDecos,
+} from '../editor/decorations';
+import { TablePreviewWidget } from '../widgets';
+
+export const setColumnSelection = StateEffect.define<{ from: number; col: number | null }>();
+export const columnSelectionField = StateField.define<{ from: number; col: number | null } | null>({
+  create() {
+    return null;
+  },
+  update(value, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setColumnSelection)) return e.value;
+    }
+    if (tr.docChanged) return null;
+    return value;
+  },
+});
+
+// ------------------------------
+// Main StateField
+// ------------------------------
+export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>({
+  create(state: EditorState) {
+    return buildDecorations(state);
+  },
+  update(decos, tr) {
+    if (tr.docChanged || tr.selection) {
+      return buildDecorations(tr.state);
+    }
+    return decos.map(tr.changes);
+  },
+  provide: f => EditorView.decorations.from(f),
+});
+
+function buildDecorations(state: EditorState): RangeSet<Decoration> {
+  const decos: StateRange<Decoration>[] = [];
+  const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
+
+  decos.push(...getFenceDecos(state, activeLineNum));
+
+  for (let lineNum = 1; lineNum <= state.doc.lines; lineNum++) {
+    const tableResult = getTableDecos(state, lineNum);
+
+    if (tableResult) {
+      decos.push(...tableResult.decos);
+      lineNum = tableResult.skipToLine;
+      continue;
+    }
+
+    const line = state.doc.line(lineNum);
+    const isActive = lineNum === activeLineNum;
+    if (line.text.startsWith('```')) {
+      continue;
+    }
+    decos.push(...getHeadingDecos(line.text, line.from, isActive));
+    decos.push(...getBoldDecos(line.text, line.from, isActive));
+    decos.push(...getInlineCodeDecos(line.text, line.from, isActive));
+    decos.push(...getItalicDecos(line.text, line.from, isActive));
+    decos.push(...getNumberedListDecos(line.text, line.from));
+    decos.push(...getBulletListDecos(line.text, line.from, isActive));
+  }
+
+  return RangeSet.of(
+    decos.sort((a, b) => a.from - b.from),
+    true
+  );
+}
+
+export const tableSelectionHighlighter = ViewPlugin.fromClass(
+  class {
+    constructor(readonly view: EditorView) {
+      this.sync();
+    }
+    update(update: ViewUpdate) {
+      if (update.selectionSet || update.docChanged || update.viewportChanged) {
+        requestAnimationFrame(() => this.sync());
+      }
+    }
+    sync() {
+      const sel = this.view.state.selection.main;
+      const isEditingAnyCell = document.activeElement?.closest('.cm-table-cell-editor');
+
+      this.view.dom.querySelectorAll<HTMLElement & { __widget?: TablePreviewWidget }>('.cm-table-widget-container').forEach(container => {
+        const from = parseInt(container.getAttribute('data-from') || '0');
+        const to = parseInt(container.getAttribute('data-to') || '0');
+        const table = container.querySelector('.cm-interactive-table');
+
+        const isInside = !isEditingAnyCell && !sel.empty && sel.from < to && sel.to > from;
+
+        table?.classList.toggle('is-selected', isInside);
+
+        if (!isInside) {
+          container.querySelectorAll('.cm-table-col-selected').forEach(el => el.classList.remove('cm-table-col-selected'));
+
+          table?.classList.remove('has-selection');
+
+          const widget = container.__widget;
+          if (widget && widget.selectedColumn !== null) {
+            widget.selectedColumn = null;
+          }
+        }
+      });
+    }
+  }
+);

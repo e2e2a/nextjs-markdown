@@ -16,9 +16,7 @@ export const tableBackspace = keymap.of([
       if (!main.empty) {
         let isTableSelection = false;
         decoSet.between(main.from, main.to, (f, t, deco) => {
-          if (deco.spec.widget instanceof TablePreviewWidget && f >= main.from && t <= main.to) {
-            isTableSelection = true;
-          }
+          if (deco.spec.widget instanceof TablePreviewWidget && f >= main.from && t <= main.to) isTableSelection = true;
         });
 
         if (isTableSelection) {
@@ -38,9 +36,7 @@ export const tableBackspace = keymap.of([
       let tableRange: { from: number; to: number } | null = null;
 
       decoSet.between(prevPos, prevPos, (from, to, deco) => {
-        if (deco.spec.widget instanceof TablePreviewWidget) {
-          tableRange = { from, to };
-        }
+        if (deco.spec.widget instanceof TablePreviewWidget) tableRange = { from, to };
       });
 
       if (tableRange) {

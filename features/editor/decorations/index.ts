@@ -88,7 +88,6 @@ export function getBulletListDecos(text: string, lineFrom: number, isLineActive:
     const indent = match[1].length;
     const markerStart = lineFrom + indent;
     const markerEnd = markerStart + match[2].length;
-    // const whitespaceEnd = markerEnd + match[3].length;
 
     if (!isLineActive) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
@@ -166,46 +165,6 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
   return decos;
 }
 
-// export function getTableDecos(state: EditorState, startLine: number): { decos: StateRange<Decoration>[]; skipToLine: number } | null {
-//   const line = state.doc.line(startLine);
-//   if (!line.text.trim().startsWith('|')) return null;
-
-//   const tableRange = getTableRange(state, startLine);
-//   const from = state.doc.line(tableRange.start).from;
-//   const to = state.doc.line(tableRange.end).to;
-
-//   const lines: string[] = [];
-//   if (tableRange.start === 1) {
-//   }
-
-//   for (let i = tableRange.start; i <= tableRange.end; i++) {
-//     lines.push(state.doc.line(i).text);
-//   }
-
-//   if (!isValidTable(lines)) {
-//     return { decos: [], skipToLine: tableRange.end };
-//   }
-
-//   const sel = state.selection.main;
-//   // const isSelected = !sel.empty && sel.from < to && sel.to > from;
-//   // const isAtBoundary = sel.empty && (sel.from === from || sel.to === to);
-//   // const finalSelectionState = isSelected || isAtBoundary;
-//   // We rely on the ViewPlugin for highlighting now, so we don't pass selection state
-//   // to the widget constructor to avoid unnecessary widget re-creation.
-
-//   return {
-//     decos: [
-//       Decoration.replace({
-//         widget: new TablePreviewWidget(lines.join('\n'), from, to),
-//         block: true,
-//         atomic: false,
-//         side: 1,
-//       }).range(from, to),
-//     ],
-//     skipToLine: tableRange.end,
-//   };
-// }
-
 export function getTableDecos(state: EditorState, startLine: number) {
   const line = state.doc.line(startLine);
   if (!line.text.trim().startsWith('|')) return null;
@@ -218,7 +177,6 @@ export function getTableDecos(state: EditorState, startLine: number) {
   for (let i = range.start; i <= range.end; i++) lines.push(state.doc.line(i).text);
 
   if (!isValidTable(lines)) return { decos: [], skipToLine: range.end };
-  // const sel = state.selection.main;
   return {
     decos: [
       Decoration.replace({

@@ -189,3 +189,31 @@ export function getTableDecos(state: EditorState, startLine: number) {
     skipToLine: range.end,
   };
 }
+
+export function getBlockquoteDecos(text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+
+  const match = text.match(/^(\s{0,3})(>+)\s?/);
+
+  if (!match) return decos;
+
+  const indent = match[1].length;
+  const markers = match[2].length;
+
+  const markerStart = lineFrom + indent;
+  const markerEnd = markerStart + markers;
+
+  // style the whole line
+  decos.push(
+    Decoration.line({
+      attributes: { class: 'cm-blockquote' },
+    }).range(lineFrom)
+  );
+
+  // hide > markers when not editing
+  if (!isLineActive) {
+    decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
+  }
+
+  return decos;
+}

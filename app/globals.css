@@ -251,28 +251,37 @@ body {
     min-height: 500px;
   }
 
-  /* .cm-editor {
-    height: auto !important;
-    overflow: visible !important;
-    @apply outline-none!;
-  } */
   .cm-selectionBackground {
     display: none !important;
   }
+
   .cm-scroller {
-    height: auto !important; /* grow with content */
-    overflow: visible !important; /* let parent scroll */
+    height: auto !important;
+    overflow: visible !important;
   }
   .cm-content::selection,
   .cm-content *::selection {
     background-color: var(--primary) !important;
   }
-  .cm-content {
-    height: auto !important; /* grow with text */
+
+  .cm-line {
+    line-height: inherit;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* @apply h-full!; */
   }
+
+  .cm-content {
+    height: auto !important;
+    line-height: 1rem;
+  }
+
+  .cm-editor {
+    outline: none !important;
+  }
+
   .cm-cursor {
     border-left: 0.5px solid #ffffff !important;
-    /* Ensure it doesn't have any 'thickness' from a width property */
     width: 0 !important;
   }
 
@@ -280,45 +289,48 @@ body {
   .markdown-preview img {
     max-width: 100%;
     border-radius: 0.5rem;
-    /* margin: 1rem 0; */
   }
 
   .cm-h1 {
     font-size: 2rem;
+    line-height: 2.5rem;
     font-weight: 700;
     vertical-align: bottom;
-    border-bottom: 1px solid var(--border);
     font-weight: 700;
   }
 
   .cm-h2 {
     font-size: 1.75rem;
+    line-height: 2.25rem;
     vertical-align: bottom;
     font-weight: 600;
     pointer-events: auto;
     padding: 0 !important;
-    border-bottom: 1px solid var(--border);
     padding-bottom: 0.25rem;
   }
 
   .cm-h3 {
     font-size: 1.45rem;
+    line-height: 1.95rem;
     vertical-align: bottom;
     font-weight: 600;
   }
 
   .cm-h4 {
     font-size: 1.25rem;
+    line-height: 1.75rem;
     font-weight: 600;
   }
 
   .cm-h5 {
     font-size: 1.1rem;
+    line-height: 1.6rem;
     font-weight: 600;
   }
 
   .cm-h6 {
     font-size: 1rem;
+    line-height: 1.5rem;
     font-weight: 600;
     opacity: 0.8;
   }
@@ -328,8 +340,7 @@ body {
   .cm-h3,
   .cm-h4,
   .cm-h5,
-  .cm-h6,
-  .cm-line {
+  .cm-h6 {
     @apply min-h-fit m-0! p-0!;
   }
 
@@ -427,7 +438,6 @@ body {
     border-top: 2px solid #5d00ff;
   }
 
-  /* 4. Close the "box" at the very bottom of the column */
   tr:last-child .cm-table-col-selected::after {
     bottom: -2;
     border-bottom: 2px solid #5d00ff;
@@ -443,7 +453,6 @@ body {
     @apply w-full max-w-full text-nowrap text-start;
   }
 
-  /* --- The Unified Handles --- */
   .cm-table-unified-col-trigger,
   .cm-table-unified-row-trigger {
     position: absolute;
@@ -530,10 +539,14 @@ body {
 
   /** End Table preview **/
 
-  /* Paragraphs (default text) */
+  .cm-blockquote {
+    border-left: 2px solid color-mix(in srgb, var(--primary), transparent 20%);
+    padding-left: 10px;
+  }
+
   .cm-paragraph {
     font-size: 1rem;
-    line-height: 1.65;
+    line-height: 1.65rem !important;
   }
 
   .cm-code-block-start,
@@ -541,11 +554,10 @@ body {
     @apply bg-neutral-800/60;
     font-family: monospace;
     min-height: 1rem !important;
-    /* height: fit-content; */
   }
 
   .cm-code-block-line:last-child {
-    padding-bottom: 0.25em; /* tiny buffer to prevent collapsing at bottom */
+    padding-bottom: 0.25em;
   }
 
   .cm-code-block-start {
@@ -564,13 +576,6 @@ body {
 
   .cm-bold-text {
     font-weight: bold;
-  }
-
-  .cm-syntax-hide {
-    font-size: 1px;
-    letter-spacing: -1px;
-    opacity: 0;
-    pointer-events: auto;
   }
 
   .cm-inline {
@@ -607,7 +612,7 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
-    pointer-events: auto; /* Let clicks pass through to editor unless on button */
+    pointer-events: auto;
   }
 
   .cm-code-header-lang {
@@ -619,10 +624,7 @@ body {
 
   .cm-code-copy-btn {
     pointer-events: auto;
-    /* opacity: 0; Hidden by default */
-    /* background: #333; */
     color: #eee;
-    /* border: 1px solid #555; */
     border-radius: 4px;
     font-size: 10px;
     padding: 2px 6px;
@@ -633,12 +635,12 @@ body {
   .cm-code-block-fence.cm-line,
   .cm-code-block-line.cm-line {
     background-color: #1e1e1e !important;
-    position: relative; /* Needed for absolute positioning of widget */
+    position: relative;
   }
 
   .markdown-render-inline {
     height: 100%;
-    display: inline-block; /* Changed from inline-block */
+    display: inline-block;
     pointer-events: none;
     vertical-align: baseline;
   }

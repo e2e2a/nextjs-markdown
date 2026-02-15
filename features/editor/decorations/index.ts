@@ -250,3 +250,32 @@ export function getTaskDecos(text: string, lineFrom: number): StateRange<Decorat
 
   return decos;
 }
+
+export function getLinkDecos(text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    const start = lineFrom + match.index;
+    const textStart = start + 1;
+    const textEnd = textStart + match[1].length;
+    const urlStart = textEnd + 2;
+    const closingParen = urlStart + match[2].length + 1;
+
+    decos.push(
+      Decoration.mark({
+        class: 'cm-link-text',
+        attributes: {
+          onclick: `window.open('${match[2]}')`,
+        },
+      }).range(textStart, textEnd)
+    );
+
+    if (!isLineActive) {
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, textStart));
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(textEnd, closingParen));
+    }
+  }
+  return decos;
+}

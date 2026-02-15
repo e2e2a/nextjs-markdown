@@ -670,4 +670,14 @@ body {
   .cm-task-inner::selection {
     color: var(--foreground);
   }
+
+  .cm-link-text {
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .cm-link-text::selection {
+    color: var(--foreground);
+  }
 }

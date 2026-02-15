@@ -106,9 +106,16 @@ export function getBulletListDecos(text: string, lineFrom: number, isLineActive:
 
 export function getNumberedListDecos(text: string, lineFrom: number): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
-  const match = text.match(/^(\d+)\.\s+/);
+  const match = text.match(/^(\d+\.\s+)/);
 
-  if (match) decos.push(Decoration.line({ attributes: { class: 'cm-numbered-list' } }).range(lineFrom));
+  if (match) {
+    const prefixLength = match[0].length;
+    decos.push(
+      Decoration.mark({
+        class: 'cm-list-number',
+      }).range(lineFrom, lineFrom + prefixLength)
+    );
+  }
 
   return decos;
 }

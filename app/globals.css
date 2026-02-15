@@ -348,9 +348,10 @@ body {
     font-style: italic;
   }
 
-  .cm-numbered-list {
-    padding-left: 2ch;
+  .cm-list-number {
+    padding-left: 10px;
     counter-increment: list-item;
+    @apply text-muted-foreground;
   }
 
   /** Start Table preview **/

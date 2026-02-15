@@ -644,4 +644,19 @@ body {
     pointer-events: none;
     vertical-align: baseline;
   }
+
+  .cm-hr {
+    position: relative;
+  }
+
+  .cm-hr:has(.cm-syntax-hide)::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: color-mix(in srgb, var(--primary), transparent 70%);
+    pointer-events: none;
+  }
 }

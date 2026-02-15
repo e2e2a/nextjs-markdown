@@ -10,6 +10,7 @@ import {
   getTableDecos,
   getFenceDecos,
   getBlockquoteDecos,
+  getHRDecos,
 } from '../editor/decorations';
 import { TablePreviewWidget } from '../widgets';
 
@@ -67,6 +68,7 @@ function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getBoldDecos(line.text, line.from, isActive));
     decos.push(...getInlineCodeDecos(line.text, line.from, isActive));
     decos.push(...getBlockquoteDecos(line.text, line.from, isActive));
+    decos.push(...getHRDecos(line.text, line.from, line.to, isActive));
     decos.push(...getItalicDecos(line.text, line.from, isActive));
     decos.push(...getNumberedListDecos(line.text, line.from));
     decos.push(...getBulletListDecos(line.text, line.from, isActive));

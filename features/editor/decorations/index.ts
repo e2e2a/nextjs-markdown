@@ -203,16 +203,24 @@ export function getBlockquoteDecos(text: string, lineFrom: number, isLineActive:
   const markerStart = lineFrom + indent;
   const markerEnd = markerStart + markers;
 
-  // style the whole line
   decos.push(
     Decoration.line({
       attributes: { class: 'cm-blockquote' },
     }).range(lineFrom)
   );
 
-  // hide > markers when not editing
-  if (!isLineActive) {
-    decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
+  if (!isLineActive) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
+
+  return decos;
+}
+
+export function getHRDecos(text: string, lineFrom: number, lineTo: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const isHR = /^(\s{0,3})([-*_])(\s*\2){2,}\s*$/.test(text);
+
+  if (isHR) {
+    decos.push(Decoration.line({ attributes: { class: 'cm-hr' } }).range(lineFrom));
+    if (!isLineActive) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(lineFrom, lineTo));
   }
 
   return decos;

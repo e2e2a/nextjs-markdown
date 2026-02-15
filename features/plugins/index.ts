@@ -11,6 +11,7 @@ import {
   getFenceDecos,
   getBlockquoteDecos,
   getHRDecos,
+  getTaskDecos,
 } from '../editor/decorations';
 import { TablePreviewWidget } from '../widgets';
 
@@ -72,6 +73,7 @@ function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getItalicDecos(line.text, line.from, isActive));
     decos.push(...getNumberedListDecos(line.text, line.from));
     decos.push(...getBulletListDecos(line.text, line.from, isActive));
+    decos.push(...getTaskDecos(line.text, line.from));
   }
 
   return RangeSet.of(

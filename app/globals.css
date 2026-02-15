@@ -660,4 +660,14 @@ body {
     background-color: color-mix(in srgb, var(--primary), transparent 70%);
     pointer-events: none;
   }
+
+  .cm-task-inner {
+    color: var(--primary);
+    font-family: monospace;
+    font-weight: bold;
+  }
+
+  .cm-task-inner::selection {
+    color: var(--foreground);
+  }
 }

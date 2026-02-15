@@ -232,3 +232,21 @@ export function getHRDecos(text: string, lineFrom: number, lineTo: number, isLin
 
   return decos;
 }
+
+export function getTaskDecos(text: string, lineFrom: number): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const match = text.match(/\[([ xX])\]/);
+
+  if (match && match.index !== undefined) {
+    const innerStart = lineFrom + match.index + 1;
+    const innerEnd = innerStart + 1;
+
+    decos.push(
+      Decoration.mark({
+        class: 'cm-task-inner',
+      }).range(innerStart, innerEnd)
+    );
+  }
+
+  return decos;
+}

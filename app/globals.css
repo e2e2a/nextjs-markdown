@@ -675,20 +675,17 @@ body {
     color: var(--foreground);
   }
 
-  /* .cm-image-alt {
-    color: var(--primary);
-    font-style: italic;
+  .cm-image-widget {
+    max-width: 100%;
+    display: block;
+    border-radius: 8px;
     cursor: pointer;
-  } */
-
-  /* Optional: Add a small icon before the alt text when hidden */
-  /* .cm-image-alt:has(+ .cm-syntax-hide)::before {
-    content: '🖼️ ';
-    font-style: normal;
-    font-size: 0.9em;
+    aspect-ratio: auto;
+    min-height: 20px;
   }
 
-  .cm-image-alt:hover {
-    text-decoration: underline;
-  } */
+  .cm-image-wrapper {
+    display: inline-block;
+    user-select: none;
+  }
 }

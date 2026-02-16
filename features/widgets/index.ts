@@ -486,23 +486,13 @@ export class ImageWidget extends WidgetType {
   }
   toDOM(view: EditorView) {
     const wrapper = document.createElement('span');
-    wrapper.style.display = 'inline-block';
-    wrapper.style.userSelect = 'none';
     wrapper.contentEditable = 'false';
     wrapper.setAttribute('aria-hidden', 'true');
     const img = document.createElement('img');
     img.src = this.url;
     img.alt = this.alt;
-    img.style.userSelect = 'none';
-    img.style.cssText = `
-      max-width: 100%;
-      display: block;
-      border-radius: 8px;
-      cursor: pointer;
-      aspect-ratio: auto;
-      min-height: 20px; 
-    `;
 
+    img.className = 'cm-image';
     img.onclick = e => {
       e.preventDefault();
       if (!view?.dispatch) return;

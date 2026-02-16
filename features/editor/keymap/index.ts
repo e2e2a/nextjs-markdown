@@ -2,7 +2,7 @@ import { keymap, EditorView, Command } from '@codemirror/view';
 import { EditorSelection, EditorState } from '@codemirror/state';
 import { TablePreviewWidget } from '@/features/widgets';
 import { markdownLivePreviewField } from '@/features/plugins';
-import { getTableRange } from '@/lib/client/markdown/markdown-table-utils';
+import { getAllTableRanges, getTableRange } from '@/lib/client/markdown/markdown-table-utils';
 
 export const selectAllToTop: Command = view => {
   view.dispatch({
@@ -134,19 +134,3 @@ export const tableKeyboardHandler = EditorView.domEventHandlers({
     return false;
   },
 });
-
-function getAllTableRanges(state: EditorState) {
-  const ranges: { from: number; to: number }[] = [];
-  for (let i = 1; i <= state.doc.lines; i++) {
-    const line = state.doc.line(i);
-    if (line.text.trim().startsWith('|')) {
-      const range = getTableRange(state, i);
-      ranges.push({
-        from: state.doc.line(range.start).from,
-        to: state.doc.line(range.end).to,
-      });
-      i = range.end;
-    }
-  }
-  return ranges;
-}

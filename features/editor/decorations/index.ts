@@ -1,7 +1,5 @@
 import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState } from '@codemirror/state';
-
-// import { tags as t } from '@lezer/highlight';
 import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 
@@ -9,13 +7,7 @@ function isRangeSelected(state: EditorState, from: number, to: number): boolean 
   const sel = state.selection.main;
   return sel.from <= to && sel.to >= from;
 }
-interface IDecosProps {
-  state: EditorState;
-  text: string;
-  lineFrom: number;
-  isActive: boolean;
-}
-// { state, text, lineFrom, isLineActive }: IDecosProps
+
 export function getHeadingDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const match = text.match(/^(#{1,6})\s/);

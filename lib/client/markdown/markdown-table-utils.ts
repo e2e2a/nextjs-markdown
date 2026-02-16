@@ -270,3 +270,19 @@ export function cleanPastedColumn(text: string) {
     .filter(l => l && !l.match(/^\|?\s*:?---*:?\s*\|?$/))
     .map(l => l.replace(/^\||\|$/g, '').trim());
 }
+
+export function getAllTableRanges(state: EditorState) {
+  const ranges: { from: number; to: number }[] = [];
+  for (let i = 1; i <= state.doc.lines; i++) {
+    const line = state.doc.line(i);
+    if (line.text.trim().startsWith('|')) {
+      const range = getTableRange(state, i);
+      ranges.push({
+        from: state.doc.line(range.start).from,
+        to: state.doc.line(range.end).to,
+      });
+      i = range.end;
+    }
+  }
+  return ranges;
+}

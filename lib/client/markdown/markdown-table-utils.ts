@@ -36,9 +36,6 @@ export function isValidTable(lines: string[]): boolean {
   return true;
 }
 
-// ------------------------------
-// Helper: Find full table range
-// ------------------------------
 export function getTableRange(state: EditorState, startLine: number) {
   let endLine = startLine;
   const currentLines: string[] = [state.doc.line(startLine).text];

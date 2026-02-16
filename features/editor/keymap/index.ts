@@ -1,8 +1,8 @@
 import { keymap, EditorView, Command } from '@codemirror/view';
-import { EditorSelection, EditorState } from '@codemirror/state';
+import { EditorSelection } from '@codemirror/state';
 import { TablePreviewWidget } from '@/features/widgets';
 import { markdownLivePreviewField } from '@/features/plugins';
-import { getAllTableRanges, getTableRange } from '@/lib/client/markdown/markdown-table-utils';
+import { getAllTableRanges } from '@/lib/client/markdown/markdown-table-utils';
 
 export const selectAllToTop: Command = view => {
   view.dispatch({

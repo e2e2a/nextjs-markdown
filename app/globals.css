@@ -680,4 +680,21 @@ body {
   .cm-link-text::selection {
     color: var(--foreground);
   }
+
+  /* .cm-image-alt {
+    color: var(--primary);
+    font-style: italic;
+    cursor: pointer;
+  } */
+
+  /* Optional: Add a small icon before the alt text when hidden */
+  /* .cm-image-alt:has(+ .cm-syntax-hide)::before {
+    content: '🖼️ ';
+    font-style: normal;
+    font-size: 0.9em;
+  }
+
+  .cm-image-alt:hover {
+    text-decoration: underline;
+  } */
 }

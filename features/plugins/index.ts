@@ -13,6 +13,7 @@ import {
   getHRDecos,
   getTaskDecos,
   getLinkDecos,
+  getImageDecos,
 } from '../editor/decorations';
 import { TablePreviewWidget } from '../widgets';
 
@@ -47,6 +48,15 @@ export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>(
 });
 
 function buildDecorations(state: EditorState): RangeSet<Decoration> {
+  // const primaryRange = state?.selection?.ranges?.[0];
+  // if (!primaryRange || !state?.doc) {
+  //   return RangeSet.empty;
+  // }
+
+  // const decos: StateRange<Decoration>[] = [];
+
+  // 2. Safely get the line number
+  // const activeLineNum = state.doc.lineAt(primaryRange.head).number;
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
 
@@ -76,6 +86,7 @@ function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getBulletListDecos(line.text, line.from, isActive));
     decos.push(...getTaskDecos(line.text, line.from));
     decos.push(...getLinkDecos(line.text, line.from, isActive));
+    decos.push(...getImageDecos(line.text, line.from, line.to, isActive));
   }
 
   return RangeSet.of(

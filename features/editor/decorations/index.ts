@@ -2,7 +2,7 @@ import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState } from '@codemirror/state';
 
 // import { tags as t } from '@lezer/highlight';
-import { BulletWidget, FenchCodeWidget, TablePreviewWidget } from '@/features/widgets';
+import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 
 export function getHeadingDecos(text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
@@ -275,6 +275,27 @@ export function getLinkDecos(text: string, lineFrom: number, isLineActive: boole
     if (!isLineActive) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, textStart));
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(textEnd, closingParen));
+    }
+  }
+  return decos;
+}
+
+export function getImageDecos(text: string, lineFrom: number, lineTo: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  let match;
+
+  while ((match = imageRegex.exec(text)) !== null) {
+    const start = lineFrom + match.index;
+    const end = start + match[0].length;
+
+    if (!isLineActive) {
+      decos.push(
+        Decoration.replace({
+          widget: new ImageWidget(match[2], match[1], start),
+          block: false,
+        }).range(start, end)
+      );
     }
   }
   return decos;

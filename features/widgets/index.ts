@@ -471,3 +471,47 @@ export class FenchCodeWidget extends WidgetType {
     return wrapper;
   }
 }
+
+export class ImageWidget extends WidgetType {
+  constructor(
+    readonly url: string,
+    readonly alt: string,
+    readonly pos: number
+  ) {
+    super();
+  }
+
+  eq(other: ImageWidget) {
+    return other.url === this.url && other.alt === this.alt;
+  }
+  toDOM(view: EditorView) {
+    const img = document.createElement('img');
+    img.src = this.url;
+    img.alt = this.alt;
+
+    img.style.cssText = `
+      max-width: 100%;
+      display: block;
+      border-radius: 8px;
+      cursor: pointer;
+      aspect-ratio: auto;
+      min-height: 20px; 
+    `;
+
+    img.onclick = e => {
+      e.preventDefault();
+      if (!view?.dispatch) return;
+      view.dispatch({
+        selection: { anchor: this.pos, head: this.pos },
+        scrollIntoView: true,
+      });
+      view.focus();
+    };
+
+    return img;
+  }
+
+  ignoreEvent() {
+    return true;
+  }
+}

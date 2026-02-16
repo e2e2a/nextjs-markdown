@@ -48,15 +48,6 @@ export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>(
 });
 
 function buildDecorations(state: EditorState): RangeSet<Decoration> {
-  // const primaryRange = state?.selection?.ranges?.[0];
-  // if (!primaryRange || !state?.doc) {
-  //   return RangeSet.empty;
-  // }
-
-  // const decos: StateRange<Decoration>[] = [];
-
-  // 2. Safely get the line number
-  // const activeLineNum = state.doc.lineAt(primaryRange.head).number;
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
 
@@ -76,17 +67,17 @@ function buildDecorations(state: EditorState): RangeSet<Decoration> {
     if (line.text.startsWith('```')) {
       continue;
     }
-    decos.push(...getHeadingDecos(line.text, line.from, isActive));
-    decos.push(...getBoldDecos(line.text, line.from, isActive));
-    decos.push(...getInlineCodeDecos(line.text, line.from, isActive));
-    decos.push(...getBlockquoteDecos(line.text, line.from, isActive));
-    decos.push(...getHRDecos(line.text, line.from, line.to, isActive));
-    decos.push(...getItalicDecos(line.text, line.from, isActive));
+    decos.push(...getHeadingDecos(state, line.text, line.from, isActive));
+    decos.push(...getBoldDecos(state, line.text, line.from, isActive));
+    decos.push(...getInlineCodeDecos(state, line.text, line.from, isActive));
+    decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));
+    decos.push(...getHRDecos(state, line.text, line.from, line.to, isActive));
+    decos.push(...getItalicDecos(state, line.text, line.from, isActive));
     decos.push(...getNumberedListDecos(line.text, line.from));
-    decos.push(...getBulletListDecos(line.text, line.from, isActive));
+    decos.push(...getBulletListDecos(state, line.text, line.from, isActive));
     decos.push(...getTaskDecos(line.text, line.from));
-    decos.push(...getLinkDecos(line.text, line.from, isActive));
-    decos.push(...getImageDecos(line.text, line.from, line.to, isActive));
+    decos.push(...getLinkDecos(state, line.text, line.from, isActive));
+    decos.push(...getImageDecos(state, line.text, line.from, line.to, isActive));
   }
 
   return RangeSet.of(

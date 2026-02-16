@@ -1,8 +1,15 @@
-import { keymap, EditorView } from '@codemirror/view';
+import { keymap, EditorView, Command } from '@codemirror/view';
 import { EditorSelection, EditorState } from '@codemirror/state';
 import { TablePreviewWidget } from '@/features/widgets';
 import { markdownLivePreviewField } from '@/features/plugins';
 import { getTableRange } from '@/lib/client/markdown/markdown-table-utils';
+
+export const selectAllToTop: Command = view => {
+  view.dispatch({
+    selection: EditorSelection.single(0, view.state.doc.length),
+  });
+  return true;
+};
 
 export const tableBackspace = keymap.of([
   {

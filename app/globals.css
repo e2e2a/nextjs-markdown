@@ -285,12 +285,6 @@ body {
     width: 0 !important;
   }
 
-  /* IMAGES */
-  .markdown-preview img {
-    max-width: 100%;
-    border-radius: 0.5rem;
-  }
-
   .cm-h1 {
     font-size: 2rem;
     line-height: 2.5rem;

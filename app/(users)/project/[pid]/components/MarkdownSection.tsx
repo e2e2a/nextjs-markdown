@@ -12,7 +12,7 @@ import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
 import { columnSelectionField, markdownLivePreviewField, tableSelectionHighlighter } from '@/features/plugins';
 import { languages } from '@codemirror/language-data';
-import { tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
+import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { history, historyKeymap } from '@codemirror/commands';
 
 const myOwnDarkTheme = createTheme({
@@ -63,7 +63,7 @@ export function MarkdownSection({ node }: { node: INode }) {
       tableBackspace,
       tableSelectionHighlighter,
       tableKeyboardHandler,
-      keymap.of([...historyKeymap]),
+      keymap.of([{ key: 'Mod-a', run: selectAllToTop }, ...historyKeymap]),
       myOwnDarkTheme,
       drawSelection(),
       dropCursor(),

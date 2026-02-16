@@ -421,7 +421,7 @@ export class MarkdownLivePreviewWidget extends WidgetType {
       e.preventDefault();
       view.dispatch({
         selection: { anchor: this.pos },
-        scrollIntoView: true,
+        scrollIntoView: false,
       });
       view.focus();
     };
@@ -485,10 +485,15 @@ export class ImageWidget extends WidgetType {
     return other.url === this.url && other.alt === this.alt;
   }
   toDOM(view: EditorView) {
+    const wrapper = document.createElement('span');
+    wrapper.style.display = 'inline-block';
+    wrapper.style.userSelect = 'none';
+    wrapper.contentEditable = 'false';
+    wrapper.setAttribute('aria-hidden', 'true');
     const img = document.createElement('img');
     img.src = this.url;
     img.alt = this.alt;
-
+    img.style.userSelect = 'none';
     img.style.cssText = `
       max-width: 100%;
       display: block;
@@ -501,14 +506,19 @@ export class ImageWidget extends WidgetType {
     img.onclick = e => {
       e.preventDefault();
       if (!view?.dispatch) return;
-      view.dispatch({
-        selection: { anchor: this.pos, head: this.pos },
-        scrollIntoView: true,
-      });
-      view.focus();
+      if (view.state.selection.main.empty) {
+        view.dispatch({
+          // selection: { anchor: this.pos, head: this.pos },
+          selection: { anchor: this.pos },
+
+          scrollIntoView: false,
+        });
+      }
+      // view.focus();
     };
 
-    return img;
+    wrapper.appendChild(img);
+    return wrapper;
   }
 
   ignoreEvent() {

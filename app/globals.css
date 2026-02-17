@@ -443,8 +443,11 @@ body {
   }
   .cm-table-cell-editor {
     padding: 8px;
+    caret-color: white !important;
     outline: none;
     min-height: 1.2em;
+    user-select: text;
+    -webkit-user-select: text !important;
     @apply w-full max-w-full text-nowrap text-start;
   }
 

@@ -10,7 +10,7 @@ import { INode } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
-import { columnSelectionField, markdownLivePreviewField, tableSelectionHighlighter } from '@/features/plugins';
+import { columnSelectionField, markdownLivePreviewField, tableSelectionHighlighter, tableSpacingManager } from '@/features/plugins';
 import { languages } from '@codemirror/language-data';
 import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { history, historyKeymap } from '@codemirror/commands';
@@ -63,6 +63,7 @@ export function MarkdownSection({ node }: { node: INode }) {
       tableBackspace,
       tableSelectionHighlighter,
       tableKeyboardHandler,
+      tableSpacingManager,
       keymap.of([{ key: 'Mod-a', run: selectAllToTop }, ...historyKeymap]),
       myOwnDarkTheme,
       drawSelection(),

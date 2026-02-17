@@ -230,7 +230,7 @@ export function focusTableCell(view: EditorView, widgetFrom: number, rowIndex: n
 }
 
 export function updateTable(view: EditorView, from: number, to: number, data: string[][]) {
-  view.dispatch({ changes: { from, to, insert: serializeTable(data) } });
+  view.dispatch({ changes: { from, to, insert: serializeTable(data) }, userEvent: 'input.table' });
 }
 
 export function removeTableColumn(data: string[][], colIndex: number): string[][] {

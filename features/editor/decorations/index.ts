@@ -192,7 +192,7 @@ export function getTableDecos(state: EditorState, startLine: number) {
         widget: new TablePreviewWidget(lines.join('\n'), from, to),
         block: true,
         atomic: false,
-        side: -1,
+        side: 1,
       }).range(from, to),
     ],
     skipToLine: range.end,

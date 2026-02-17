@@ -1,5 +1,5 @@
 import { EditorView, Decoration, ViewPlugin, ViewUpdate } from '@codemirror/view';
-import { StateField, RangeSet, Range as StateRange, EditorState, StateEffect } from '@codemirror/state';
+import { StateField, RangeSet, Range as StateRange, EditorState, StateEffect, Transaction, Extension, ChangeSpec } from '@codemirror/state';
 import {
   getHeadingDecos,
   getBoldDecos,
@@ -123,3 +123,30 @@ export const tableSelectionHighlighter = ViewPlugin.fromClass(
     }
   }
 );
+
+export const tableSpacingManager: Extension = EditorState.transactionFilter.of(tr => {
+  if (!tr.docChanged || tr.annotation(Transaction.userEvent) === 'layout.spacing') return tr;
+
+  const changes: ChangeSpec[] = [];
+  tr.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
+    const text = inserted.toString();
+    if (!text) return;
+
+    const line = tr.startState.doc.lineAt(fromA);
+    const nextLineText = tr.startState.doc.line(Math.min(line.number + 1, tr.startState.doc.lines)).text;
+    const prevLineText = tr.startState.doc.line(Math.max(line.number - 1, 1)).text;
+
+    if (nextLineText.trim().startsWith('|')) changes.push({ from: toB, insert: '\n' });
+    if (prevLineText.trim().startsWith('|')) changes.push({ from: fromB, insert: '\n' });
+  });
+
+  if (changes.length === 0) return tr;
+
+  return [
+    tr,
+    {
+      changes,
+      annotations: Transaction.userEvent.of('layout.spacing'),
+    },
+  ];
+});

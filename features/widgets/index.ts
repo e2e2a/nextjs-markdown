@@ -15,7 +15,7 @@ import {
   splitRow,
   updateTable,
 } from '@/lib/client/markdown/markdown-table-utils';
-import { EditorSelection, Transaction } from '@uiw/react-codemirror';
+import { EditorSelection } from '@uiw/react-codemirror';
 
 export class BulletWidget extends WidgetType {
   toDOM() {
@@ -104,7 +104,6 @@ export class TablePreviewWidget extends WidgetType {
         e.preventDefault();
 
         const docLength = view.state.doc.length;
-        // Target the position immediately after the table
         const targetPos = Math.min(this.to + 1, docLength);
 
         view.dispatch({
@@ -114,6 +113,7 @@ export class TablePreviewWidget extends WidgetType {
         view.focus();
       }
     };
+
     const table = document.createElement('table');
     table.className = 'cm-interactive-table';
     if (this.selectedColumn !== null) table.classList.add('has-selection');
@@ -184,16 +184,6 @@ export class TablePreviewWidget extends WidgetType {
         editor.className = 'cm-table-cell-editor';
         editor.contentEditable = 'true';
         editor.textContent = cellText.replace(/\\\|/g, '|');
-        // editor.addEventListener('blur', e => {
-        //   e.stopPropagation();
-        //   const newText = editor.textContent || '';
-        //   if (newText !== cellText) {
-        //     const newData = [...tableData];
-        //     newData[rIdx][cIdx] = newText;
-
-        //     updateTable(view, this.from, this.to, newData);
-        //   }
-        // });
 
         let debounceTimer: ReturnType<typeof setTimeout>;
         editor.addEventListener('input', () => {
@@ -234,6 +224,21 @@ export class TablePreviewWidget extends WidgetType {
         });
 
         editor.addEventListener('keydown', e => {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+
+            const sel = window.getSelection();
+            if (sel) {
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
+
+            editor.focus();
+          }
           if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key)) {
             e.stopPropagation();
             return; // Let the browser handle the native copy/paste
@@ -348,28 +353,6 @@ export class TablePreviewWidget extends WidgetType {
       })
     );
 
-    requestAnimationFrame(() => {
-      if (!view.state) return;
-      const { doc } = view.state;
-      const changes = [];
-
-      if (this.from === 0) changes.push({ from: 0, to: 0, insert: '\n' });
-      const prevLine = view.state.doc.lineAt(Math.max(0, this.from - 1));
-      const text = prevLine.text;
-      if (text) changes.push({ from: this.from, to: this.from, insert: '\n' });
-      if (this.to === doc.length) {
-        changes.push({ from: doc.length, insert: '\n' });
-      }
-
-      if (changes.length > 0) {
-        view.dispatch({
-          changes,
-          annotations: Transaction.addToHistory.of(false),
-          userEvent: 'layout',
-        });
-      }
-    });
-
     inner.appendChild(table);
     scrollWrapper.appendChild(inner);
     container.appendChild(scrollWrapper);
@@ -379,6 +362,8 @@ export class TablePreviewWidget extends WidgetType {
   ignoreEvent(event: Event): boolean {
     if (event instanceof KeyboardEvent) {
       const target = event.target as HTMLElement;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') return true;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') return true;
       if (['copy', 'paste', 'cut'].includes(event.type)) return true;
       if (target.closest('.cm-table-cell-editor')) {
         return ['ArrowUp', 'ArrowDown', 'Tab', 'Enter'].includes(event.key);

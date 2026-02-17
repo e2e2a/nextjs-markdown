@@ -1,5 +1,5 @@
 import { Decoration } from '@codemirror/view';
-import { Range as StateRange, EditorState } from '@codemirror/state';
+import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
 import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 
@@ -322,4 +322,43 @@ export function getImageDecos(state: EditorState, text: string, lineFrom: number
   }
 
   return decos;
+}
+
+export function buildDecorations(state: EditorState): RangeSet<Decoration> {
+  const decos: StateRange<Decoration>[] = [];
+  const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
+
+  decos.push(...getFenceDecos(state, activeLineNum));
+
+  for (let lineNum = 1; lineNum <= state.doc.lines; lineNum++) {
+    const tableResult = getTableDecos(state, lineNum);
+
+    if (tableResult) {
+      decos.push(...tableResult.decos);
+      lineNum = tableResult.skipToLine;
+      continue;
+    }
+
+    const line = state.doc.line(lineNum);
+    const isActive = lineNum === activeLineNum;
+    if (line.text.startsWith('```')) {
+      continue;
+    }
+    decos.push(...getHeadingDecos(state, line.text, line.from, isActive));
+    decos.push(...getBoldDecos(state, line.text, line.from, isActive));
+    decos.push(...getInlineCodeDecos(state, line.text, line.from, isActive));
+    decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));
+    decos.push(...getHRDecos(state, line.text, line.from, line.to, isActive));
+    decos.push(...getItalicDecos(state, line.text, line.from, isActive));
+    decos.push(...getNumberedListDecos(line.text, line.from));
+    decos.push(...getBulletListDecos(state, line.text, line.from, isActive));
+    decos.push(...getTaskDecos(line.text, line.from));
+    decos.push(...getLinkDecos(state, line.text, line.from, isActive));
+    decos.push(...getImageDecos(state, line.text, line.from, line.to, isActive));
+  }
+
+  return RangeSet.of(
+    decos.sort((a, b) => a.from - b.from),
+    true
+  );
 }

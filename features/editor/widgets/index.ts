@@ -1,6 +1,6 @@
 import { EditorView, WidgetType } from '@codemirror/view';
 import { marked } from 'marked';
-import { getLanguageLabel } from '../helper/getLanguageLabel';
+import { getLanguageLabel } from '../../helpers/editor/getLanguageLabel';
 import {
   addTableColumn,
   addTableRow,

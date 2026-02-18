@@ -1,6 +1,6 @@
 import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
-import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/widgets';
+import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 
 function isRangeSelected(state: EditorState, from: number, to: number): boolean {

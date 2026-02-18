@@ -2,7 +2,7 @@ import { EditorView, Decoration, ViewPlugin, ViewUpdate } from '@codemirror/view
 import { StateField, RangeSet, EditorState, StateEffect, Transaction, Extension, ChangeSpec } from '@codemirror/state';
 
 import { TablePreviewWidget } from '../widgets';
-import { buildDecorations } from '../editor/decorations';
+import { buildDecorations } from '../decorations';
 
 export const setColumnSelection = StateEffect.define<{ from: number; col: number | null }>();
 export const columnSelectionField = StateField.define<{ from: number; col: number | null } | null>({

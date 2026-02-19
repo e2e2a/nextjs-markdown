@@ -302,6 +302,7 @@ export class TablePreviewWidget extends WidgetType {
           }
         });
 
+        editor.addEventListener('cut', e => e.stopPropagation());
         editor.addEventListener('copy', e => e.stopPropagation());
         editor.onmousedown = e => {
           e.stopPropagation();

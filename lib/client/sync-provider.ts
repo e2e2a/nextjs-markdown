@@ -1,21 +1,62 @@
-// lib/sync-provider.ts
-import { HocuspocusProvider } from '@hocuspocus/provider';
-import { IndexeddbPersistence } from 'y-indexeddb';
 import * as Y from 'yjs';
+import { HocuspocusProvider, HocuspocusProviderConfiguration } from '@hocuspocus/provider';
+import { IndexeddbPersistence } from 'y-indexeddb';
 
-export function getSyncProvider(nodeId: string) {
+export interface SyncInstance {
+  ydoc: Y.Doc;
+  provider: HocuspocusProvider;
+  persistence: IndexeddbPersistence;
+}
+
+const instances = new Map<string, SyncInstance>();
+
+export function getSyncProvider(nodeId: string): SyncInstance {
+  const existing = instances.get(nodeId);
+  if (existing) return existing;
+
   const ydoc = new Y.Doc();
+  console.log('📄 Y.Doc created');
 
-  // 1. Local Offline Storage: Syncs YDoc to Browser DB (IndexedDB)
-  const localPersistence = new IndexeddbPersistence(nodeId, ydoc);
-
-  // 2. Remote Sync: Syncs YDoc to Hocuspocus Server
-  const provider = new HocuspocusProvider({
-    url: 'ws://your-server-url:1234',
-    name: nodeId, // This maps to 'documentName' on the server
-    document: ydoc,
-    // Add token: session.accessToken if you implement onAuthenticate
+  // Offline restore
+  const persistence = new IndexeddbPersistence(nodeId, ydoc);
+  persistence.on('synced', () => {
+    console.log('📦 Offline content restored');
   });
 
-  return { ydoc, provider, localPersistence };
+  const config: HocuspocusProviderConfiguration = {
+    url: 'ws://localhost:1234',
+    name: nodeId,
+    document: ydoc,
+  };
+
+  const provider = new HocuspocusProvider(config);
+
+  provider.on('status', ({ status }) => {
+    console.log('🔌 WS status:', status);
+  });
+
+  provider.on('synced', () => {
+    console.log('☁️ Synced with server');
+  });
+
+  // awareness = online users
+  provider.awareness?.on('change', () => {
+    const states = Array.from(provider.awareness?.getStates().values() ?? []);
+    console.log('👥 Awareness update', states.length, states);
+  });
+
+  // document updates
+  ydoc.on('update', (_update: Uint8Array, origin: unknown) => {
+    console.log('🧠 Document updated', { origin });
+  });
+
+  const instance: SyncInstance = {
+    ydoc,
+    provider,
+    persistence,
+  };
+
+  instances.set(nodeId, instance);
+
+  return instance;
 }

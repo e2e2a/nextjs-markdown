@@ -111,44 +111,42 @@ export function handleTableTabNavigation(widget: TablePreviewWidget, view: Edito
   if (!pos) return;
 
   const { table, rowIndex, cellIndex } = pos;
+  const isLastRow = rowIndex === table.rows.length - 1;
+  const isLastCell = cellIndex === table.rows[rowIndex].cells.length - 1;
+  const isFirstRow = rowIndex === 0;
+  const isFirstCell = cellIndex === 0;
 
   if (shiftKey) {
-    let r = rowIndex;
-    let c = cellIndex - 1;
-
+    if (isFirstRow && isFirstCell) return; // Exit at start
+    let r = rowIndex,
+      c = cellIndex;
     if (c < 0) {
       r--;
-      if (r < 0) return;
       c = table.rows[r].cells.length - 1;
     }
-
-    const target = table.rows[r].cells[c].querySelector('.cm-table-cell-editor') as HTMLElement | null;
-
+    const target = table.rows[r].cells[c].querySelector('.cm-table-cell-editor') as HTMLElement;
     target?.focus();
     return;
   }
 
-  let r = rowIndex;
-  let c = cellIndex + 1;
-
-  if (c >= table.rows[r].cells.length) {
-    r++;
-    c = 0;
-  }
-
-  if (r < table.rows.length) {
-    const target = table.rows[r].cells[c].querySelector('.cm-table-cell-editor') as HTMLElement | null;
-
+  if (isLastRow && isLastCell) {
+    const next = addTableRow(tableData);
+    view.dispatch({
+      changes: { from: widget.from, to: widget.to, insert: serializeTable(next) },
+      userEvent: 'input.table',
+    });
+    focusTableCell(view, widget.from, next.length - 1, 0);
+  } else {
+    let r = rowIndex,
+      c = cellIndex;
+    if (c >= table.rows[r].cells.length) {
+      r++;
+      c = 0;
+    }
+    const target = table.rows[r].cells[c].querySelector('.cm-table-cell-editor') as HTMLElement;
     target?.focus();
-    return;
   }
-
-  const next = addTableRow(tableData);
-
-  view.dispatch({
-    changes: { from: widget.from, to: widget.to, insert: serializeTable(next) },
-  });
-  focusTableCell(view, widget.from, next.length - 1, 0);
+  return;
 }
 
 export function handleTableEnterNavigation(widget: TablePreviewWidget, view: EditorView, tableData: string[][], editor: HTMLElement) {

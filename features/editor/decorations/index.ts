@@ -177,7 +177,25 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
 export function getTableDecos(state: EditorState, startLine: number) {
   const line = state.doc.line(startLine);
   if (!line.text.trim().startsWith('|')) return null;
+  // --- STRENGTHENED GUARD ---
+  if (startLine < state.doc.lines) {
+    const nextLineText = state.doc.line(startLine + 1).text.trim();
 
+    // A valid Markdown table MUST have a separator line (e.g., |---| or |:---|)
+    // as the second line. If the next line isn't a separator, this line
+    // cannot be the start of a table.
+    const isNextLineSeparator = /^\|?([\s-]*:?---+:?[\s-]*\|?)+$/.test(nextLineText);
+
+    if (!isNextLineSeparator) {
+      // This line is just text starting with '|'.
+      // Do NOT include it in a table decoration.
+      return null;
+    }
+  } else {
+    // If it's the last line of the doc and starts with '|',
+    // it can't be a table because there's no room for a separator.
+    return null;
+  }
   const range = getTableRange(state, startLine);
   const from = state.doc.line(range.start).from;
   const to = state.doc.line(range.end).to;
@@ -192,7 +210,7 @@ export function getTableDecos(state: EditorState, startLine: number) {
         widget: new TablePreviewWidget(lines.join('\n'), from, to),
         block: true,
         atomic: false,
-        side: 1,
+        side: -1,
       }).range(from, to),
     ],
     skipToLine: range.end,

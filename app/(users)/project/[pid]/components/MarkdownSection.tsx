@@ -1,19 +1,20 @@
 'use client';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { drawSelection, dropCursor, EditorView, keymap } from '@codemirror/view';
 import CodeMirror from '@uiw/react-codemirror';
-import { yCollab } from 'y-codemirror.next';
+import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { createTheme } from '@uiw/codemirror-themes';
-import { getSyncProvider } from '@/lib/client/sync-provider';
+// import { getSyncProvider } from '@/lib/client/sync-provider';
 import { INode } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
-import { columnSelectionField, markdownLivePreviewField, tableSelectionHighlighter, tableSpacingManager } from '@/features/editor/plugins';
+import { columnSelectionField, markdownLivePreviewField, tableSelectionHighlighter } from '@/features/editor/plugins';
 import { languages } from '@codemirror/language-data';
 import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
-import { history, historyKeymap } from '@codemirror/commands';
+import { HocuspocusProvider } from '@hocuspocus/provider';
+import * as Y from 'yjs';
 
 const myOwnDarkTheme = createTheme({
   theme: 'dark',
@@ -42,29 +43,57 @@ const myOwnDarkTheme = createTheme({
 });
 
 export function MarkdownSection({ node }: { node: INode }) {
-  const { ydoc, provider } = useMemo(() => getSyncProvider(node._id), [node._id]);
-  const ytext = useMemo(() => ydoc.getText('codemirror'), [ydoc]);
+  const [synced, setSynced] = useState(false);
+  const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
-  // const [content, setContent] = useState(ytext.toString());
 
   useEffect(() => {
-    // const onUpdate = () => setContent(ytext.toString());
-    // ytext.observe(onUpdate);
+    const ydoc = new Y.Doc();
+    const provider = new HocuspocusProvider({
+      url: 'ws://localhost:1234',
+      name: node._id,
+      document: ydoc,
+    });
+
+    provider.on('synced', () => {
+      console.log('☁️ Document fully synced');
+      setSynced(true);
+    });
+
+    provider.on('status', ({ status }: { status: string }) => {
+      console.log('🔌 Connection Status:', status);
+    });
+
+    provider.connect();
+    requestAnimationFrame(() => {
+      setInstance({ ydoc, provider });
+    });
+
     return () => {
-      // ytext.unobserve(onUpdate);
+      console.log('🧹 Destroying session for', node._id);
       provider.destroy();
       ydoc.destroy();
+      setSynced(false);
+      setInstance(null);
     };
-  }, [ytext, provider, ydoc]);
+  }, [node._id]);
 
-  const editorExtensions = useMemo(
-    () => [
-      history(),
+  const ytext = useMemo(() => instance?.ydoc.getText('codemirror'), [instance]);
+  const undoManager = useMemo(() => {
+    if (!ytext || !instance) return null;
+    return new Y.UndoManager(ytext, {
+      trackedOrigins: new Set([instance.provider?.awareness?.clientID]),
+      captureTimeout: 200,
+    });
+  }, [ytext, instance]);
+
+  const editorExtensions = useMemo(() => {
+    if (!instance || !ytext || !undoManager) return [];
+    return [
       tableBackspace,
       tableSelectionHighlighter,
       tableKeyboardHandler,
-      tableSpacingManager,
-      keymap.of([{ key: 'Mod-a', run: selectAllToTop }, ...historyKeymap]),
+      keymap.of([{ key: 'Mod-a', run: selectAllToTop }, ...yUndoManagerKeymap]),
       myOwnDarkTheme,
       drawSelection(),
       dropCursor(),
@@ -73,27 +102,25 @@ export function MarkdownSection({ node }: { node: INode }) {
         codeLanguages: languages,
         addKeymap: true,
       }),
+      yCollab(ytext, instance.provider.awareness, { undoManager }),
       EditorView.lineWrapping,
-      yCollab(ytext, provider.awareness),
       columnSelectionField,
       markdownLivePreviewField,
-    ],
-    [ytext, provider]
-  );
+    ];
+  }, [instance, ytext, undoManager]);
+  if (!instance || !ytext) return null;
 
   return (
     <div className="h-full! grid grid-cols-1 max-h-full px-5 overflow-y-auto overflow-hidden">
-      <div
-        onMouseDown={e => {
-          e.preventDefault();
-          const view = editorViewRef.current;
-          if (!view || view.hasFocus) return;
-          view.focus();
-        }}
-        className="w-full h-auto pb-12 cursor-text"
-      >
+      {!synced && (
+        <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+          <p className="text-sm animate-pulse">Syncing content...</p>
+        </div>
+      )}
+      <div className="w-full h-auto pb-12 flex flex-col">
         <CodeMirror
           // value={content}
+          key={node._id}
           onCreateEditor={view => {
             editorViewRef.current = view;
           }}
@@ -101,6 +128,24 @@ export function MarkdownSection({ node }: { node: INode }) {
           basicSetup={false}
           extensions={editorExtensions}
           className="h-auto"
+        />
+        <div
+          onMouseDown={() => {
+            // e.preventDefault();
+            const view = editorViewRef.current;
+            if (!view) return;
+            setTimeout(() => {
+              view.focus();
+              const endPos = view.state.doc.length;
+
+              view.dispatch({
+                selection: { anchor: endPos, head: endPos },
+                scrollIntoView: true,
+                userEvent: 'select',
+              });
+            }, 0);
+          }}
+          className="cursor-text flex-1"
         />
       </div>
 

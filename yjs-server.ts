@@ -1,55 +1,57 @@
+import 'dotenv/config';
 import { Server } from '@hocuspocus/server';
 import { Logger } from '@hocuspocus/extension-logger';
 import Node from './modules/projects/nodes/node.model';
+import * as Y from 'yjs';
+import connectDb from './lib/db/connection';
 
-const server = new Server({
-  port: 1234,
-  unloadImmediately: false, // Prevents document evaporation on tab switch
+async function start() {
+  await connectDb();
+  const server = new Server({
+    port: 1234,
+    unloadImmediately: false, // Prevents document evaporation on tab switch
+    quiet: true,
 
-  extensions: [new Logger()],
+    extensions: [new Logger()],
 
-  /**
-   * Cold Start: Triggered when the first user joins a room that isn't in RAM.
-   */
-  async onLoadDocument({ documentName, document }) {
-    const ytext = document.getText('codemirror');
+    /**
+     * Cold Start: Triggered when the first user joins a room that isn't in RAM.
+     * This is where we load the "original content".
+     */
+    async onLoadDocument(data) {
+      const doc = new Y.Doc();
+      const ytext = doc.getText('codemirror');
 
-    // If the doc is already in server RAM, return it immediately.
-    if (ytext.length > 0) return document;
-
-    try {
-      // documentName is the nodeId passed from the client
-      const node = await Node.findById(documentName);
-
-      if (node?.content) {
-        document.transact(() => {
-          // 'initial-load' origin prevents unnecessary triggers elsewhere
-          ytext.insert(0, node.content);
-        }, 'initial-load');
+      try {
+        // If room is new to RAM, fetch from DB
+        const node = await Node.findById(data.documentName);
+        if (node?.content && ytext.length === 0) {
+          ytext.insert(0, '123');
+        }
+      } catch (e) {
+        console.error('Load error', e);
       }
-    } catch (error) {
-      console.error(`[DB Error] Failed to load node ${documentName}:`, error);
-    }
+      return doc;
+    },
 
-    return document;
-  },
+    /**
+     * Persistence: Automatically debounced by Hocuspocus.
+     */
+    async onStoreDocument({ documentName, document }) {
+      const currentContent = document.getText('codemirror').toString();
 
-  /**
-   * Persistence: Automatically debounced by Hocuspocus.
-   */
-  async onStoreDocument({ documentName, document }) {
-    const currentContent = document.getText('codemirror').toString();
+      try {
+        // await Node.findByIdAndUpdate(documentName, {
+        //   content: currentContent,
+        //   updatedAt: new Date(),
+        // });
+        console.log(`✅ Saved ${documentName} to DB`);
+      } catch (error) {
+        console.error(`[DB Error] Failed to save node ${documentName}:`, error);
+      }
+    },
+  });
 
-    try {
-      await Node.findByIdAndUpdate(documentName, {
-        content: currentContent,
-        updatedAt: new Date(),
-      });
-      console.log(`✅ Saved ${documentName} to DB`);
-    } catch (error) {
-      console.error(`[DB Error] Failed to save node ${documentName}:`, error);
-    }
-  },
-});
-
-server.listen();
+  server.listen();
+}
+start();

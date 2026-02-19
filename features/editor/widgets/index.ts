@@ -15,7 +15,7 @@ import {
   splitRow,
   updateTable,
 } from '@/lib/client/markdown/markdown-table-utils';
-import { EditorSelection } from '@uiw/react-codemirror';
+import { ChangeSpec, EditorSelection, Transaction } from '@uiw/react-codemirror';
 
 export class BulletWidget extends WidgetType {
   toDOM() {
@@ -239,10 +239,8 @@ export class TablePreviewWidget extends WidgetType {
 
             editor.focus();
           }
-          if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key)) {
-            e.stopPropagation();
-            return; // Let the browser handle the native copy/paste
-          }
+
+          if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key)) return e.stopPropagation();
           const isUp = e.key === 'ArrowUp';
           const isDown = e.key === 'ArrowDown';
           const isTab = e.key === 'Tab';
@@ -252,7 +250,6 @@ export class TablePreviewWidget extends WidgetType {
           e.stopPropagation();
 
           if (isEnter) return handleTableEnterNavigation(this, view, tableData, editor);
-
           if (isTab) return handleTableTabNavigation(this, view, tableData, editor, e.shiftKey);
 
           const isFirstRow = rIdx === 0;
@@ -304,6 +301,7 @@ export class TablePreviewWidget extends WidgetType {
             targetEditor.focus();
           }
         });
+
         editor.addEventListener('copy', e => e.stopPropagation());
         editor.onmousedown = e => {
           e.stopPropagation();
@@ -336,6 +334,34 @@ export class TablePreviewWidget extends WidgetType {
     //     focusTableCell(view, this.from, 0, 0);
     //   }
     // }
+
+    requestAnimationFrame(() => {
+      if (!view.dom.isConnected || !view.hasFocus) return;
+
+      let pos: number;
+      try {
+        pos = view.posAtDOM(container);
+      } catch {
+        return;
+      }
+      if (pos < 0) return;
+      const doc = view.state.doc;
+      const line = doc.lineAt(pos);
+      const changes: ChangeSpec[] = [];
+
+      if (line.number > 1) {
+        const prevLine = doc.line(line.number - 1);
+        if (prevLine.text.trim() !== '' || prevLine.text.includes('|')) changes.push({ from: prevLine.to, insert: '\n' });
+      }
+      if (line.number === 1) changes.push({ from: 0, insert: '\n' });
+      if (this.to === doc.length) changes.push({ from: doc.length, insert: '\n' });
+      if (changes.length > 0)
+        view.dispatch({
+          changes,
+          annotations: [Transaction.userEvent.of('input.type'), Transaction.addToHistory.of(true)],
+          selection: view.state.selection,
+        });
+    });
 
     inner.appendChild(
       createTableActionButton('col', () => {

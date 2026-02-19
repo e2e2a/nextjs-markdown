@@ -248,7 +248,6 @@ body {
   .CodeMirror-scroll {
     overflow: visible !important;
     height: auto !important;
-    min-height: 500px;
   }
 
   .cm-selectionBackground {
@@ -258,6 +257,7 @@ body {
   .cm-scroller {
     height: auto !important;
     overflow: visible !important;
+    min-height: 290px !important;
   }
   .cm-content::selection,
   .cm-content *::selection {

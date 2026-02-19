@@ -43,11 +43,13 @@ const myOwnDarkTheme = createTheme({
 });
 
 export function MarkdownSection({ node }: { node: INode }) {
+  console.log('node', node);
   const [synced, setSynced] = useState(false);
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
+    if (!node?._id) return;
     const ydoc = new Y.Doc();
     const provider = new HocuspocusProvider({
       url: 'ws://localhost:1234',
@@ -76,7 +78,7 @@ export function MarkdownSection({ node }: { node: INode }) {
       setSynced(false);
       setInstance(null);
     };
-  }, [node._id]);
+  }, [node?._id]);
 
   const ytext = useMemo(() => instance?.ydoc.getText('codemirror'), [instance]);
   const undoManager = useMemo(() => {
@@ -108,27 +110,24 @@ export function MarkdownSection({ node }: { node: INode }) {
       markdownLivePreviewField,
     ];
   }, [instance, ytext, undoManager]);
-  if (!instance || !ytext) return null;
 
   return (
-    <div className="h-full! grid grid-cols-1 max-h-full px-5 overflow-y-auto overflow-hidden">
-      {!synced && (
-        <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
-          <p className="text-sm animate-pulse">Syncing content...</p>
-        </div>
-      )}
-      <div className="w-full h-auto pb-12 flex flex-col">
-        <CodeMirror
-          // value={content}
-          key={node._id}
-          onCreateEditor={view => {
-            editorViewRef.current = view;
-          }}
-          theme={myOwnDarkTheme}
-          basicSetup={false}
-          extensions={editorExtensions}
-          className="h-auto"
-        />
+    <div className="h-full! grid grid-cols-1 max-h-full w-full px-5 overflow-y-auto overflow-hidden">
+      <div className="w-full h-auto pb-4 flex flex-col">
+        {instance && ytext && (
+          <CodeMirror
+            // value={content}
+            key={node._id}
+            onCreateEditor={view => {
+              editorViewRef.current = view;
+            }}
+            theme={myOwnDarkTheme}
+            basicSetup={false}
+            extensions={editorExtensions}
+            className="h-auto!"
+          />
+        )}
+        {!synced && <div className="min-h-full flex items-center justify-center text-5xl leading-1 w-full">Syncing Document...</div>}
         <div
           onMouseDown={() => {
             // e.preventDefault();
@@ -145,11 +144,11 @@ export function MarkdownSection({ node }: { node: INode }) {
               });
             }, 0);
           }}
-          className="cursor-text flex-1"
+          className="cursor-text flex-1  h-full"
         />
       </div>
 
-      <div className="pb-12">
+      <div className="pb-12 ">
         <Separator className="w-full border-border" />
         <div className="flex items-center justify-end py-5 gap-x-2">
           <List className="h-5 w-5" />

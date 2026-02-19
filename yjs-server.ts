@@ -9,11 +9,18 @@ async function start() {
   await connectDb();
   const server = new Server({
     port: 1234,
-    unloadImmediately: false, // Prevents document evaporation on tab switch
+    unloadImmediately: true, // Prevents document evaporation on tab switch
     quiet: true,
 
     extensions: [new Logger()],
+    async onConnect(data) {
+      // Check how many people are in this specific room
+      const room = data.instance.documents.get(data.documentName);
 
+      // A room in Hocuspocus has a 'connections' Set
+      const userCount = room ? room.connections.size : 0;
+      console.log(`Users in ${data.documentName}: ${userCount}`);
+    },
     /**
      * Cold Start: Triggered when the first user joins a room that isn't in RAM.
      * This is where we load the "original content".
@@ -26,7 +33,7 @@ async function start() {
         // If room is new to RAM, fetch from DB
         const node = await Node.findById(data.documentName);
         if (node?.content && ytext.length === 0) {
-          ytext.insert(0, '123');
+          ytext.insert(0, node?.content);
         }
       } catch (e) {
         console.error('Load error', e);
@@ -41,10 +48,7 @@ async function start() {
       const currentContent = document.getText('codemirror').toString();
 
       try {
-        // await Node.findByIdAndUpdate(documentName, {
-        //   content: currentContent,
-        //   updatedAt: new Date(),
-        // });
+        await Node.findByIdAndUpdate(documentName, { content: currentContent }, { new: true });
         console.log(`✅ Saved ${documentName} to DB`);
       } catch (error) {
         console.error(`[DB Error] Failed to save node ${documentName}:`, error);

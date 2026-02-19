@@ -8,6 +8,7 @@ export interface Tab {
   title: string;
   isDirty: boolean;
   isPreview: boolean;
+  node: INode;
 }
 
 interface TabsState {
@@ -58,6 +59,7 @@ export const useTabStore = create<TabsState>()(
             title: node.title ?? 'Untitled',
             isDirty: false,
             isPreview,
+            node: node,
           };
 
           // 3️⃣ Preview replacement (VS Code style)

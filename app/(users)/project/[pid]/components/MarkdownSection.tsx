@@ -15,6 +15,8 @@ import { languages } from '@codemirror/language-data';
 import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
+import { useTabStore } from '@/features/editor/stores/tabs';
+import { useParams } from 'next/navigation';
 
 const myOwnDarkTheme = createTheme({
   theme: 'dark',
@@ -46,6 +48,8 @@ export function MarkdownSection({ node }: { node: INode }) {
   const [synced, setSynced] = useState(false);
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
+  const markDirty = useTabStore(state => state.markDirty);
+  const pid = useParams().pid as string;
 
   useEffect(() => {
     if (!node?._id) return;
@@ -88,9 +92,16 @@ export function MarkdownSection({ node }: { node: INode }) {
     });
   }, [ytext, instance]);
 
+  const onDocChange = useMemo(() => {
+    return EditorView.updateListener.of(update => {
+      if (update.docChanged && update.transactions.some(tr => tr.isUserEvent('input') || tr.isUserEvent('delete'))) markDirty(pid, node._id, true);
+    });
+  }, [markDirty, pid, node._id]);
+
   const editorExtensions = useMemo(() => {
     if (!instance || !ytext || !undoManager) return [];
     return [
+      onDocChange,
       tableBackspace,
       tableSelectionHighlighter,
       tableKeyboardHandler,
@@ -108,7 +119,7 @@ export function MarkdownSection({ node }: { node: INode }) {
       columnSelectionField,
       markdownLivePreviewField,
     ];
-  }, [instance, ytext, undoManager]);
+  }, [instance, ytext, onDocChange, undoManager]);
 
   return (
     <div className="h-full! grid grid-cols-1 max-h-full w-full px-5 overflow-y-auto overflow-hidden">

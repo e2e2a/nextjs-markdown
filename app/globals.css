@@ -627,6 +627,7 @@ body {
     font-size: 10px;
     padding: 2px 6px;
     cursor: pointer;
+    user-select: none;
     @apply hover:bg-accent/60;
   }
 
@@ -690,5 +691,46 @@ body {
   .cm-image-wrapper {
     display: inline-block;
     user-select: none;
+  }
+  .cm-mermaid-hidden-line {
+    display: none !important;
+  }
+
+  /* Ensure the widget container has its own healthy margins */
+  .mermaid-widget-container {
+    position: relative;
+    display: block;
+    background: #1a1d23;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    height: auto;
+    line-height: 0 !important;
+    user-select: none !important;
+    @apply w-full;
+  }
+
+  /* The floating toggle button */
+  .mermaid-toggle-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    @apply hover:bg-accent/60;
+  }
+
+  .mermaid-toggle-btn:hover {
+    background: #30363d;
+    color: #c9d1d9;
+    @apply hover:bg-accent/60;
   }
 }

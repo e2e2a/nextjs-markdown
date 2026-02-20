@@ -2,6 +2,7 @@ import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
 import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
+import { MermaidWidget } from '../widgets/mermaid-widget';
 
 function isRangeSelected(state: EditorState, from: number, to: number): boolean {
   const sel = state.selection.main;
@@ -121,6 +122,58 @@ export function getNumberedListDecos(text: string, lineFrom: number): StateRange
   return decos;
 }
 
+// export function getFenceDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
+//   const decos: StateRange<Decoration>[] = [];
+//   let isInsideBlock = false;
+//   let blockStartLine = -1;
+
+//   for (let i = 1; i <= state.doc.lines; i++) {
+//     const line = state.doc.line(i);
+//     const text = line.text.trim();
+//     const selFrom = state.selection.main.from;
+//     const selTo = state.selection.main.to;
+//     if (text.startsWith('```')) {
+//       const isOpening = !isInsideBlock;
+//       let isBlockActive = false;
+
+//       if (isOpening) {
+//         blockStartLine = i;
+//         let closingLine = i;
+//         const content = [];
+//         for (let j = i + 1; j <= state.doc.lines; j++) {
+//           const nextLine = state.doc.line(j);
+//           if (nextLine.text.trim().startsWith('```')) {
+//             closingLine = j;
+//             break;
+//           }
+//           content.push(nextLine.text);
+//         }
+
+//         isBlockActive = activeLineNum >= i && activeLineNum <= closingLine;
+
+//         decos.push(
+//           Decoration.widget({
+//             widget: new FenchCodeWidget(text.replace('```', '').trim(), content.join('\n')),
+//             side: 1,
+//             block: false,
+//           }).range(line.to)
+//         );
+//       } else {
+//         isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;
+//       }
+
+//       decos.push(Decoration.line({ attributes: { class: 'cm-code-block-fence' } }).range(line.from));
+//       const isSelected = selFrom <= line.to && selTo >= line.from;
+//       if (!isBlockActive && !isSelected) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
+
+//       isInsideBlock = !isInsideBlock;
+//       continue;
+//     }
+
+//     if (isInsideBlock) decos.push(Decoration.line({ attributes: { class: 'cm-code-block-line' } }).range(line.from));
+//   }
+//   return decos;
+// }
 export function getFenceDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   let isInsideBlock = false;
@@ -131,6 +184,16 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
     const text = line.text.trim();
     const selFrom = state.selection.main.from;
     const selTo = state.selection.main.to;
+    if (!isInsideBlock && text.startsWith('```mermaid')) {
+      for (let j = i + 1; j <= state.doc.lines; j++) {
+        if (state.doc.line(j).text.trim().startsWith('```')) {
+          i = j; // Jump index to closing fence
+          break;
+        }
+      }
+      continue;
+    }
+
     if (text.startsWith('```')) {
       const isOpening = !isInsideBlock;
       let isBlockActive = false;
@@ -153,15 +216,16 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
         decos.push(
           Decoration.widget({
             widget: new FenchCodeWidget(text.replace('```', '').trim(), content.join('\n')),
-            side: 1,
+            side: -1,
             block: false,
-          }).range(line.to)
+          }).range(line.from)
         );
       } else {
         isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;
       }
 
       decos.push(Decoration.line({ attributes: { class: 'cm-code-block-fence' } }).range(line.from));
+
       const isSelected = selFrom <= line.to && selTo >= line.from;
       if (!isBlockActive && !isSelected) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
 
@@ -177,23 +241,12 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
 export function getTableDecos(state: EditorState, startLine: number) {
   const line = state.doc.line(startLine);
   if (!line.text.trim().startsWith('|')) return null;
-  // --- STRENGTHENED GUARD ---
   if (startLine < state.doc.lines) {
     const nextLineText = state.doc.line(startLine + 1).text.trim();
-
-    // A valid Markdown table MUST have a separator line (e.g., |---| or |:---|)
-    // as the second line. If the next line isn't a separator, this line
-    // cannot be the start of a table.
     const isNextLineSeparator = /^\|?([\s-]*:?---+:?[\s-]*\|?)+$/.test(nextLineText);
 
-    if (!isNextLineSeparator) {
-      // This line is just text starting with '|'.
-      // Do NOT include it in a table decoration.
-      return null;
-    }
+    if (!isNextLineSeparator) return null;
   } else {
-    // If it's the last line of the doc and starts with '|',
-    // it can't be a table because there's no room for a separator.
     return null;
   }
   const range = getTableRange(state, startLine);
@@ -342,10 +395,57 @@ export function getImageDecos(state: EditorState, text: string, lineFrom: number
   return decos;
 }
 
+export function getMermaidDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const doc = state.doc;
+
+  for (let i = 1; i <= doc.lines; i++) {
+    const line = doc.line(i);
+    if (line.text.trim().startsWith('```mermaid')) {
+      const startLine = i;
+      let endLine = i;
+      const content = [];
+
+      for (let j = i + 1; j <= doc.lines; j++) {
+        const nextLine = doc.line(j);
+        if (nextLine.text.trim().startsWith('```')) {
+          endLine = j;
+          break;
+        }
+        content.push(nextLine.text);
+      }
+
+      const isBlockActive = activeLineNum >= startLine && activeLineNum <= endLine;
+
+      if (!isBlockActive) {
+        for (let k = startLine; k <= endLine; k++) {
+          decos.push(
+            Decoration.line({
+              attributes: { class: 'cm-mermaid-hidden-line' },
+            }).range(doc.line(k).from)
+          );
+        }
+
+        decos.push(
+          Decoration.widget({
+            widget: new MermaidWidget(content.join('\n'), line.from),
+            side: 1,
+            block: true,
+          }).range(doc.line(endLine).to)
+        );
+      }
+
+      i = endLine; // Skip to next section
+    }
+  }
+  return decos;
+}
+
 export function buildDecorations(state: EditorState): RangeSet<Decoration> {
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
 
+  decos.push(...getMermaidDecos(state, activeLineNum));
   decos.push(...getFenceDecos(state, activeLineNum));
 
   for (let lineNum = 1; lineNum <= state.doc.lines; lineNum++) {

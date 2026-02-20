@@ -478,9 +478,11 @@ export class FenchCodeWidget extends WidgetType {
         button.classList.remove('copied');
       }, 2000);
     };
-
     wrapper.append(button);
     return wrapper;
+  }
+  eq(other: FenchCodeWidget) {
+    return other.lang === this.lang;
   }
 }
 

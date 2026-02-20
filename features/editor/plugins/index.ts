@@ -1,7 +1,8 @@
-import { EditorView, Decoration, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import { EditorView, Decoration, ViewPlugin, ViewUpdate, DecorationSet } from '@codemirror/view';
 import { StateField, RangeSet, EditorState, StateEffect } from '@codemirror/state';
 import { buildDecorations } from '../decorations';
 import { TablePreviewWidget } from '../widgets';
+import { MermaidWidget } from '../widgets/mermaid-widget';
 
 export const setColumnSelection = StateEffect.define<{ from: number; col: number | null }>();
 export const columnSelectionField = StateField.define<{ from: number; col: number | null } | null>({

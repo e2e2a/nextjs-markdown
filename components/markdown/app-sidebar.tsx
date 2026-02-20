@@ -3,25 +3,16 @@ import { NavMain } from './nav-main';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
 import { CopyMinus, FilePlus2, FolderPlus } from 'lucide-react';
 import { SidebarContextMenu } from './sidebar-context-menu';
-import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
-import { useParams } from 'next/navigation';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { useEffect } from 'react';
 import { makeToastError } from '@/lib/toast';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
+import { IProject } from '@/types';
 
-export function AppSidebar() {
-  const params = useParams();
-  const pid = params.pid as string;
-  const { data: pData, isLoading: pLoading } = useProjectByIdQuery(pid);
-  const { setCollapseAll, selectedNode, activeNode, setIsCreating, undo, clearHistory } = useNodeStore();
+export function AppSidebar({ projectData }: { projectData: IProject }) {
+  const { setCollapseAll, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
   const mutation = useNodeMutations();
-  useEffect(() => {
-    if (!pid) return;
-
-    clearHistory();
-  }, [pid, clearHistory]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,13 +23,13 @@ export function AppSidebar() {
 
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      console.log(document.activeElement);
       const sidebarRoot = document.querySelector('[data-sidebar-node="true"]');
       // if (!sidebarRoot || !sidebarRoot.contains(target)) return;
       const active = document.activeElement as HTMLElement | null;
       if (!active || !sidebarRoot || !sidebarRoot.contains(active)) return;
       // ignore inputs
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      // if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      if (target.tagName === 'INPUT' || target.isContentEditable) return;
 
       e.preventDefault();
 
@@ -55,7 +46,7 @@ export function AppSidebar() {
               mutation.trash.mutate({ _id: op.node._id as string, pid: op.node.projectId });
               break;
             case 'move':
-              mutation.move.mutate({ _id: op.draggedId, pid, parentId: op.fromParentId });
+              mutation.move.mutate({ _id: op.draggedId, pid: projectData?._id, parentId: op.fromParentId });
               break;
             case 'delete':
               mutation.restore.mutate([op.node]);
@@ -78,9 +69,8 @@ export function AppSidebar() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, pid, mutation]);
+  }, [undo, projectData?._id, mutation]);
 
-  if (pLoading) return;
   let parentId: string | null = null;
   if (activeNode) parentId = activeNode.type === 'folder' ? activeNode._id : activeNode.parentId;
   if (selectedNode) parentId = selectedNode.type === 'folder' ? selectedNode._id : selectedNode.parentId;
@@ -98,7 +88,7 @@ export function AppSidebar() {
         <div className="h-screen overflow-hidden flex flex-col">
           <SidebarHeader className="h-6 p-0">
             <SidebarMenu className="h-6 flex w-full flex-row items-center justify-center px-1 border-b border-border">
-              <div className="font-bold truncate uppercase text-sm w-full text-accent-foreground ">{pData?.project.title}</div>
+              <div className="font-bold truncate uppercase text-sm w-full text-accent-foreground ">{projectData?.title}</div>
               <div className="hidden w-full bg-transparent flex-row items-center justify-end h-full gap-x-2 group-hover:flex">
                 <Button
                   className="p-0! h-auto cursor-pointer bg-transparent text-inherit hover:text-accent-foreground hover:bg-transparent"

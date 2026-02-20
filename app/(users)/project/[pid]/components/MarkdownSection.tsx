@@ -43,7 +43,6 @@ const myOwnDarkTheme = createTheme({
 });
 
 export function MarkdownSection({ node }: { node: INode }) {
-  console.log('node', node);
   const [synced, setSynced] = useState(false);
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);

@@ -1,9 +1,7 @@
 'use client';
 import { useRef, DragEvent, useEffect, useMemo } from 'react';
-import { useParams } from 'next/navigation';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { groupNodes } from '@/utils/client/node-utils';
-import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import SidebarItem from '../project/nodes/sidebar-item';
 import { INode } from '@/types';
@@ -14,15 +12,13 @@ import { makeToastError } from '@/lib/toast';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { sortNodeTree } from '@/utils/client/sortNode';
 // import { sortNodeTree } from '@/modules/projects/nodes/node.service';
+
 export function clearAllFolderDragOver() {
   document.querySelectorAll('[data-drag-over]').forEach(el => el.removeAttribute('data-drag-over'));
 }
-export function NavMain() {
-  const params = useParams();
-  const pid = params.pid as string;
-  const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
-  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode, undo } = useNodeStore();
 
+export function NavMain() {
+  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode, undo } = useNodeStore();
   const mutation = useNodeMutations();
 
   const nodesById = useMemo(() => {
@@ -39,11 +35,6 @@ export function NavMain() {
   }, [nodes]);
 
   useEffect(() => {
-    if (!nData && (!nData?.nodes || nData?.nodes?.length <= 0)) return;
-    setNodes(nData?.nodes);
-  }, [nData, setNodes]);
-
-  useEffect(() => {
     if (!nodes || nodes?.length <= 0) return;
     const result = sortNodeTree(nodes);
     setNodes(result);
@@ -52,7 +43,6 @@ export function NavMain() {
   // Ref for the final drop logic to avoid unnecessary re-renders
   const targetIdRef = useRef<string | null>(null);
 
-  if (nLoading) return <div>Loading...</div>;
   const { folders, files } = groupNodes(nodes || []);
 
   const handleDragFinished = () => {
@@ -62,15 +52,12 @@ export function NavMain() {
     setActiveDrag(null);
     targetIdRef.current = null;
 
-    console.log('dragged', dragged);
     if (!dragged || !targetId) return; // invalid drop
     if (targetId === 'root' && dragged.parentId === null) return; // invalid drop
 
     try {
       moveNode(dragged._id, targetId);
-      requestAnimationFrame(() => {
-        document.getElementById('sidebar-tree-nodes')?.focus();
-      });
+      requestAnimationFrame(() => document.getElementById('sidebar-tree-nodes')?.focus());
 
       mutation.move.mutate(
         { _id: dragged._id, pid: dragged.projectId, parentId: targetId === 'root' ? null : targetId },
@@ -106,7 +93,6 @@ export function NavMain() {
       e.dataTransfer.dropEffect = 'move';
 
       const targetId = 'root';
-      // Clear previous hover if it's a different node
       if (targetIdRef.current !== targetId) {
         clearAllFolderDragOver();
         targetIdRef.current = targetId;

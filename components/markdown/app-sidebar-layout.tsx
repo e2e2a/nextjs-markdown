@@ -8,8 +8,10 @@ import { AppSidebar } from './app-sidebar';
 import RightSidebarTemplate from './right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { useParams } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { TabsHeader } from '../project/tabs/tab-header';
+import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
+import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 
 const MainContentArea = memo(function MainContentArea({ children }: { children: React.ReactNode }) {
   const params = useParams();
@@ -37,10 +39,21 @@ const RightSidebarArea = memo(function RightSidebarArea() {
 });
 
 export default function AppSidebarLayout({ children }: { children: React.ReactNode }) {
-  const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode } = useNodeStore();
+  const params = useParams();
+  const pid = params.pid as string;
+  const { data: pData, isLoading: pLoading, error: pError } = useProjectByIdQuery(pid);
+  const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
+  const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode, clearHistory } = useNodeStore();
+  const { setNodes } = useNodeStore();
 
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
   const RightSidebarRef = useRef<ImperativePanelHandle>(null);
+
+  useEffect(() => {
+    if (!pid) return;
+
+    clearHistory();
+  }, [pid, clearHistory]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -53,6 +66,11 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
     return () => window.removeEventListener('keydown', handleKey);
   }, [activeNode, selectedNode, setIsUpdatingNode]);
 
+  useEffect(() => {
+    if (!nData && (!nData?.nodes || nData?.nodes?.length <= 0)) return;
+    setNodes(nData?.nodes);
+  }, [nData, setNodes]);
+
   // const handlePanelMouseDown = (e: React.MouseEvent) => {
   //   const target = e.target as HTMLElement;
   //   if (target.closest('[data-sidebar-node]')) return;
@@ -60,7 +78,9 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
   //     setSelectedNode(activeNode ? activeNode : null);
   //   }
   // };
-
+  const isReady = !pLoading && !nLoading && pData?.project && nData?.nodes;
+  if (!isReady) return <div className="flex items-center justify-center h-screen bg-background text-muted-foreground">Loading workspace...</div>;
+  if (pError) return notFound();
   return (
     <AppShell variant="sidebar">
       <ResizablePanelGroup
@@ -88,7 +108,7 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           }}
           className="text-muted-foreground flex h-full flex-row p-0"
         >
-          <AppSidebar />
+          <AppSidebar projectData={pData?.project} />
         </ResizablePanel>
 
         <ResizableHandle className="p-0" />

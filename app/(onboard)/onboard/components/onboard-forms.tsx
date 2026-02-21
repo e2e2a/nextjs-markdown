@@ -22,6 +22,7 @@ export function OnboardForms() {
   const { data: user, isLoading } = useUserQuery(session?.user?._id as string);
   const [link, setLink] = useState('');
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const mutation = useUserMutations();
   const form1 = useForm({
     resolver: zodResolver(Step1Schema),
@@ -58,7 +59,7 @@ export function OnboardForms() {
     if (step === 3) {
       const valid = await form3.trigger();
       if (!valid) return;
-
+      setLoading(true);
       const payload = {
         step1: { ...form1.getValues() },
         step2: { ...form2.getValues() },
@@ -78,6 +79,9 @@ export function OnboardForms() {
         onError: err => {
           makeToastError(err.message);
           return;
+        },
+        onSettled: () => {
+          setLoading(false);
         },
       });
     }
@@ -114,25 +118,18 @@ export function OnboardForms() {
                   <div>
                     <Label>Given Name</Label>
                     <Input defaultValue={user.given_name || ''} {...form1.register('given_name')} />
-                    <p className="text-red-500 text-sm">
-                      {form1.formState.errors.given_name?.message}
-                    </p>
+                    <p className="text-red-500 text-sm">{form1.formState.errors.given_name?.message}</p>
                   </div>
                   <div>
                     <Label>
                       Middle Name <span className="text-muted-foreground">(optional)</span>
                     </Label>
-                    <Input
-                      defaultValue={user.middle_name || ''}
-                      {...form1.register('middle_name')}
-                    />
+                    <Input defaultValue={user.middle_name || ''} {...form1.register('middle_name')} />
                   </div>
                   <div>
                     <Label>Family Name</Label>
                     <Input {...form1.register('family_name')} />
-                    <p className="text-red-500 text-sm">
-                      {form1.formState.errors.family_name?.message}
-                    </p>
+                    <p className="text-red-500 text-sm">{form1.formState.errors.family_name?.message}</p>
                   </div>
                   <div className="sm:col-span-2">
                     <Label>
@@ -226,7 +223,9 @@ export function OnboardForms() {
                   <Button type="button" variant="outline" onClick={back}>
                     Back
                   </Button>
-                  <Button type="submit">Next</Button>
+                  <Button type="submit" disabled={loading}>
+                    Next
+                  </Button>
                 </div>
               </motion.form>
             )}
@@ -240,10 +239,8 @@ export function OnboardForms() {
                 className="text-center space-y-4"
               >
                 <h2 className="text-2xl font-semibold">You&apos;re all set! 🎉</h2>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Your onboarding is complete. You can now start collaborating on markdown files.
-                </p>
-                <Link href={link || '/workspaces'} className="">
+                <p className="text-muted-foreground max-w-md mx-auto">Your onboarding is complete. You can now start collaborating on markdown files.</p>
+                <Link href={link || '/preferences/workspaces'} className="">
                   <Button variant={'default'} className="cursor-pointer">
                     Go to Workspaces
                   </Button>

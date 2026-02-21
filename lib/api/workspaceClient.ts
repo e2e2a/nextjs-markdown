@@ -12,9 +12,9 @@ export const workspaceClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error(res.statusText || '');
-
-    return res.json();
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+    return json;
   },
 
   async getUserWorkspaces(): Promise<IResponse> {

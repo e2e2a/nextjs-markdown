@@ -43,8 +43,7 @@ export const WorkspaceCreateClient = () => {
   const onSubmit = async () => {
     const valid = await form2.trigger();
     if (!valid) return;
-    if (session?.user.email === form2.getValues('email'))
-      return form2.setError('email', { message: `Can't invite yourself.` });
+    if (session?.user.email === form2.getValues('email')) return form2.setError('email', { message: `Can't invite yourself.` });
     const existMember = await members.find(mem => mem.email === form2.getValues('email'));
     if (existMember) return form2.setError('email', { message: 'This email is already a exist.' });
     const email = form2.getValues('email');
@@ -69,7 +68,7 @@ export const WorkspaceCreateClient = () => {
 
       mutation.create.mutate(payload, {
         onSuccess: data => {
-          return router.push(`/workspaces/${data.workspaceId}/projects`);
+          return router.push(`/workspaces/${data?.workspace._id}/projects`);
         },
         onError: err => {
           return makeToastError(err.message);
@@ -161,10 +160,7 @@ export const WorkspaceCreateClient = () => {
                   <div className="flex flex-col gap-y-4">
                     <Label className="text-lg font-semibold">Add Members and Set Permissions</Label>
                     <div className="flex gap-x-1">
-                      <Input
-                        {...form2.register('email')}
-                        placeholder="Invite new or existing user via email address..."
-                      />
+                      <Input {...form2.register('email')} placeholder="Invite new or existing user via email address..." />
                       <Button
                         type="button"
                         title="Send Invite"
@@ -184,12 +180,7 @@ export const WorkspaceCreateClient = () => {
                         <TableRow>
                           <TableCell>{session?.user.email}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="outline"
-                              disabled={true}
-                              type="button"
-                              className="w-[150px] justify-start capitalize"
-                            >
+                            <Button variant="outline" disabled={true} type="button" className="w-[150px] justify-start capitalize">
                               Owner
                             </Button>
                           </TableCell>
@@ -221,13 +212,7 @@ export const WorkspaceCreateClient = () => {
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant={'outline'}
-                    disabled={loading}
-                    onClick={() => setStep(1)}
-                    className="cursor-pointer"
-                  >
+                  <Button type="button" variant={'outline'} disabled={loading} onClick={() => setStep(1)} className="cursor-pointer">
                     Back
                   </Button>
                   <div className="space-x-2">

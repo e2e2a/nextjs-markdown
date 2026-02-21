@@ -27,10 +27,8 @@ export function OnboardComplete() {
               className="text-center space-y-4"
             >
               <h2 className="text-2xl font-semibold">You&apos;re all set! 🎉</h2>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Your onboarding is complete. You can now start collaborating on markdown files.
-              </p>
-              <Link href={'/workspaces'} className="">
+              <p className="text-muted-foreground max-w-md mx-auto">Your onboarding is complete. You can now start collaborating on markdown files.</p>
+              <Link href={'/preferences/workspaces'} className="">
                 <Button variant={'default'} className="cursor-pointer">
                   Go to Workspaces
                 </Button>

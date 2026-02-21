@@ -6,30 +6,35 @@ import { workspaceRepository } from '@/modules/workspaces/workspace.repository';
 import { workspaceSchema } from '@/lib/validators/workspace';
 import { User } from 'next-auth';
 import { workspaceMemberService } from '../workspaces/members/member.service';
+import { UnitOfWork } from '@/common/UnitOfWork';
 
 export const userServices = {
   onboard: async (data: IOnboard, authUser: User) => {
-    const result1 = Step1Schema.safeParse(data.step1);
-    const result2 = Step2Schema.safeParse(data.step2);
-    const result3 = workspaceSchema.safeParse(data.step3);
-    if (!result1.success || !result2.success || !result3.success) throw new HttpError('NOT_FOUND', 'Invalid fields.');
+    return await UnitOfWork.run(async () => {
+      const result1 = Step1Schema.safeParse(data.step1);
+      const result2 = Step2Schema.safeParse(data.step2);
+      const result3 = workspaceSchema.safeParse(data.step3);
+      if (!result1.success || !result2.success || !result3.success) throw new HttpError('NOT_FOUND', 'Invalid fields.');
 
-    const user = userRepository.updateUserById(authUser._id!, {
-      ...result1.data,
-      ...result2.data,
-      isOnboard: true,
-    });
+      const user = await userRepository.updateUserById(authUser._id!, {
+        ...result1.data,
+        ...result2.data,
+        isOnboard: true,
+      });
 
-    if (!user) throw new HttpError('NOT_FOUND', 'No user found.');
-    const workspace = await workspaceRepository.store({
-      ...result3.data,
-      ownerUserId: authUser._id!.toString(),
+      if (!user) throw new HttpError('NOT_FOUND', 'No user found.');
+      // if (user.isOnboard) throw new HttpError('CONFLICT', 'You are already onboarded.');
+      console.log('result3.data', result3.data);
+      const workspace = await workspaceRepository.store({
+        ...result3.data,
+        ownerUserId: authUser._id!.toString(),
+      });
+      console.log('workspace', workspace);
+      await workspaceMemberService.initializeOwnership({
+        email: authUser.email,
+        workspaceId: workspace._id,
+      });
+      return { workspaceId: workspace._id };
     });
-
-    await workspaceMemberService.initializeOwnership({
-      email: authUser.email,
-      workspaceId: workspace._id,
-    });
-    return { workspaceId: workspace._id };
   },
 };

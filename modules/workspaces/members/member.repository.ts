@@ -25,7 +25,9 @@ export const workspaceMemberRepository = {
 
   create: async (data: { role: 'owner' | 'editor' | 'viewer'; email: string; status: 'pending' | 'accepted'; workspaceId: string }) => {
     const session = UnitOfWork.getSession();
-    const [newMember] = await WorkspaceMember.create(data, { session });
+    // const [newMember] = await WorkspaceMember.create([data], { session });
+    const newMember = new WorkspaceMember(data);
+    await newMember.save({ session });
     return newMember;
   },
 

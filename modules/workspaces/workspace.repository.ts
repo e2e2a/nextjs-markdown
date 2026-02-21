@@ -7,7 +7,8 @@ export const workspaceRepository = {
 
   store: async (data: { ownerUserId: string; title: string }) => {
     const session = UnitOfWork.getSession();
-    const [newWorkspace] = await Workspace.create(data, { session });
-    return newWorkspace;
+    const workspace = new Workspace(data);
+    await workspace.save({ session });
+    return workspace;
   },
 };

@@ -24,11 +24,14 @@ export function ProjectSingleClient() {
           </div>
         )}
 
-        {tabs.map(tab => (
-          <div key={tab.nodeId} className={tab.nodeId === activeTabId ? 'h-full w-full block' : 'hidden'}>
-            <MarkdownSection node={tab.node as INode} />
-          </div>
-        ))}
+        {tabs.map(tab => {
+          console.log('tab', tab);
+          return (
+            <div key={tab.nodeId} className={tab.nodeId === activeTabId ? 'h-full w-full block' : 'hidden'}>
+              <MarkdownSection node={tab.node as INode} isDirty={tab.isDirty} />
+            </div>
+          );
+        })}
       </div>
     </AppSidebarLayout>
   );

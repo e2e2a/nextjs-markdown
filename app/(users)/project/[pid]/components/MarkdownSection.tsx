@@ -44,7 +44,7 @@ const myOwnDarkTheme = createTheme({
   ],
 });
 
-export function MarkdownSection({ node }: { node: INode }) {
+export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
   const [synced, setSynced] = useState(false);
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
@@ -92,9 +92,10 @@ export function MarkdownSection({ node }: { node: INode }) {
 
   const onDocChange = useMemo(() => {
     return EditorView.updateListener.of(update => {
-      if (update.docChanged && update.transactions.some(tr => tr.isUserEvent('input') || tr.isUserEvent('delete'))) markDirty(pid, node._id, true);
+      if (update.docChanged && update.transactions.some(tr => tr.isUserEvent('input') || tr.isUserEvent('delete')))
+        if (!isDirty) markDirty(pid, node._id, true);
     });
-  }, [markDirty, pid, node._id]);
+  }, [markDirty, pid, node._id, isDirty]);
 
   const editorExtensions = useMemo(() => {
     if (!instance || !ytext || !undoManager) return [];

@@ -44,16 +44,16 @@ async function start() {
     /**
      * Persistence: Automatically debounced by Hocuspocus.
      */
-    async onStoreDocument({ documentName, document }) {
-      const currentContent = document.getText('codemirror').toString();
+    // async onStoreDocument({ documentName, document }) {
+    //   const currentContent = document.getText('codemirror').toString();
 
-      try {
-        await Node.findByIdAndUpdate(documentName, { content: currentContent }, { new: true });
-        console.log(`✅ Saved ${documentName} to DB`);
-      } catch (error) {
-        console.error(`[DB Error] Failed to save node ${documentName}:`, error);
-      }
-    },
+    //   try {
+    //     // await Node.findByIdAndUpdate(documentName, { content: currentContent }, { new: true });
+    //     console.log(`✅ Saved ${documentName} to DB`);
+    //   } catch (error) {
+    //     console.error(`[DB Error] Failed to save node ${documentName}:`, error);
+    //   }
+    // },
   });
 
   server.listen();

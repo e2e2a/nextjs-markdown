@@ -1,8 +1,20 @@
 import { EditorView, WidgetType } from '@uiw/react-codemirror';
 import mermaid from 'mermaid';
 
-mermaid.initialize({ startOnLoad: false, theme: 'dark' });
-
+// mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  flowchart: {
+    useMaxWidth: false,
+    htmlLabels: true,
+    curve: 'basis',
+    nodeSpacing: 50,
+    rankSpacing: 50,
+  },
+  sequence: { useMaxWidth: false },
+  gantt: { useMaxWidth: false },
+});
 export class MermaidWidget extends WidgetType {
   constructor(
     readonly code: string,
@@ -13,7 +25,8 @@ export class MermaidWidget extends WidgetType {
 
   toDOM(view: EditorView) {
     const container = document.createElement('div');
-    container.className = 'mermaid-widget-container group';
+    container.className =
+      'group border border-transparent hover:border-border transition-colors relative block w-full max-w-full box-border z-10 select-none leading-[0] overflow-x-auto! overflow-y-hidden!';
 
     const btn = document.createElement('button');
     btn.className = 'mermaid-toggle-btn';
@@ -29,20 +42,33 @@ export class MermaidWidget extends WidgetType {
       view.focus();
     };
 
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.className = 'mermaid-scroll-wrapper';
+
     const renderArea = document.createElement('div');
     renderArea.className = 'mermaid-render-area';
     const id = `mermaid-${Math.random().toString(36).slice(2, 9)}`;
     renderArea.id = id;
 
     container.appendChild(btn);
-    container.appendChild(renderArea);
+    scrollWrapper.appendChild(renderArea);
+    container.appendChild(scrollWrapper);
 
     requestAnimationFrame(async () => {
       try {
-        // v10+ Mermaid render is async
+        const isValid = await mermaid.parse(this.code, { suppressErrors: true });
+        if (!isValid) throw new Error('Syntax Error');
+
         const { svg } = await mermaid.render(`${id}-svg`, this.code);
         renderArea.innerHTML = svg;
-      } catch (e) {
+
+        const svgElement = renderArea.querySelector('svg');
+        if (svgElement) {
+          svgElement.style.maxWidth = 'none';
+          svgElement.style.width = 'auto';
+          svgElement.setAttribute('height', 'auto');
+        }
+      } catch {
         renderArea.innerHTML = `<div style="line-height: normal; color: #ef4444; font-size: 12px; padding: 10px;">Syntax Error</div>`;
       }
     });
@@ -50,8 +76,6 @@ export class MermaidWidget extends WidgetType {
     return container;
   }
   eq(other: MermaidWidget) {
-    // If the code is exactly the same, do NOT recreate the widget.
-    // This stops the "text-then-diagram" flicker during unrelated edits.
     return other.code === this.code;
   }
 }

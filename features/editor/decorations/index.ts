@@ -398,6 +398,7 @@ export function getImageDecos(state: EditorState, text: string, lineFrom: number
 export function getMermaidDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const doc = state.doc;
+  const selection = state.selection.main;
 
   for (let i = 1; i <= doc.lines; i++) {
     const line = doc.line(i);
@@ -414,10 +415,11 @@ export function getMermaidDecos(state: EditorState, activeLineNum: number): Stat
         }
         content.push(nextLine.text);
       }
-
+      const blockFrom = doc.line(startLine).from;
+      const blockTo = doc.line(endLine).to;
       const isBlockActive = activeLineNum >= startLine && activeLineNum <= endLine;
-
-      if (!isBlockActive) {
+      const isSelected = !selection.empty && selection.from < blockTo && selection.to > blockFrom;
+      if (!isBlockActive && !isSelected) {
         for (let k = startLine; k <= endLine; k++) {
           decos.push(
             Decoration.line({

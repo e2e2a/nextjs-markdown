@@ -696,19 +696,40 @@ body {
     display: none !important;
   }
 
-  /* Ensure the widget container has its own healthy margins */
   .mermaid-widget-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
     position: relative;
-    display: block;
-    background: #1a1d23;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    height: auto;
+    box-sizing: border-box;
+    z-index: 11;
+    user-select: none;
     line-height: 0 !important;
-    user-select: none !important;
-    @apply w-full;
   }
 
+  .mermaid-scroll-wrapper {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+    contain: inline-size;
+  }
+
+  .mermaid-render-area {
+    position: relative;
+    display: inline-block; /* Crucial: allows width to expand beyond 100% */
+    padding-right: 5px; /* Give the diagram some breathing room */
+    padding-bottom: 5px;
+    width: auto !important;
+    min-width: 100%;
+  }
+
+  .mermaid-render-area svg {
+    max-width: none !important; /* Stop Mermaid from shrinking the SVG */
+    width: auto !important;
+    height: auto !important;
+    display: block;
+  }
   /* The floating toggle button */
   .mermaid-toggle-btn {
     position: absolute;
@@ -725,7 +746,7 @@ body {
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    @apply hover:bg-accent/60;
+    @apply hover:bg-accent/60 pointer-events-auto;
   }
 
   .mermaid-toggle-btn:hover {

@@ -4,12 +4,7 @@ import mongoose from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
 
 export const projectMemberRepository = {
-  create: async (data: {
-    role: 'owner' | 'editor' | 'viewer';
-    email: string;
-    workspaceId: string;
-    projectId: string;
-  }) => {
+  create: async (data: { role: 'owner' | 'editor' | 'viewer'; email: string; workspaceId: string; projectId: string }) => {
     const session = UnitOfWork.getSession();
     // Note: Mongoose .create() expects an array when options (like session) are used
     // This returns an array of created documents
@@ -61,10 +56,7 @@ export const projectMemberRepository = {
         $lookup: {
           from: 'projectmembers',
           let: { pid: '$projectId' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$projectId', '$$pid'] } } },
-            { $count: 'memberCount' },
-          ],
+          pipeline: [{ $match: { $expr: { $eq: ['$projectId', '$$pid'] } } }, { $count: 'memberCount' }],
           as: 'memberData',
         },
       },
@@ -84,20 +76,12 @@ export const projectMemberRepository = {
     ]);
   },
 
-  findOne: async (data: { projectId: string; email: string }) => ProjectMember.findOne(data),
+  findOne: async (data: { projectId: string; email: string }) => await ProjectMember.findOne(data),
 
-  findMany: async (data: { projectId: string; workspaceId: string }) =>
-    await ProjectMember.find(data),
+  findMany: async (data: { projectId: string; workspaceId: string }) => await ProjectMember.find(data),
 
-  updateMany: async (
-    dataToFind: { workspaceId: string; projectId: string },
-    updateData: { workspaceId: string; role: 'owner' | 'editor' | 'viewer' }
-  ) => {
+  updateMany: async (dataToFind: { workspaceId: string; projectId: string }, updateData: { workspaceId: string; role: 'owner' | 'editor' | 'viewer' }) => {
     const session = UnitOfWork.getSession();
-    return await ProjectMember.updateMany(
-      dataToFind,
-      { $set: updateData },
-      { ...updateOptions, session }
-    );
+    return await ProjectMember.updateMany(dataToFind, { $set: updateData }, { ...updateOptions, session });
   },
 };

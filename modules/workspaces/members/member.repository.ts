@@ -120,7 +120,12 @@ export const workspaceMemberRepository = {
     const pipeline: PipelineStage[] = [];
     pipeline.push({ $match: data });
     addLookup(pipeline, 'workspaceId', '_id', 'workspaces', false);
-    if (populate && populate.invitedBy) addLookup(pipeline, 'invitedBy', 'email', 'users', false);
+    pipeline.push({
+      $addFields: {
+        invitedBy: { $toObjectId: '$invitedBy' },
+      },
+    });
+    if (populate && populate.invitedBy) addLookup(pipeline, 'invitedBy', '_id', 'users', false);
 
     pipeline.push(...getOwnerCountStages(true));
     pipeline.push(...getProjectCountStages(true));

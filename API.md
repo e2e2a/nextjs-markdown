@@ -17,21 +17,18 @@ This README serves as the definitive API blueprint for the Project. It defines t
 **Scenario:** Handling the lifecycle of a user entering the workspace.
 
 - **GET `/api/invitations`**
-
   - **Context:** Authenticated; filter by `session.user.email`.
   - **Controller:** `invitationController.getMyPendingInvitations()`
   - **Service:** `invitation.listPendingInvitationsForUser(email)`
   - **Scenario:** User views all pending invites on their global dashboard.
 
 - **POST `/api/workspaces/[id]/invitations`**
-
   - **Context:** Workspace Admin/Owner only.
   - **Controller:** `handleInviteAction`
   - **Service:** `invitation.send()` or `invitation.resend()`
   - **Scenario:** **Invite:** Create new record. **Resend:** If record exists, update `expiresAt` and trigger a new email.
 
 - **POST `/api/invitations/[id]/accept`**
-
   - **Context:** User email must match invitation.
   - **Controller:** `handleAcceptance`
   - **Service:** `invitation.accept()`
@@ -39,7 +36,6 @@ This README serves as the definitive API blueprint for the Project. It defines t
   - **Scenario:** **Accept:** User joins the workspace; record moves to `workspaceMembers`.
 
 - **POST `/api/invitations/[id]/reject`**
-
   - **Context:** Recipient action.
   - **Controller:** `handleRejection`
   - **Service:** `invitation.setStatus('REJECTED')`
@@ -58,12 +54,10 @@ This README serves as the definitive API blueprint for the Project. It defines t
 **Scenario:** Managing high-level organization access.
 
 - **GET `/api/workspaces/[id]/members/me`**
-
   - **Controller:** `handleGetMyMembership`
   - **Scenario:** Retrieve current user's role (OWNER, ADMIN, MEMBER) for UI permission gating.
 
 - **PATCH `/api/workspaces/[id]/members/[memberId]`**
-
   - **Controller:** `handleUpdateMemberRole`
   - **Scenario:** **Promote/Demote:** Admin changes a member's workspace permissions.
 
@@ -78,12 +72,10 @@ This README serves as the definitive API blueprint for the Project. It defines t
 **Scenario:** Granular access to specific "Obsidian-style" vaults.
 
 - **GET `/api/projects/[id]/members/me`**
-
   - **Controller:** `handleGetProjectAccess`
   - **Scenario:** **Retrieve:** Check if the user has READ or WRITE access to this specific project.
 
 - **POST `/api/projects/[id]/members`**
-
   - **Controller:** `handleProjectAssignment`
   - **Service:** `projectMember.assign(userId)`
   - **Scenario:** **Assign:** Workspace Admin adds a workspace member to this specific project.
@@ -99,19 +91,16 @@ This README serves as the definitive API blueprint for the Project. It defines t
 **Scenario:** Managing the VS Code-style file tree and content.
 
 - **GET `/api/projects/[id]/nodes`**
-
   - **Controller:** `handleFetchTree`
   - **Service:** `node.getHierarchicalTree(projectId)`
   - **Scenario:** **Load Sidebar:** Returns a nested JSON of folders and files for the project.
 
 - **POST `/api/nodes`**
-
   - **Controller:** `handleCreateNode`
   - **Service:** `node.create(projectId, parentId, type: FILE | FOLDER)`
   - **Scenario:** **New Item:** Adds a file or sub-folder at a specific point in the tree.
 
 - **PATCH `/api/nodes/[id]`**
-
   - **Controller:** `handleUpdateNode`
   - **Service:** `node.patch(data)`
   - **Scenario:** **Edit:** Save Markdown content. **Rename:** Change title. **Move:** Update `parentId` to move file to a different folder.

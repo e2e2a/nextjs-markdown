@@ -122,58 +122,6 @@ export function getNumberedListDecos(text: string, lineFrom: number): StateRange
   return decos;
 }
 
-// export function getFenceDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
-//   const decos: StateRange<Decoration>[] = [];
-//   let isInsideBlock = false;
-//   let blockStartLine = -1;
-
-//   for (let i = 1; i <= state.doc.lines; i++) {
-//     const line = state.doc.line(i);
-//     const text = line.text.trim();
-//     const selFrom = state.selection.main.from;
-//     const selTo = state.selection.main.to;
-//     if (text.startsWith('```')) {
-//       const isOpening = !isInsideBlock;
-//       let isBlockActive = false;
-
-//       if (isOpening) {
-//         blockStartLine = i;
-//         let closingLine = i;
-//         const content = [];
-//         for (let j = i + 1; j <= state.doc.lines; j++) {
-//           const nextLine = state.doc.line(j);
-//           if (nextLine.text.trim().startsWith('```')) {
-//             closingLine = j;
-//             break;
-//           }
-//           content.push(nextLine.text);
-//         }
-
-//         isBlockActive = activeLineNum >= i && activeLineNum <= closingLine;
-
-//         decos.push(
-//           Decoration.widget({
-//             widget: new FenchCodeWidget(text.replace('```', '').trim(), content.join('\n')),
-//             side: 1,
-//             block: false,
-//           }).range(line.to)
-//         );
-//       } else {
-//         isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;
-//       }
-
-//       decos.push(Decoration.line({ attributes: { class: 'cm-code-block-fence' } }).range(line.from));
-//       const isSelected = selFrom <= line.to && selTo >= line.from;
-//       if (!isBlockActive && !isSelected) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
-
-//       isInsideBlock = !isInsideBlock;
-//       continue;
-//     }
-
-//     if (isInsideBlock) decos.push(Decoration.line({ attributes: { class: 'cm-code-block-line' } }).range(line.from));
-//   }
-//   return decos;
-// }
 export function getFenceDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   let isInsideBlock = false;
@@ -184,16 +132,6 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
     const text = line.text.trim();
     const selFrom = state.selection.main.from;
     const selTo = state.selection.main.to;
-    if (!isInsideBlock && text.startsWith('```mermaid')) {
-      for (let j = i + 1; j <= state.doc.lines; j++) {
-        if (state.doc.line(j).text.trim().startsWith('```')) {
-          i = j; // Jump index to closing fence
-          break;
-        }
-      }
-      continue;
-    }
-
     if (text.startsWith('```')) {
       const isOpening = !isInsideBlock;
       let isBlockActive = false;
@@ -216,16 +154,15 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
         decos.push(
           Decoration.widget({
             widget: new FenchCodeWidget(text.replace('```', '').trim(), content.join('\n')),
-            side: -1,
+            side: 1,
             block: false,
-          }).range(line.from)
+          }).range(line.to)
         );
       } else {
         isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;
       }
 
       decos.push(Decoration.line({ attributes: { class: 'cm-code-block-fence' } }).range(line.from));
-
       const isSelected = selFrom <= line.to && selTo >= line.from;
       if (!isBlockActive && !isSelected) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
 
@@ -237,6 +174,69 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
   }
   return decos;
 }
+// export function getFenceDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
+//   const decos: StateRange<Decoration>[] = [];
+//   let isInsideBlock = false;
+//   let blockStartLine = -1;
+
+//   for (let i = 1; i <= state.doc.lines; i++) {
+//     const line = state.doc.line(i);
+//     const text = line.text.trim();
+//     const selFrom = state.selection.main.from;
+//     const selTo = state.selection.main.to;
+//     if (!isInsideBlock && text.startsWith('```mermaid')) {
+//       for (let j = i + 1; j <= state.doc.lines; j++) {
+//         if (state.doc.line(j).text.trim().startsWith('```')) {
+//           i = j; // Jump index to closing fence
+//           break;
+//         }
+//       }
+//       continue;
+//     }
+
+//     if (text.startsWith('```')) {
+//       const isOpening = !isInsideBlock;
+//       let isBlockActive = false;
+
+//       if (isOpening) {
+//         blockStartLine = i;
+//         let closingLine = i;
+//         const content = [];
+//         for (let j = i + 1; j <= state.doc.lines; j++) {
+//           const nextLine = state.doc.line(j);
+//           if (nextLine.text.trim().startsWith('```')) {
+//             closingLine = j;
+//             break;
+//           }
+//           content.push(nextLine.text);
+//         }
+
+//         isBlockActive = activeLineNum >= i && activeLineNum <= closingLine;
+
+//         decos.push(
+//           Decoration.widget({
+//             widget: new FenchCodeWidget(text.replace('```', '').trim(), content.join('\n')),
+//             side: -1,
+//             block: false,
+//           }).range(line.from)
+//         );
+//       } else {
+//         isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;
+//       }
+
+//       decos.push(Decoration.line({ attributes: { class: 'cm-code-block-fence' } }).range(line.from));
+
+//       const isSelected = selFrom <= line.to && selTo >= line.from;
+//       if (!isBlockActive && !isSelected) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
+
+//       isInsideBlock = !isInsideBlock;
+//       continue;
+//     }
+
+//     if (isInsideBlock) decos.push(Decoration.line({ attributes: { class: 'cm-code-block-line' } }).range(line.from));
+//   }
+//   return decos;
+// }
 
 export function getTableDecos(state: EditorState, startLine: number) {
   const line = state.doc.line(startLine);

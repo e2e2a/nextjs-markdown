@@ -61,13 +61,12 @@ export function MarkdownSection({ node }: { node: INode }) {
     });
 
     provider.on('synced', () => {
-      console.log('☁️ Document fully synced');
       setSynced(true);
     });
 
-    provider.on('status', ({ status }: { status: string }) => {
-      console.log('🔌 Connection Status:', status);
-    });
+    // provider.on('status', ({ status }: { status: string }) => {
+    //   console.log('🔌 Connection Status:', status);
+    // });
 
     provider.connect();
     requestAnimationFrame(() => {
@@ -75,7 +74,6 @@ export function MarkdownSection({ node }: { node: INode }) {
     });
 
     return () => {
-      console.log('🧹 Destroying session for', node._id);
       provider.destroy();
       ydoc.destroy();
       setSynced(false);
@@ -100,6 +98,7 @@ export function MarkdownSection({ node }: { node: INode }) {
 
   const editorExtensions = useMemo(() => {
     if (!instance || !ytext || !undoManager) return [];
+
     return [
       onDocChange,
       tableBackspace,
@@ -124,10 +123,10 @@ export function MarkdownSection({ node }: { node: INode }) {
   return (
     <div className="h-full! grid grid-cols-1 max-h-full w-full px-5 overflow-y-auto overflow-hidden">
       <div className="w-full h-auto pb-4 flex flex-col">
-        {instance && ytext && (
+        {synced && instance && ytext && (
           <CodeMirror
-            // value={content}
             key={node._id}
+            value={instance?.ydoc.getText('codemirror').toString() ?? ''}
             onCreateEditor={view => {
               editorViewRef.current = view;
             }}

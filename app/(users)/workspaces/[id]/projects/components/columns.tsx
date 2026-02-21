@@ -18,20 +18,12 @@ export const columns: ColumnDef<IProject>[] = [
     enableHiding: true,
     header: ({ table }) => (
       <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
+        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={value => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label="Select row" />,
   },
 
   {
@@ -42,11 +34,7 @@ export const columns: ColumnDef<IProject>[] = [
     accessorKey: 'title',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          className="px-0! hover:bg-transparent!"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
+        <Button variant="ghost" className="px-0! hover:bg-transparent!" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Project Name
           <ArrowUpDown />
         </Button>
@@ -74,10 +62,7 @@ export const columns: ColumnDef<IProject>[] = [
       const project = row.original;
       const value = row.getValue('Users');
       return (
-        <Link
-          href={`/workspace/${project.workspaceId}/access/users`}
-          className="text-blue-500 hover:underline"
-        >
+        <Link href={`/workspaces/${project.workspaceId}/access/users`} className="text-blue-500 hover:underline">
           {value as string}
         </Link>
       );
@@ -98,11 +83,7 @@ export const columns: ColumnDef<IProject>[] = [
     id: 'createdAt',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          className="px-0! hover:bg-transparent!"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
+        <Button variant="ghost" className="px-0! hover:bg-transparent!" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           createdAt
           <ArrowUpDown />
         </Button>

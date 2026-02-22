@@ -1,18 +1,15 @@
 import connectDb from '@/lib/db/connection';
-import { HttpError } from '@/utils/server/errors';
 import { handleError } from '@/lib/server/handleError';
-import { tokenService } from '@/modules/tokens/token.service';
 import { NextRequest, NextResponse } from 'next/server';
+import { tokenController } from '@/modules/tokens/token.controller';
 
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
     await connectDb();
+    const body = await req.json();
 
-    const token = await tokenService.resendCode(body.token);
-    if (!token) throw new HttpError('NOT_FOUND', 'Invalid Token.');
-
-    return NextResponse.json({ success: true, message: 'Email Resend successfully.', token: body.token }, { status: 201 });
+    const res = await tokenController.resendCode(body.token);
+    return NextResponse.json(res, { status: 201 });
   } catch (err) {
     return handleError(err);
   }

@@ -1,8 +1,7 @@
 import connectDb from '@/lib/db/connection';
-import { HttpError } from '@/utils/server/errors';
 import { handleError } from '@/lib/server/handleError';
-import { tokenService } from '@/modules/tokens/token.service';
 import { NextRequest, NextResponse } from 'next/server';
+import { tokenController } from '@/modules/tokens/token.controller';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,9 +9,8 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const tokenParam = searchParams.get('token') as string;
 
-    const token = await tokenService.getToken(tokenParam);
-    if (!token) throw new HttpError('NOT_FOUND', 'No Token Found.');
-    return NextResponse.json({ expiresCode: token.expiresCode, email: token.email });
+    const res = await tokenController.getToken(tokenParam);
+    return NextResponse.json(res ?? null, { status: 200 });
   } catch (err) {
     return handleError(err);
   }

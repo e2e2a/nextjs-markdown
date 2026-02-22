@@ -46,7 +46,8 @@ export const tokenService = {
     if (!tokenDoc) throw new HttpError('NOT_FOUND', 'Invalid or expired token.');
     if (tokenDoc.expires < new Date()) throw new HttpError('GONE', 'Token has expired.');
 
-    return tokenDoc;
+    // return tokenDoc;
+    return { expiresCode: tokenDoc.expiresCode, email: tokenDoc.email };
   },
 
   resendCode: async (token: string) => {
@@ -62,6 +63,6 @@ export const tokenService = {
     await rateLimitService.checkLimit('sendEmail', tokenDoc.email);
     await tokenDoc.save();
 
-    return { token: tokenDoc.token, email: tokenDoc.email, code, type: tokenDoc.type };
+    return { message: 'Email Resend successfully.', token: tokenDoc.token, email: tokenDoc.email, code, type: tokenDoc.type };
   },
 };

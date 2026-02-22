@@ -1,4 +1,4 @@
-import { nodeClient } from '@/lib/api/nodeClient';
+import { nodeClient } from '@/lib/client/api/nodeClient';
 import { useQuery } from '@tanstack/react-query';
 
 export function useNodesProjectIdQuery(projectId: string) {

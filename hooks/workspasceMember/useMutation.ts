@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { workspaceMemberClient } from '@/lib/api/workspaceMemberClient';
+import { workspaceMemberClient } from '@/lib/client/api/workspaceMemberClient';
 
 export function useWorkspaceMemberMutations() {
   const queryClient = useQueryClient();
@@ -14,8 +14,7 @@ export function useWorkspaceMemberMutations() {
   });
 
   const update = useMutation({
-    mutationFn: (data: { wid: string; mid: string; role: 'editor' | 'owner' | 'viewer' }) =>
-      workspaceMemberClient.update(data),
+    mutationFn: (data: { wid: string; mid: string; role: 'editor' | 'owner' | 'viewer' }) => workspaceMemberClient.update(data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['workspaceMembers', variables.wid] });
       queryClient.invalidateQueries({ queryKey: ['userWorkspaces'] });

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { projectClient } from '@/lib/api/projectClient';
+import { projectClient } from '@/lib/client/api/projectClient';
 
 export function useProjectMutations() {
   const queryClient = useQueryClient();
@@ -30,8 +30,7 @@ export function useProjectMutations() {
   });
 
   const move = useMutation({
-    mutationFn: (data: { wid: string; currentwid: string; pid: string }) =>
-      projectClient.move(data),
+    mutationFn: (data: { wid: string; currentwid: string; pid: string }) => projectClient.move(data),
     onSuccess: (_data, variables) => {
       if (!variables) return;
       queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', variables.wid] });
@@ -43,8 +42,7 @@ export function useProjectMutations() {
   const handleDelete = useMutation({
     mutationFn: (data: { pid: string }) => projectClient.delete(data),
     onSuccess: data => {
-      if (data && data.workspaceId)
-        queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
+      if (data && data.workspaceId) queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', data.workspaceId] });
       return;
     },
   });

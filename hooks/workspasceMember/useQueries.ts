@@ -1,4 +1,4 @@
-import { workspaceMemberClient } from '@/lib/api/workspaceMemberClient';
+import { workspaceMemberClient } from '@/lib/client/api/workspaceMemberClient';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetMembersInWorkspace(workspaceId: string) {

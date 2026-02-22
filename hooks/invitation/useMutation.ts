@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invitationClient } from '@/lib/api/invitationClient';
+import { invitationClient } from '@/lib/client/api/invitationClient';
 
 export function useInvitationMutations() {
   const queryClient = useQueryClient();

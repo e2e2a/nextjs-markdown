@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { tokenClient } from '@/lib/api/tokenClient';
+import { tokenClient } from '@/lib/client/api/tokenClient';
 
 export function useTokenQueryByToken(token: string) {
   return useQuery({

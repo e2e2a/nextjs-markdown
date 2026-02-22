@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { userClient } from '@/lib/api/userClient';
+import { userClient } from '@/lib/client/api/userClient';
 import { IOnboard } from '@/types';
 
 export function useUserMutations() {

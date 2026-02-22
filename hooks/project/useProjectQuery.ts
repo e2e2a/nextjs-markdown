@@ -1,4 +1,4 @@
-import { projectClient } from '@/lib/api/projectClient';
+import { projectClient } from '@/lib/client/api/projectClient';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetProjectsByWorkspaceId(workspaceId: string) {

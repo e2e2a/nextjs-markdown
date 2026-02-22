@@ -1,4 +1,4 @@
-import { userClient } from '@/lib/api/userClient';
+import { userClient } from '@/lib/client/api/userClient';
 import { useQuery } from '@tanstack/react-query';
 
 export function useUserQuery(id: string) {

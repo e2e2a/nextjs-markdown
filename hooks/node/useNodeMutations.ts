@@ -1,4 +1,4 @@
-import { nodeClient } from '@/lib/api/nodeClient';
+import { nodeClient } from '@/lib/client/api/nodeClient';
 import { INode } from '@/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 

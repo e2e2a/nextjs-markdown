@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { tokenClient } from '@/lib/api/tokenClient';
+import { tokenClient } from '@/lib/client/api/tokenClient';
 
 export function useTokenMutations() {
   const queryClient = useQueryClient();
@@ -7,8 +7,7 @@ export function useTokenMutations() {
   const resendCode = useMutation({
     mutationFn: tokenClient.resendCode,
     onSuccess: data => {
-      if (data && data.token)
-        queryClient.invalidateQueries({ queryKey: ['tokenByToken', data.token] });
+      if (data && data.token) queryClient.invalidateQueries({ queryKey: ['tokenByToken', data.token] });
       return;
     },
   });

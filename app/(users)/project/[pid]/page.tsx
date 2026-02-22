@@ -1,12 +1,8 @@
-import { projectClient } from '@/lib/api/projectClient';
+import { projectClient } from '@/lib/client/api/projectClient';
 import { ProjectSingleClient } from './components/ProjectSingleClient';
 import { headers } from 'next/headers';
 
-export const generateMetadata = async ({
-  params,
-}: {
-  params: { pid: string } | Promise<{ pid: string }>;
-}) => {
+export const generateMetadata = async ({ params }: { params: { pid: string } | Promise<{ pid: string }> }) => {
   const resolvedParams = await params;
   const projectId = resolvedParams.pid;
   const headersList = await headers();

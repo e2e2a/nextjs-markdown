@@ -24,7 +24,7 @@ export const userServices = {
 
       if (!user) throw new HttpError('NOT_FOUND', 'No user found.');
       // if (user.isOnboard) throw new HttpError('CONFLICT', 'You are already onboarded.');
-      console.log('result3.data', result3.data);
+
       const workspace = await workspaceRepository.store({
         ...result3.data,
         ownerUserId: authUser._id!.toString(),
@@ -36,5 +36,11 @@ export const userServices = {
       });
       return { workspaceId: workspace._id };
     });
+  },
+
+  getCurrentUser: async (authUser: User) => {
+    const user = await userRepository.findUser(authUser._id as string, true);
+    if (!user) throw new HttpError('NOT_FOUND', 'No User Found');
+    return user;
   },
 };

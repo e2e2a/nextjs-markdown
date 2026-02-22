@@ -6,7 +6,11 @@ export const userController = {
   onboard: async (body: IOnboard) => {
     const session = await ensureAuthenticated();
 
-    const res = await userServices.onboard(body, session.user);
-    return res;
+    return await userServices.onboard(body, session.user);
+  },
+
+  getCurrentUser: async () => {
+    const session = await ensureAuthenticated();
+    return await userServices.getCurrentUser(session.user);
   },
 };

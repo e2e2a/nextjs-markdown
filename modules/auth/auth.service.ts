@@ -1,9 +1,6 @@
 import { compareText, hashText } from '@/lib/bcrypt';
 import { HttpError } from '@/utils/server/errors';
-import { loginSchema } from '@/lib/validators/login';
-import { validateRegisterSchema } from '@/lib/validators/register';
 import { userRepository } from '@/modules/users/user.repository';
-import { AuthUser } from '@/types';
 import nodemailer from 'nodemailer';
 import { verificationTemplate } from '@/components/email-template/verification-code';
 import { tokenRepository } from '@/modules/tokens/token.repository';
@@ -30,35 +27,30 @@ const sendEmail = async (email: string, subject: string, type: 'EmailVerificatio
 
 export const authServices = {
   login: async (data: { email: string; password: string }) => {
-    const result = loginSchema.safeParse(data);
-    if (!result.success) throw new HttpError('BAD_INPUT', 'Invalid fields');
-
     await rateLimitService.checkLimit('login', data.email);
 
-    const user = await userRepository.findUserByEmail(result.data.email, false);
+    const user = await userRepository.findUserByEmail(data.email, false);
     if (!user) throw new HttpError('CONFLICT', 'Email has not been yet registered');
     if (!user.password) throw new HttpError('CONFLICT', 'Account is linked to another provider');
     if (!user.email_verified) throw new HttpError('BAD_INPUT', 'Email is not verified');
 
-    const verify = await compareText(result.data.password, user.password);
+    const verify = await compareText(data.password, user.password);
     if (!verify) throw new HttpError('BAD_INPUT', 'Invalid Credentials');
 
     return user;
   },
 
-  register: async (data: AuthUser) => {
-    const result = validateRegisterSchema.safeParse(data);
-    if (!result.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
+  register: async (data: { email: string; password: string }) => {
     let user = null;
-    user = await userRepository.findUserByEmail(result.data.email, false);
-    const hashedPassword = await hashText(result.data.password);
+    user = await userRepository.findUserByEmail(data.email, false);
+    const hashedPassword = await hashText(data.password);
     if (user) {
       if (user.email_verified) throw new HttpError('CONFLICT', 'Email already exists in this level');
       user.password = hashedPassword;
       await user.save();
     } else {
       user = await userRepository.create({
-        email: result.data.email,
+        email: data.email,
         password: hashedPassword,
       });
     }

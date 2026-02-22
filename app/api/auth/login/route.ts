@@ -1,15 +1,15 @@
 import connectDb from '@/lib/db/connection';
 import { handleError } from '@/lib/handleError';
-import { authServices } from '@/modules/auth/auth.service';
+import { authController } from '@/modules/auth/auth.controller';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
     await connectDb();
-    const data = await req.json();
-    const res = await authServices.login(data as { email: string; password: string });
+    const body = await req.json();
+    const res = await authController.login(body);
 
-    return NextResponse.json({ token: res?.token || '', email: res.email });
+    return NextResponse.json(res, { status: 201 });
   } catch (err) {
     return handleError(err);
   }

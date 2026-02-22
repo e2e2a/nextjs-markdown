@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { HttpError } from '../utils/server/errors';
+import { HttpError } from '../../utils/server/errors';
 
 /**
  * Basic Guard: Just ensures the user is logged in.

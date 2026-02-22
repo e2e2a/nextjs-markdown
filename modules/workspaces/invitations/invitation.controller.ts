@@ -1,5 +1,5 @@
 import { invitationServices } from './invitation.service';
-import { ensureAuthenticated } from '@/lib/auth-utils';
+import { ensureAuthenticated } from '@/lib/server/auth-utils';
 import { IWorkspaceMemberCreateDTO } from '@/types';
 
 export const invitationController = {

@@ -1,4 +1,4 @@
-import { handleError } from '@/lib/handleError';
+import { handleError } from '@/lib/server/handleError';
 import { NextRequest } from 'next/server';
 import { workspaceController } from '@/modules/workspaces/workspace.controller';
 import { NextResponse } from 'next/server';

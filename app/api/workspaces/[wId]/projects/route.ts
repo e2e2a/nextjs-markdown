@@ -1,4 +1,4 @@
-import { handleError } from '@/lib/handleError';
+import { handleError } from '@/lib/server/handleError';
 import { NextRequest, NextResponse } from 'next/server';
 import { projectController } from '@/modules/projects/project.controller';
 import connectDb from '@/lib/db/connection';

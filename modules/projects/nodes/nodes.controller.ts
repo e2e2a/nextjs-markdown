@@ -1,7 +1,7 @@
 import { HttpError } from '@/utils/server/errors';
 import { nodeService } from './node.service';
 import { NodeDTO } from './node.dto';
-import { ensureAuthenticated } from '@/lib/auth-utils';
+import { ensureAuthenticated } from '@/lib/server/auth-utils';
 import { INode } from '@/types';
 
 export const nodeController = {

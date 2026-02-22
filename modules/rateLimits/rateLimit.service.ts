@@ -1,5 +1,5 @@
 import { HttpError } from '@/utils/server/errors';
-import { getHeaders } from '@/lib/getHeaders';
+import { getHeaders } from '@/lib/server/getHeaders';
 import { rateLimitRepository } from '@/modules/rateLimits/rateLimit.repository';
 import { CreateIRateLimitDTO, IRateLimit, IRateLimitType } from '@/types';
 

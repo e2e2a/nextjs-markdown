@@ -1,4 +1,4 @@
-import { ensureAuthenticated } from '@/lib/auth-utils';
+import { ensureAuthenticated } from '@/lib/server/auth-utils';
 import { workspaceService } from './workspace.service';
 import { NextRequest } from 'next/server';
 import { MembersSchema } from '@/lib/validators/workspaceMember';

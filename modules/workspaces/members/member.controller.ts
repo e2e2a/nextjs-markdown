@@ -1,4 +1,4 @@
-import { ensureAuthenticated } from '@/lib/auth-utils';
+import { ensureAuthenticated } from '@/lib/server/auth-utils';
 import { workspaceMemberService } from './member.service';
 import { HttpError } from '@/utils/server/errors';
 import { isValidMemberRole } from '@/utils/validators/workspace-member-roles';

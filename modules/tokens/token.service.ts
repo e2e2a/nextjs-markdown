@@ -3,7 +3,7 @@ import { generateRandomString } from '@/utils/server/generateRandomString';
 import jwt from 'jsonwebtoken';
 import { rateLimitService } from '../rateLimits/rateLimit.service';
 import { HttpError } from '@/utils/server/errors';
-import { hashText } from '@/lib/bcrypt';
+import { hashText } from '@/lib/server/bcrypt';
 
 export const tokenService = {
   generateToken: async (email: string, type: 'EmailVerification' | 'ChangeEmailVerification', emailToChange?: string) => {
@@ -43,15 +43,15 @@ export const tokenService = {
 
   getToken: async (token: string) => {
     const tokenDoc = await tokenRepository.getToken({ token });
-    if (!tokenDoc) throw new HttpError('Invalid or expired token.', 404);
-    if (tokenDoc.expires < new Date()) throw new HttpError('Token has expired.', 410);
+    if (!tokenDoc) throw new HttpError('NOT_FOUND', 'Invalid or expired token.');
+    if (tokenDoc.expires < new Date()) throw new HttpError('GONE', 'Token has expired.');
 
     return tokenDoc;
   },
 
   resendCode: async (token: string) => {
     const tokenDoc = await tokenRepository.getToken({ token });
-    if (!tokenDoc) throw new HttpError('Invalid token.', 404);
+    if (!tokenDoc) throw new HttpError('NOT_FOUND', 'Invalid token.');
     const now = new Date();
     const code = await generateRandomString();
     console.log('Resent code:', code);

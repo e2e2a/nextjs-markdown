@@ -1,4 +1,4 @@
-import { compareText, hashText } from '@/lib/bcrypt';
+import { compareText, hashText } from '@/lib/server/bcrypt';
 import { HttpError } from '@/utils/server/errors';
 import { userRepository } from '@/modules/users/user.repository';
 import nodemailer from 'nodemailer';

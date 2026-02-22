@@ -1,5 +1,5 @@
 import connectDb from '@/lib/db/connection';
-import { handleError } from '@/lib/handleError';
+import { handleError } from '@/lib/server/handleError';
 import { authController } from '@/modules/auth/auth.controller';
 import { NextRequest, NextResponse } from 'next/server';
 

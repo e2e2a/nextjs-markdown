@@ -1,12 +1,9 @@
-import { handleError } from '@/lib/handleError';
+import { handleError } from '@/lib/server/handleError';
 import { NextRequest, NextResponse } from 'next/server';
 import { workspaceMemberController } from '@/modules/workspaces/members/member.controller';
 import connectDb from '@/lib/db/connection';
 
-export async function PATCH(
-  req: NextRequest,
-  context: { params: Promise<{ wid: string; mid: string }> }
-) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ wid: string; mid: string }> }) {
   try {
     await connectDb();
     const { wid, mid } = await context.params;
@@ -19,10 +16,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  context: { params: Promise<{ wid: string; mid: string }> }
-) {
+export async function DELETE(_req: NextRequest, context: { params: Promise<{ wid: string; mid: string }> }) {
   try {
     await connectDb();
     const { wid, mid } = await context.params;

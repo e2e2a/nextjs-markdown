@@ -1,6 +1,6 @@
 import connectDb from '@/lib/db/connection';
 import { HttpError } from '@/utils/server/errors';
-import { handleError } from '@/lib/handleError';
+import { handleError } from '@/lib/server/handleError';
 import { projectService } from '@/modules/projects/project.service';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';

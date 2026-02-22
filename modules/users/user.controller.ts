@@ -1,4 +1,4 @@
-import { ensureAuthenticated } from '@/lib/auth-utils';
+import { ensureAuthenticated } from '@/lib/server/auth-utils';
 import { userServices } from './user.service';
 import { IOnboard } from '@/types';
 

@@ -14,6 +14,10 @@ export const workspaceMemberService = {
     }[]
   ) => {
     return await UnitOfWork.run(async () => {
+      // 1. CLEAN: Ensure no null/undefined elements are in the array
+      const docsToInsert = members.filter(m => m && typeof m === 'object' && Object.keys(m).length > 0);
+
+      if (docsToInsert.length === 0) return [];
       const existing = await workspaceMemberService.checkWorkspaceMemberExistence(members);
 
       let nonExisting = members;

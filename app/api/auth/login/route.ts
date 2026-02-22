@@ -1,6 +1,6 @@
 import connectDb from '@/lib/db/connection';
 import { handleError } from '@/lib/handleError';
-import { authServices } from '@/services/auth';
+import { authServices } from '@/modules/auth/auth.service';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {

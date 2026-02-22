@@ -4,11 +4,11 @@ import { loginSchema } from '@/lib/validators/login';
 import { validateRegisterSchema } from '@/lib/validators/register';
 import { userRepository } from '@/modules/users/user.repository';
 import { AuthUser } from '@/types';
-import { tokenService } from '../modules/tokens/token.service';
 import nodemailer from 'nodemailer';
 import { verificationTemplate } from '@/components/email-template/verification-code';
-import { rateLimitService } from '../modules/rateLimits/rateLimit.service';
 import { tokenRepository } from '@/modules/tokens/token.repository';
+import { rateLimitService } from '../rateLimits/rateLimit.service';
+import { tokenService } from '../tokens/token.service';
 
 const sendEmail = async (email: string, subject: string, type: 'EmailVerification' | 'ChangeEmailVerification', code: string) => {
   try {

@@ -154,9 +154,9 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
         decos.push(
           Decoration.widget({
             widget: new FenchCodeWidget(text.replace('```', '').trim(), content.join('\n')),
-            side: 1,
+            side: -1,
             block: false,
-          }).range(line.to)
+          }).range(line.from)
         );
       } else {
         isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;

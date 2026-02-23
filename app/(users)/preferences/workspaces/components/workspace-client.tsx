@@ -18,7 +18,7 @@ export const WorkspaceClient = () => {
     if (error) makeToastError(error.message);
   }, [error]);
 
-  if (status === 'loading' || isLoading) return;
+  if (status === 'loading') return;
 
   return (
     <SidebarInset className="flex flex-col h-full w-full">
@@ -30,7 +30,7 @@ export const WorkspaceClient = () => {
           </Link>
         </div>
         <div className="">
-          <DataTable columns={columns} data={(data?.workspaces || []) as IUserWorkspaces[]} />
+          <DataTable columns={columns} data={(data?.workspaces || []) as IUserWorkspaces[]} isLoading={isLoading} />
         </div>
       </main>
     </SidebarInset>

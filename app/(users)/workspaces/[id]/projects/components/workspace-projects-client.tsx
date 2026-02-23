@@ -14,18 +14,13 @@ export function WorkspaceProjectsClient() {
   const params = useParams();
   const workspaceId = params.id as string;
   const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
-  const { data, error } = useGetProjectsByWorkspaceId(workspaceId);
+  const { data, error, isLoading } = useGetProjectsByWorkspaceId(workspaceId);
   if (error) return notFound();
-
+  console.log('isLoading', isLoading);
   return (
     <SidebarInset className="flex flex-col h-screen w-full! overflow-hidden">
       <div className="px-3 py-4 w-full! flex-1 overflow-y-auto">
-        <div
-          className={cn(
-            'flex items-center',
-            mData?.permissions.canCreateProject ? 'justify-between' : ''
-          )}
-        >
+        <div className={cn('flex items-center', mData?.permissions.canCreateProject ? 'justify-between' : '')}>
           <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Projects</h1>
           {mData?.permissions.canCreateProject && (
             <Link href={`/workspaces/${workspaceId}/projects/create`}>
@@ -34,7 +29,7 @@ export function WorkspaceProjectsClient() {
           )}
         </div>
         <div className="w-full">
-          <DataTable columns={columns} data={(data || []) as IProject[]} />
+          <DataTable columns={columns} data={(data || []) as IProject[]} isLoading={isLoading} />
         </div>
       </div>
     </SidebarInset>

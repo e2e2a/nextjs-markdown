@@ -16,7 +16,7 @@ export function WorkspaceProjectsClient() {
   const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
   const { data, error, isLoading } = useGetProjectsByWorkspaceId(workspaceId);
   if (error) return notFound();
-  console.log('isLoading', isLoading);
+
   return (
     <SidebarInset className="flex flex-col h-screen w-full! overflow-hidden">
       <div className="px-3 py-4 w-full! flex-1 overflow-y-auto">

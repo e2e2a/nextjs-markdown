@@ -51,6 +51,7 @@ export function SidebarWrapper({ data, children, type }: IProps) {
         {
           '--sidebar-width': 'calc(var(--spacing) * 60)',
           '--header-height': 'calc(var(--spacing) * 0)',
+          transition: 'all 700ms cubic-bezier(0.4, 0, 0.2, 1)',
         } as React.CSSProperties
       }
       className="h-screen flex-1 flex flex-col"

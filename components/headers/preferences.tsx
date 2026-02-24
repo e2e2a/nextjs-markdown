@@ -1,14 +1,7 @@
 'use client';
 import { NavUser } from '../nav-user';
 import Image from 'next/image';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { usePathname } from 'next/navigation';
 import { INavItem } from '@/types';
 import { Menu } from 'lucide-react';
@@ -38,18 +31,11 @@ export function PreferencesHeader() {
   const active = findActiveSidebarItem(sidebarData, path);
   return (
     <header className="overflow-hidden">
-      <div className="flex px-2 justify-between h-10 shrink-0 items-center border-b transition-[width,height] ease-linear overflow-hidden">
+      <div className="flex px-2 justify-between h-10 shrink-0 items-center border-b transition-[width,height] ease-linear duration-500 overflow-hidden">
         {isMobile ? (
           <div className="">
             <Link href={'/preferences/workspaces'}>
-              <Image
-                alt="Project Logo"
-                src={'/images/logo.png'}
-                width={500}
-                height={500}
-                priority
-                className="w-9.5! h-8! rounded-sm"
-              />
+              <Image alt="Project Logo" src={'/images/logo.png'} width={500} height={500} priority className="w-9.5! h-8! rounded-sm" />
             </Link>
           </div>
         ) : (
@@ -58,21 +44,12 @@ export function PreferencesHeader() {
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink href="/preferences/workspaces">
-                    <Image
-                      alt="Project Logo"
-                      src={'/images/logo.png'}
-                      width={500}
-                      height={500}
-                      priority
-                      className="w-9.5! h-8! rounded-sm"
-                    />
+                    <Image alt="Project Logo" src={'/images/logo.png'} width={500} height={500} priority className="w-9.5! h-8! rounded-sm" />
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {active && active.itemTitle ? active.itemTitle : 'Not found'}
-                  </BreadcrumbPage>
+                  <BreadcrumbPage>{active && active.itemTitle ? active.itemTitle : 'Not found'}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -101,9 +78,7 @@ export function PreferencesHeader() {
             <Breadcrumb className="flex-1 min-w-0">
               <BreadcrumbList className="flex min-w-max gap-1 whitespace-nowrap">
                 <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {active && active.itemTitle ? active.itemTitle : 'Not found'}
-                  </BreadcrumbPage>
+                  <BreadcrumbPage>{active && active.itemTitle ? active.itemTitle : 'Not found'}</BreadcrumbPage>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator>/</BreadcrumbSeparator>
               </BreadcrumbList>

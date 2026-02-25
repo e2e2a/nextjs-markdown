@@ -27,9 +27,7 @@ export const WorkspaceCreateClient = () => {
   const { data: mData, isLoading, error: mError } = useGetMyWorkspaceMembership(workspaceId);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>(
-    []
-  );
+  const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>([]);
   const mutation = useProjectMutations();
   const router = useRouter();
   const form1 = useForm({
@@ -49,8 +47,7 @@ export const WorkspaceCreateClient = () => {
   const onSubmit = async () => {
     const valid = await form2.trigger();
     if (!valid) return;
-    if (session?.user.email === form2.getValues('email'))
-      return form2.setError('email', { message: `Can't invite yourself.` });
+    if (session?.user.email === form2.getValues('email')) return form2.setError('email', { message: `Can't invite yourself.` });
     const existMember = await members.find(mem => mem.email === form2.getValues('email'));
     if (existMember) return form2.setError('email', { message: 'This email is already a exist.' });
     const email = form2.getValues('email');
@@ -76,7 +73,7 @@ export const WorkspaceCreateClient = () => {
       mutation.create.mutate(payload, {
         onSuccess: data => {
           makeToastSucess('New Project Created');
-          return router.push(`/project/${data.project._id}`);
+          return router.push(`/projects/${data.project._id}`);
         },
         onError: err => {
           return makeToastError(err.message);
@@ -137,9 +134,7 @@ export const WorkspaceCreateClient = () => {
                 <div className=" gap-4">
                   <div>
                     <Label className="text-lg font-semibold">Name Your Project</Label>
-                    <span className="text-sm text-muted-foreground">
-                      Project names have to be unique within the workspace (and other restrictions).
-                    </span>
+                    <span className="text-sm text-muted-foreground">Project names have to be unique within the workspace (and other restrictions).</span>
                     <Input {...form1.register('title')} />
                     <p className="text-red-500 text-sm">{form1.formState.errors.title?.message}</p>
                   </div>
@@ -178,10 +173,7 @@ export const WorkspaceCreateClient = () => {
                   <div className="flex flex-col gap-y-4">
                     <Label className="text-lg font-semibold">Add Members and Set Permissions</Label>
                     <div className="flex gap-x-1">
-                      <Input
-                        {...form2.register('email')}
-                        placeholder="Invite new or existing user via email address..."
-                      />
+                      <Input {...form2.register('email')} placeholder="Invite new or existing user via email address..." />
                       <Button
                         type="button"
                         title="Send Invite"
@@ -202,12 +194,7 @@ export const WorkspaceCreateClient = () => {
                         <TableRow>
                           <TableCell>{session?.user.email}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="outline"
-                              disabled={true}
-                              type="button"
-                              className="w-[150px] justify-start capitalize"
-                            >
+                            <Button variant="outline" disabled={true} type="button" className="w-[150px] justify-start capitalize">
                               Owner
                             </Button>
                           </TableCell>
@@ -239,13 +226,7 @@ export const WorkspaceCreateClient = () => {
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant={'outline'}
-                    disabled={loading}
-                    onClick={() => setStep(1)}
-                    className="cursor-pointer"
-                  >
+                  <Button type="button" variant={'outline'} disabled={loading} onClick={() => setStep(1)} className="cursor-pointer">
                     Back
                   </Button>
                   <div className="space-x-2">

@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
 
   if (
     pathname.startsWith('/invite') ||
-    pathname.startsWith('/project') ||
+    pathname.startsWith('/projects') ||
     pathname.startsWith('/preferences/') ||
     pathname.startsWith('/workspaces') ||
     pathname.startsWith('/trash')
@@ -30,7 +30,7 @@ export const config = {
   runtime: 'nodejs',
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
-    '/project/:path*',
+    '/projects/:path*',
     '/invite/:path*',
     '/trash/:path*',
     '/workspace/:path*',

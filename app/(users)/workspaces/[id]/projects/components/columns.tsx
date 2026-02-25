@@ -62,7 +62,7 @@ export const columns: ColumnDef<IProject>[] = [
       const project = row.original;
       const value = row.getValue('Users');
       return (
-        <Link href={`/workspaces/${project.workspaceId}/access/users`} className="text-blue-500 hover:underline">
+        <Link href={`/projects/${project._id}/access/users`} className="text-blue-500 hover:underline">
           {value as string}
         </Link>
       );

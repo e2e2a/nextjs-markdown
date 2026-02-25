@@ -44,7 +44,7 @@ export const columns: ColumnDef<IProject>[] = [
       const project = row.original;
       const value = row.getValue('Project Name');
       return (
-        <Link href={`/project/${project._id}`} className="text-blue-500 hover:underline">
+        <Link href={`/projects/${project._id}`} className="text-blue-500 hover:underline">
           {value as string}
         </Link>
       );

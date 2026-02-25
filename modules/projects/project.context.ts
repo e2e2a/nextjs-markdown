@@ -1,11 +1,11 @@
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
-import { resolveWorkspacePermissions, WorkspacePermissions } from '@/utils/server/permissions';
+import { resolveProjectPermissions, ProjectPermissions } from '@/utils/server/permissions';
 import { HttpError } from '@/utils/server/errors';
 
-export interface WorkspaceContext {
+export interface ProjectContext {
   membership: object | null;
   role: string;
-  permissions: WorkspacePermissions;
+  permissions: ProjectPermissions;
   ownerCount: number;
   canLeave: boolean;
 }
@@ -13,7 +13,7 @@ export interface WorkspaceContext {
 /**
  * Builds the security and logic context for a specific user within a project.
  */
-export async function getProjectContext(projectId: string, email: string): Promise<WorkspaceContext> {
+export async function getProjectContext(projectId: string, email: string): Promise<ProjectContext> {
   const membership = await projectMemberRepository.findOne({
     projectId,
     email,
@@ -23,13 +23,13 @@ export async function getProjectContext(projectId: string, email: string): Promi
     return {
       membership: null,
       role: 'none',
-      permissions: resolveWorkspacePermissions('none'),
+      permissions: resolveProjectPermissions('none'),
       ownerCount: 0,
       canLeave: false,
     };
 
   // 3. Map the role to boolean capabilities
-  const permissions = resolveWorkspacePermissions(membership.role);
+  const permissions = resolveProjectPermissions(membership.role);
 
   return {
     membership: membership,
@@ -46,7 +46,7 @@ export async function getProjectContext(projectId: string, email: string): Promi
  */
 export async function ensureProjectMember(pid: string, email: string) {
   const context = await getProjectContext(pid, email);
-  if (!context.membership) throw new HttpError('FORBIDDEN', 'You are not a member of this workspace');
+  if (!context.membership) throw new HttpError('FORBIDDEN', 'You are not a member of this project');
   return context;
 }
 

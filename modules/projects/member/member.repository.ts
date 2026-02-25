@@ -1,6 +1,7 @@
 import { UnitOfWork } from '@/common/UnitOfWork';
+import { addLookup } from '@/lib/helpers/aggregationHelpers';
 import ProjectMember from '@/modules/projects/member/member.model';
-import mongoose from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 const updateOptions = { new: true, runValidators: true };
 
 export const projectMemberRepository = {
@@ -83,5 +84,65 @@ export const projectMemberRepository = {
   updateMany: async (dataToFind: { workspaceId: string; projectId: string }, updateData: { workspaceId: string; role: 'owner' | 'editor' | 'viewer' }) => {
     const session = UnitOfWork.getSession();
     return await ProjectMember.updateMany(dataToFind, { $set: updateData }, { ...updateOptions, session });
+  },
+
+  findMembers: async (data: { projectId: string; workspaceId: string; emails?: string[] }) => {
+    const pipeline: PipelineStage[] = [];
+    pipeline.push({
+      $match: {
+        projectId: new mongoose.Types.ObjectId(data.projectId),
+        workspaceId: new mongoose.Types.ObjectId(data.workspaceId),
+        ...(data.emails && data.emails.length > 0 ? { email: { $in: data.emails } } : {}),
+      },
+    });
+    pipeline.push({ $addFields: { originalEmail: '$email' } });
+    addLookup(pipeline, 'email', 'email', 'users', false);
+
+    pipeline.push({
+      // look up to the workspaceMember to know the status
+      $lookup: {
+        from: 'workspacemembers',
+        // IMPORTANT: Use originalEmail (string), not email (object)
+        let: { pEmail: '$originalEmail', pWid: '$workspaceId' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [{ $eq: ['$email', '$$pEmail'] }, { $eq: ['$workspaceId', '$$pWid'] }],
+              },
+            },
+          },
+          { $project: { status: 1, _id: 0 } },
+        ],
+        as: 'wsMember',
+      },
+    });
+
+    pipeline.push({
+      $unwind: { path: '$wsMember', preserveNullAndEmptyArrays: true },
+    });
+    pipeline.push({
+      $addFields: {
+        email: '$originalEmail',
+        status: '$wsMember.status',
+        user: {
+          $cond: [
+            { $ifNull: ['$email._id', false] },
+            {
+              _id: '$email._id',
+              family_name: '$email.family_name',
+              given_name: '$email.given_name',
+              email: '$email.email',
+              last_login: '$email.last_login',
+            },
+            null,
+          ],
+        },
+      },
+    });
+    pipeline.push({ $project: { originalEmail: 0, wsMember: 0, 'email.password': 0 } });
+
+    const result = await ProjectMember.aggregate(pipeline);
+    return result ?? [];
   },
 };

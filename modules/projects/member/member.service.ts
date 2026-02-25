@@ -1,6 +1,9 @@
 import { HttpError } from '@/utils/server/errors';
 import { projectMemberRepository } from '@/modules/projects/member/member.repository';
 import { UnitOfWork } from '@/common/UnitOfWork';
+import { ensureWorkspaceMember } from '@/modules/workspaces/workspace.context';
+import { ensureProjectMember } from '../project.context';
+import { projectRepository } from '../project.repository';
 
 export const projectMemberService = {
   store: async (
@@ -53,4 +56,15 @@ export const projectMemberService = {
   },
 
   addOwner: (data: { projectId: string; workspaceId: string; email: string }) => projectMemberRepository.create({ ...data, role: 'owner' }),
+
+  getMemberships: async (data: { projectId: string; email: string }) => {
+    const { email, projectId } = data;
+    const project = await projectRepository.findOne({ _id: projectId });
+    await Promise.all([
+      ensureWorkspaceMember(project.workspaceId, email), // wCtx
+      ensureProjectMember(project._id, email), // pCtx
+    ]);
+    const members = await projectMemberRepository.findMembers({ ...data, workspaceId: project.workspaceId });
+    return members;
+  },
 };

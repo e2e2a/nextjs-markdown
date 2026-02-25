@@ -18,35 +18,22 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
     enableHiding: true,
     header: ({ table }) => (
       <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
+        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={value => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label="Select row" />,
   },
   {
     id: 'Display Name',
     size: 10,
     minSize: 10,
     maxSize: 40,
-    accessorFn: row =>
-      row.status === 'accepted' ? `${row.user.given_name} ${row.user.family_name}` : '',
+    accessorFn: row => (row.status === 'accepted' ? `${row.user.given_name} ${row.user.family_name}` : ''),
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          className="px-0!"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
+        <Button variant="ghost" className="px-0!" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Display Name
           <ArrowUpDown />
         </Button>
@@ -75,11 +62,7 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
     accessorKey: 'email',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          className="px-0! hover:bg-transparent!"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
+        <Button variant="ghost" className="px-0! hover:bg-transparent!" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Email
           <ArrowUpDown />
         </Button>
@@ -98,22 +81,12 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
     },
   },
   {
-    id: 'Projects',
-    accessorKey: 'projects',
-    enableHiding: true,
-    header: 'Projects',
-  },
-  {
     accessorKey: 'user.last_login',
     id: 'Last Login',
     enableHiding: true,
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          className="px-0!"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
+        <Button variant="ghost" className="px-0!" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Last Login Date
           <ArrowUpDown />
         </Button>
@@ -133,11 +106,7 @@ export const columns: ColumnDef<IWorkspaceMember>[] = [
     enableHiding: true,
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          className="px-0!"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
+        <Button variant="ghost" className="px-0!" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           invitedAt
           <ArrowUpDown />
         </Button>

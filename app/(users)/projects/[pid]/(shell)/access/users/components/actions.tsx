@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Table } from '@tanstack/react-table';
 import { useParams } from 'next/navigation';
 import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
+import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 
 interface IProps {
   item: IWorkspaceMember;
@@ -15,15 +16,16 @@ export function Actions({ item, table }: IProps) {
   const meta = table.options.meta as TableMeta;
   const { setEditingMemberId } = meta;
   const params = useParams();
-  const workspaceId = params.id as string;
+  const projectId = params.pid as string;
+  const { data: pData, isLoading: pLoading } = useProjectByIdQuery(projectId);
 
-  const { data: mData, isLoading: mLoading } = useGetMyWorkspaceMembership(workspaceId);
-  if (mLoading) return;
+  const { data: mData, isLoading: mLoading } = useGetMyWorkspaceMembership(pData?.project?.workspaceId);
+  if (mLoading || pLoading) return;
 
   return (
     <div className="inline-grid grid-flow-col auto-cols-max gap-x-1.5 items-end justify-end">
       <div className="w-8.5">
-        {item.status === 'accepted' && mData.permissions.canEditMember && (
+        {item.status === 'accepted' && mData?.permissions.canEditMember && (
           <Button
             size={'sm'}
             variant={'outline'}
@@ -38,7 +40,7 @@ export function Actions({ item, table }: IProps) {
       </div>
 
       <div className="w-8.5">
-        <TrashDialog item={item} workspaceId={workspaceId} />
+        <TrashDialog item={item} workspaceId={pData?.project?.workspaceId} />
       </div>
     </div>
   );

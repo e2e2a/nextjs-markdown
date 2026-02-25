@@ -34,3 +34,28 @@ export const resolveWorkspacePermissions = (role?: string): WorkspacePermissions
     canDeleteProject: role === 'owner',
   };
 };
+
+export type ProjectPermissions = {
+  canEditNode: boolean;
+
+  canCreateNode: boolean;
+
+  canMoveNode: boolean;
+
+  canDeleteNode: boolean;
+};
+
+/**
+ * The "Single Source of Truth" for what roles are allowed to do.
+ */
+export const resolveProjectPermissions = (role?: string): ProjectPermissions => {
+  return {
+    canEditNode: role === 'owner' || role === 'editor',
+
+    canCreateNode: role === 'owner' || role === 'editor',
+
+    canMoveNode: role === 'owner' || role === 'editor',
+
+    canDeleteNode: role === 'owner' || role === 'editor',
+  };
+};

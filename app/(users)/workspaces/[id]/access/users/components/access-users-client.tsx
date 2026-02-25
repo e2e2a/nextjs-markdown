@@ -12,9 +12,18 @@ import { cn } from '@/lib/utils';
 export function AccessUsersClient() {
   const params = useParams();
   const workspaceId = params.id as string;
-  const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
+  const { data: mData, isLoading: mLoading } = useGetMyWorkspaceMembership(workspaceId);
   const { data, isLoading, error } = useGetMembersInWorkspace(workspaceId);
+
   if (error) return notFound();
+  if (mLoading)
+    return (
+      <div className="fixed inset-0 z-200 bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-sm text-muted-foreground">Loading Project...</p>
+        </div>
+      </div>
+    );
 
   return (
     <SidebarInset className="flex flex-col h-full w-full">

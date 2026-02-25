@@ -23,22 +23,20 @@ interface IProps {
   workspaceId: string;
 }
 
-function RemoveContent({ item }: { item: IWorkspaceMember }) {
+function RemoveMemberContent({ item }: { item: IWorkspaceMember }) {
   return (
     <AlertDialogDescription className="text-start">
-      This action cannot be undone. This will permanently delete the project{' '}
-      <span className="font-bold">{item.email}</span>, including all associated tasks, files, and
-      data. All team members will immediately lose access.
-    </AlertDialogDescription>
-  );
-}
-
-function DeleteContent({ item }: { item: IWorkspaceMember }) {
-  return (
-    <AlertDialogDescription className="text-start">
-      This action cannot be undone. This will permanently delete the project{' '}
-      <span className="font-bold">{item.email}</span>, including all associated tasks, files, and
-      data. All team members will immediately lose access.
+      {item.user ? (
+        <>
+          This action cannot be undone. This will remove <span className="font-bold">{item.email}</span> from this project. They will immediately lose
+          access to all files and data.
+        </>
+      ) : (
+        <>
+          This action cannot be undone. This will cancel the invitation for <span className="font-bold">{item.email}</span>. They will not be able to join
+          the project unless invited again.
+        </>
+      )}
     </AlertDialogDescription>
   );
 }
@@ -47,13 +45,7 @@ export default function TrashDialog({ item, workspaceId }: IProps) {
   const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const isLastOwner = item.role === 'owner' && (mData?.ownerCount || 0) <= 1;
-
-  const [canTrash] = useState(
-    item.status === 'accepted'
-      ? !!mData?.permissions.canDeleteMember && !isLastOwner
-      : !!mData?.permissions.canDeleteInvite
-  );
+  const canTrash = mData?.permissions?.canDeleteProjectInvite;
 
   const memberMutation = useWorkspaceMemberMutations();
   const invitationMutation = useInvitationMutations();
@@ -107,18 +99,12 @@ export default function TrashDialog({ item, workspaceId }: IProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <Tooltip>
-        <AlertDialogTrigger
-          className={'w-auto'}
-          disabled={!canTrash}
-          onClick={() => setIsOpen(true)}
-        >
+        <AlertDialogTrigger className={'w-auto'} disabled={!canTrash} onClick={() => setIsOpen(true)}>
           <TooltipTrigger asChild>
             <span tabIndex={0}>
               <div
                 className={`${
-                  !canTrash
-                    ? 'opacity-50 cursor-not-allowed bg-secondary border-border rounded-md'
-                    : 'action-button'
+                  !canTrash ? 'opacity-50 cursor-not-allowed bg-secondary border-border rounded-md' : 'action-button'
                 } w-full items-center flex size-4 px-2 gap-1.5 h-8`}
               >
                 <Trash className="h-4 w-4" />
@@ -128,8 +114,8 @@ export default function TrashDialog({ item, workspaceId }: IProps) {
         </AlertDialogTrigger>
         <TooltipContent side="top">
           {!canTrash && 'You do not have permission'}
-          {canTrash && item.status === 'accepted' && 'You are about to delete the user.'}
-          {canTrash && item.status !== 'accepted' && 'You are about to delete the user invitation.'}
+          {canTrash && item.status === 'accepted' && 'You are about to remove the user.'}
+          {canTrash && item.status !== 'accepted' && 'You are about to remove the user invitation.'}
         </TooltipContent>
       </Tooltip>
       <AlertDialogContent className="flex sm:flex-row gap-x-1 flex-col rounded-md">
@@ -141,21 +127,16 @@ export default function TrashDialog({ item, workspaceId }: IProps) {
         <div className="flex flex-col">
           <AlertDialogHeader className="gap-y-3">
             <AlertDialogTitle className="sm:text-xl text-start font-bold">
-              Are you sure you want to delete the user{item.user ? '' : ' invite'}?
+              Are you sure you want to remove the user{item.user ? '' : ' invitation'}?
             </AlertDialogTitle>
-            {item.user ? <RemoveContent item={item} /> : <DeleteContent item={item} />}
+            <RemoveMemberContent item={item} />
           </AlertDialogHeader>
           <span className="my-3">Are you sure you wish to proceed?</span>
           <AlertDialogFooter className="mt-5">
             <AlertDialogCancel type="button" className="cursor-pointer">
               Cancel
             </AlertDialogCancel>
-            <Button
-              className="bg-red-500 hover:bg-red-500/90 cursor-pointer"
-              disabled={loading}
-              onClick={onSubmit}
-              type="submit"
-            >
+            <Button className="bg-red-500 hover:bg-red-500/90 cursor-pointer" disabled={loading} onClick={onSubmit} type="submit">
               Continue
             </Button>
           </AlertDialogFooter>

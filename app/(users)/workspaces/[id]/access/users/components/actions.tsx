@@ -23,7 +23,7 @@ export function Actions({ item, table }: IProps) {
   return (
     <div className="inline-grid grid-flow-col auto-cols-max gap-x-1.5 items-end justify-end">
       <div className="w-8.5">
-        {item.status === 'accepted' && mData.permissions.canEditMember && (
+        {item.status === 'accepted' && mData?.permissions?.canEditMember && (
           <Button
             size={'sm'}
             variant={'outline'}

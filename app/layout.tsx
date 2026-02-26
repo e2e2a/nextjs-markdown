@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Merriweather, Roboto } from 'next/font/google';
+import { DM_Sans, IBM_Plex_Mono, Merriweather, Roboto } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/provider/query-provider';
 import { Toaster } from 'react-hot-toast';
@@ -11,10 +11,17 @@ const roboto = Roboto({
   subsets: ['latin'],
 });
 
+const ibm = IBM_Plex_Mono({
+  variable: '--font-IBM',
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+});
+
 const merriweather = Merriweather({
   variable: '--font-merriweather',
   subsets: ['latin'],
 });
+
 const dm_sans = DM_Sans({
   variable: '--font-dm-sans',
   subsets: ['latin'],
@@ -35,9 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${roboto.variable} ${merriweather.variable} ${dm_sans.variable} antialiased`}
-      >
+      <body className={`${roboto.variable} ${merriweather.variable} ${dm_sans.variable} ${ibm.variable} antialiased`}>
         <SessionProviderWrapper>
           <Providers>
             <SessionGuard>

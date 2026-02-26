@@ -122,7 +122,7 @@ export const TabsHeader = ({ pid }: TabsHeaderProps) => {
           />
         );
       })}
-      <div className="flex-1 w-full h-full border-b border-border" />
+      <div className="flex-1 w-full h-full drop-shadow-xl shadow-xl" />
     </header>
   );
 };

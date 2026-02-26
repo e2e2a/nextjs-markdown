@@ -122,8 +122,29 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
   }, [instance, ytext, onDocChange, undoManager]);
 
   return (
-    <div className="h-full! grid grid-cols-1 max-h-full w-full px-5 overflow-y-auto overflow-hidden">
-      <div className="w-full h-auto pb-4 flex flex-col">
+    <div className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative editor-scrollbar">
+      <div
+        className="w-full h-auto pb-4 flex flex-col"
+        onMouseDown={e => {
+          const target = e.target as HTMLElement;
+
+          if (target.classList.contains('cm-scroller')) {
+            e.preventDefault();
+
+            const view = editorViewRef.current;
+            if (!view) return;
+
+            view.focus();
+            const endPos = view.state.doc.length;
+
+            view.dispatch({
+              selection: { anchor: endPos, head: endPos },
+              scrollIntoView: true,
+              userEvent: 'select',
+            });
+          }
+        }}
+      >
         {synced && instance && ytext && (
           <CodeMirror
             key={node._id}

@@ -218,10 +218,10 @@ body {
 
   *::-webkit-scrollbar-thumb {
     background: var(--sb-thumb-color);
-    border-radius: 3px;
+    /* border-radius: 3px; */
   }
 
-  *::-webkit-scrollbar-button:single-button:vertical:decrement {
+  /* *::-webkit-scrollbar-button:single-button:vertical:decrement {
     background: var(--sb-track-color)
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><polygon points="4,0 0,6 8,6" fill="white"/></svg>')
       no-repeat center center;
@@ -243,6 +243,42 @@ body {
     background: var(--sb-track-color)
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><polygon points="2,0 2,8 8,4" fill="white"/></svg>')
       no-repeat center center;
+  } */
+  /* Target the handle when it's just sitting there */
+  .editor-scrollbar::-webkit-scrollbar-track {
+    margin-top: 56px; /* Offset scrollbar handle by header height (h-14) */
+  }
+
+  .custom-resize-handle {
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+  }
+
+  .custom-resize-handle[data-panel-resize-handle-hover],
+  .custom-resize-handle[data-active],
+  .custom-resize-handle:hover,
+  .custom-resize-handle[data-resize-handle-state='drag'] {
+    background-color: var(--primary) !important;
+  }
+
+  [data-slot='resizable-handle']::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    /* We extend the hit area 4px to the left and 4px to the right */
+    left: -1px !important;
+    right: -1.5px !important;
+
+    width: auto !important;
+    cursor: col-resize !important;
+    pointer-events: auto;
+    z-index: 10;
+  }
+
+  .is-dragging-panels,
+  .is-dragging-panels * {
+    cursor: col-resize !important;
   }
 
   .CodeMirror-scroll {
@@ -258,7 +294,9 @@ body {
     height: auto !important;
     overflow: visible !important;
     min-height: 290px !important;
+    @apply pt-16 cursor-text w-full;
   }
+
   .cm-content::selection,
   .cm-content *::selection {
     background-color: var(--primary) !important;

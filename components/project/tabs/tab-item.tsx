@@ -40,11 +40,11 @@ export const TabItem = ({ tab, isActive, draggedTabId, isDropBefore, pid, onDrag
     >
       <div
         className={cn(
-          'group relative inline-flex select-none items-center h-10 px-3 min-w-[120px] max-w-[200px] border-r cursor-pointer transition-colors',
+          'group relative inline-flex select-none items-center h-12 px-3 min-w-[120px] max-w-[200px] border-r cursor-pointer transition-colors',
           isActive ? 'bg-background text-foreground' : 'bg-muted/40 text-muted-foreground hover:bg-muted/80'
         )}
       >
-        {isActive && <div className="absolute top-0 left-0 right-0 h-[2px] bg-blue-500 " />}
+        {isActive && <div className="absolute top-0 left-0 right-0 h-[2px]" />}
 
         {isDropBefore && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-blue-500 z-50" />}
 

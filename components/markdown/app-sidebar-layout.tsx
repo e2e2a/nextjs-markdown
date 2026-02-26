@@ -36,16 +36,15 @@ const MainContentArea = memo(function MainContentArea({ children, RightSidebarRe
 
   return (
     <AppContent variant="sidebar" className="text-muted-foreground h-screen overflow-hidden">
-      <div className="flex flex-col h-full w-full">
-        <div className="h-10 bg-sidebar flex">
+      <div className="flex flex-col h-full w-full gap-1">
+        <div className="h-12 bg-sidebar flex">
           <TabsHeader pid={pid} />
-          <div className="w-fit h-10 flex items-center border-b px-1">
-            <Button type="button" variant={'ghost'} onClick={toggleRightSidebar} className=" w-5 h-5 cursor-pointer ">
-              {isRightCollapsed ? <PanelRightOpenIcon className="w-4 h-4" /> : <PanelRightCloseIcon className="w-4 h-4" />}
+          <div className="w-fit h-12 flex items-center px-1">
+            <Button type="button" variant={'ghost'} onClick={toggleRightSidebar} className="w-8 h-8 cursor-pointer ">
+              {isRightCollapsed ? <PanelRightOpenIcon className="w-6! h-6!" /> : <PanelRightCloseIcon className="w-6! h-6!" />}
             </Button>
           </div>
         </div>
-
         <div className="flex-1 min-h-0 w-full overflow-hidden">{children}</div>
       </div>
     </AppContent>
@@ -110,7 +109,7 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
       <ResizablePanelGroup
         direction="horizontal"
         autoSaveId="sidebar-layout"
-        className="overflow-y-hidden rounded-none bg-white"
+        className="overflow-y-hidden rounded-none bg-white font-(family-name:--font-IBM)"
         onMouseDownCapture={e => {
           const target = e.target as HTMLElement;
           if (target.closest('[data-sidebar-node]')) return;
@@ -137,7 +136,18 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           <AppSidebar projectData={pData?.project} />
         </ResizablePanel>
 
-        <ResizableHandle withHandle={isLeftCollapsed} />
+        <ResizableHandle
+          hitAreaMargins={{ coarse: 1, fine: 1 }}
+          onDragging={isDragging => {
+            if (isDragging) {
+              document.documentElement.classList.add('is-dragging-panels');
+            } else {
+              document.documentElement.classList.remove('is-dragging-panels');
+            }
+          }}
+          className="p-0 w-px custom-resize-handle group relative "
+          withHandle={isLeftCollapsed}
+        />
 
         <ResizablePanel className="flex-1 h-full max-h-full p-0" minSize={8} defaultSize={60}>
           <MainContentArea RightSidebarRef={RightSidebarRef} isRightCollapsed={isRightCollapsed}>
@@ -145,7 +155,19 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           </MainContentArea>
         </ResizablePanel>
 
-        <ResizableHandle className="p-0" hitAreaMargins={{ coarse: 20, fine: 10 }} withHandle={isRightCollapsed} />
+        <div className=" w-px p-px bg-background! " />
+        <ResizableHandle
+          hitAreaMargins={{ coarse: 1, fine: 1 }}
+          onDragging={isDragging => {
+            if (isDragging) {
+              document.documentElement.classList.add('is-dragging-panels');
+            } else {
+              document.documentElement.classList.remove('is-dragging-panels');
+            }
+          }}
+          className="p-0 w-px custom-resize-handle group relative "
+          withHandle={isRightCollapsed}
+        />
 
         <ResizablePanel
           ref={RightSidebarRef}

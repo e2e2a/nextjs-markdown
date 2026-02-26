@@ -17,10 +17,10 @@ export const projectMemberService = {
     }
   ) => {
     return await UnitOfWork.run(async () => {
-      const res = await projectService.findById(pid);
-      if (!res || !res.project) throw new HttpError('NOT_FOUND', 'Project Not found');
-      await ensureWorkspaceMember(res.project.workspaceId, user.email);
-      const baseMemberData = { projectId: res.project._id.toString(), workspaceId: res.project.workspaceId };
+      const project = await projectService.findById(pid);
+      await ensureWorkspaceMember(project.workspaceId, user.email);
+
+      const baseMemberData = { projectId: project._id.toString(), workspaceId: project.workspaceId };
       if (data.members && data.members.length > 0) {
         const workspaceMembersDataToCreate = data.members.map(member => ({
           ...member,

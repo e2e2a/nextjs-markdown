@@ -117,14 +117,14 @@ export const nodeService = {
       title: string;
     }
   ) => {
-    const resP = await projectService.findById(data.projectId);
+    const project = await projectService.findById(data.projectId);
     await Promise.all([
-      ensureWorkspaceMember(resP.project.workspaceId, email), // wCtx
-      ensureProjectMember(resP.project._id, email), // pCtx
+      ensureWorkspaceMember(project.workspaceId, email), // wCtx
+      ensureProjectMember(project._id, email), // pCtx
     ]);
     await checkNodeExistence(data);
     return await UnitOfWork.run(async () => {
-      return await nodeRepository.create({ ...data, workspaceId: resP.project.workspaceId });
+      return await nodeRepository.create({ ...data, workspaceId: project.workspaceId });
     });
   },
 

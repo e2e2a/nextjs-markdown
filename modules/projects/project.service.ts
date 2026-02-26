@@ -126,7 +126,7 @@ export const projectService = {
     const project = await projectRepository.findOne({ _id });
     if (!project) throw new HttpError('NOT_FOUND', 'Project not found');
 
-    return { project };
+    return project;
   },
 
   findByIdWithAccess: async (email: string, _id: string) => {

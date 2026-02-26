@@ -11,7 +11,7 @@ import { sidebarData } from '@/data/sidebar/preferences/workspace';
 
 export function findActiveSidebarItem(sidebarData: INavItem[], path: string) {
   for (const section of sidebarData) {
-    const item = section.items.find(item => path === item.url || path.startsWith(item.url + '/'));
+    const item = section?.items?.find(item => path === item.url || path.startsWith(item.url + '/'));
 
     if (item) {
       return {

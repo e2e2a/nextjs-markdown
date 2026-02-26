@@ -6,7 +6,7 @@ import { SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButto
 import { INavItem } from '@/types';
 import Link from 'next/link';
 import * as LucideIcons from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 interface IProps {
@@ -22,10 +22,14 @@ const iconMap: { [key: string]: IconComponentType } = LucideIcons as unknown as 
 export function AppSidebarSection({ item, initialLink }: IProps) {
   const IconComponent = iconMap[item?.icon];
   const pathname = usePathname();
-
+  const router = useRouter();
   if (!item.items || item.items.length <= 0)
     return (
-      <SidebarMenuButton asChild className={cn(pathname.endsWith(`${item.url}`) && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
+      <SidebarMenuButton
+        asChild
+        onClick={() => router.push(`${initialLink}${item.url}`)}
+        className={cn(pathname.endsWith(`${item.url}`) && 'bg-sidebar-accent text-sidebar-accent-foreground')}
+      >
         <div className="">
           {IconComponent && <IconComponent className="cursor-pointer!" />}
           <Link href={`${initialLink}${item.url}`} className="font-normal">

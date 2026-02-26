@@ -7,11 +7,11 @@ import { INavItem } from '@/types';
 import { Menu } from 'lucide-react';
 import { useSidebar } from '../ui/sidebar';
 import Link from 'next/link';
-import { sidebarData } from '@/data/sidebar/workspace';
+import { sidebarData } from '@/data/sidebar/project';
 
-function findActiveSidebarItem(sidebarData: INavItem[], path: string, wid: string) {
+function findActiveSidebarItem(sidebarData: INavItem[], path: string, pid: string) {
   for (const section of sidebarData) {
-    const url = `/workspaces/${wid}`;
+    const url = `/projects/${pid}`;
     const item = section?.items?.find(item => path === url + item.url || path.startsWith(url + item.url + '/'));
 
     if (item) {
@@ -26,12 +26,12 @@ function findActiveSidebarItem(sidebarData: INavItem[], path: string, wid: strin
   return null;
 }
 
-export function WorkspacesHeader() {
+export function ProjectsHeader() {
   const { toggleSidebar, isMobile } = useSidebar();
   const path = usePathname();
   const params = useParams();
-  const workspaceId = params.id as string;
-  const active = findActiveSidebarItem(sidebarData, path, workspaceId);
+  const projectId = params.pid as string;
+  const active = findActiveSidebarItem(sidebarData, path, projectId);
 
   return (
     <header className="overflow-hidden">

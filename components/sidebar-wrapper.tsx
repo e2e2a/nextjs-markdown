@@ -7,11 +7,12 @@ import { notFound, useParams } from 'next/navigation';
 import { PreferencesHeader } from './headers/preferences';
 import { WorkspacesHeader } from './headers/workspaces';
 import { useGetMembersInWorkspace } from '@/hooks/workspasceMember/useQueries';
+import { ProjectsHeader } from './headers/projects';
 
 type IProps = {
   data: INavItem[];
   children: React.ReactNode;
-  type: 'workspaces' | 'preferences';
+  type: 'workspaces' | 'preferences' | 'projects';
 };
 
 export function SidebarWrapper({ data, children, type }: IProps) {
@@ -29,7 +30,7 @@ export function SidebarWrapper({ data, children, type }: IProps) {
     case 'preferences':
       initialLink = '';
       break;
-    case 'preferences':
+    case 'projects':
       initialLink = `/projects/${pid}`;
       break;
     default:
@@ -63,6 +64,7 @@ export function SidebarWrapper({ data, children, type }: IProps) {
     >
       {type === 'preferences' && <PreferencesHeader />}
       {type === 'workspaces' && <WorkspacesHeader />}
+      {type === 'projects' && <ProjectsHeader />}
 
       <div className="flex flex-1 overflow-hidden">
         <AppSidebar data={data} initialLink={initialLink} collapsible="icon" variant="sidebar" />

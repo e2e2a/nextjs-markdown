@@ -7,7 +7,7 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarWrapper data={sidebarData} type={'preferences'}>
+    <SidebarWrapper data={sidebarData} type={'projects'}>
       {children}
     </SidebarWrapper>
   );

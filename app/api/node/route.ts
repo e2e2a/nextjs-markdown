@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const res = await nodeController.create(body);
 
-    return NextResponse.json(res, { status: 201 });
+    return NextResponse.json(res ?? null, { status: 201 });
   } catch (err) {
     return handleError(err);
   }

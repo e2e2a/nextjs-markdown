@@ -17,19 +17,19 @@ import { notFound, redirect, useParams, useRouter } from 'next/navigation';
 import { makeToastError } from '@/lib/toast';
 import Link from 'next/link';
 import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
-import { useInvitationMutations } from '@/hooks/invitation/useMutation';
 import { cn } from '@/lib/utils';
+import { useProjectMemberMutations } from '@/hooks/projectMember/useMutations';
+import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 
 export const InviteUserClient = () => {
   const { data: session, status } = useSession();
   const params = useParams();
-  const workspaceId = params.id as string;
-  const { data: mData, isLoading, error: mError } = useGetMyWorkspaceMembership(workspaceId);
+  const projectId = params.pid as string;
+  const { data: pData, isLoading: pLoading, error: pError } = useProjectByIdQuery(projectId);
+  const { data: mData, isLoading, error: mError } = useGetMyWorkspaceMembership(pData?.project?.workspaceId);
   const [loading, setLoading] = useState(false);
-  const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>(
-    []
-  );
-  const mutation = useInvitationMutations();
+  const [members, setMembers] = useState<{ email: string; role: 'owner' | 'editor' | 'viewer' }[]>([]);
+  const mutation = useProjectMemberMutations();
   const router = useRouter();
 
   const form = useForm({
@@ -42,8 +42,7 @@ export const InviteUserClient = () => {
   const onSubmit = async () => {
     const valid = await form.trigger();
     if (!valid) return;
-    if (session?.user.email === form.getValues('email'))
-      return form.setError('email', { message: `Can't invite yourself.` });
+    if (session?.user.email === form.getValues('email')) return form.setError('email', { message: `Can't invite yourself.` });
     const existMember = await members.find(mem => mem.email === form.getValues('email'));
     if (existMember) return form.setError('email', { message: 'This email is already a exist.' });
     const email = form.getValues('email');
@@ -55,13 +54,13 @@ export const InviteUserClient = () => {
     if (members.length <= 0) return makeToastError('No members to be invited.');
     setLoading(true);
     const payload = {
-      workspaceId,
+      projectId,
       members,
     };
 
     mutation.create.mutate(payload, {
       onSuccess: () => {
-        return router.push(`/workspaces/${workspaceId}/access/users`);
+        return router.push(`/projects/${projectId}/access/users`);
       },
       onError: err => {
         return makeToastError(err.message);
@@ -76,22 +75,21 @@ export const InviteUserClient = () => {
     name: 'email',
   });
   if (status === 'loading') return;
-  if (isLoading) return;
-  if (!mData?.membership || !mData?.permissions.canInvite || mError) return notFound();
+  if (isLoading || pLoading) return;
+
+  if (!mData?.membership || !mData?.permissions.canInvite || mError || pError) return notFound();
 
   return (
     <SidebarInset className="flex flex-col items-center h-full w-full overflow-y-auto">
       <div className="px-3 py-4 w-full flex-1 max-w-2xl">
         <div className="">
-          <Link href={`/workspaces/${workspaceId}/access/users`}>
+          <Link href={`/workspaces/${pData?.project?.workspaceId}/access/users`}>
             <Button variant={'link'} className="px-0! cursor-pointer text-blue-500">
               <ArrowLeft />
               Go back to Users
             </Button>
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">
-            Invite to Workspace
-          </h1>
+          <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Invite to Project</h1>
         </div>
         <div className="flex flex-col gap-y-2 max-w-2xl mt-5">
           <div className="">
@@ -108,14 +106,9 @@ export const InviteUserClient = () => {
             >
               <div className="flex flex-col text-sm space-y-4">
                 <div className="flex flex-col gap-y-4">
-                  <Label className="text-lg font-semibold">
-                    Add new users to your organization below.
-                  </Label>
+                  <Label className="text-lg font-semibold">Add new users to your organization below.</Label>
                   <div className="flex gap-x-1">
-                    <Input
-                      {...form.register('email')}
-                      placeholder="Invite new or existing user via email address..."
-                    />
+                    <Input {...form.register('email')} placeholder="Invite new or existing user via email address..." />
                     <Button
                       type="button"
                       variant={'outline'}
@@ -157,9 +150,7 @@ export const InviteUserClient = () => {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell className="col-span-3 text-center w-full text-muted-foreground">
-                            No members added yet.
-                          </TableCell>
+                          <TableCell className="col-span-3 text-center w-full text-muted-foreground">No members added yet.</TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -173,17 +164,13 @@ export const InviteUserClient = () => {
                     variant={'outline'}
                     disabled={loading}
                     onClick={() => {
-                      redirect(`/workspaces/${workspaceId}/access/users`);
+                      redirect(`/workspaces/${pData?.project?.workspaceId}/access/users`);
                     }}
                     className="text-end bg-secondary text-foreground cursor-pointer"
                   >
                     Cancel
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading || members.length <= 0}
-                    className="text-end cursor-pointer"
-                  >
+                  <Button type="submit" disabled={loading || members.length <= 0} className="text-end cursor-pointer">
                     Invite Members
                   </Button>
                 </div>

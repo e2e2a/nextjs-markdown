@@ -4,6 +4,7 @@ import { projectService } from '../project.service';
 import { ensureWorkspaceMember } from '@/modules/workspaces/workspace.context';
 import { ensureProjectMember } from '../project.context';
 import { HttpError } from '@/utils/server/errors';
+import { UnitOfWork } from '@/common/UnitOfWork';
 
 interface FlatNode {
   _id: ObjectId;
@@ -116,9 +117,15 @@ export const nodeService = {
       title: string;
     }
   ) => {
-    const resP = await projectService.findProject(email, data.projectId);
+    const resP = await projectService.findById(data.projectId);
+    await Promise.all([
+      ensureWorkspaceMember(resP.project.workspaceId, email), // wCtx
+      ensureProjectMember(resP.project._id, email), // pCtx
+    ]);
     await checkNodeExistence(data);
-    return await nodeRepository.create({ ...data, workspaceId: resP.project.workspaceId });
+    return await UnitOfWork.run(async () => {
+      return await nodeRepository.create({ ...data, workspaceId: resP.project.workspaceId });
+    });
   },
 
   restore: async (
@@ -135,7 +142,7 @@ export const nodeService = {
     const { projectId, workspaceId } = data[0];
 
     await Promise.all([ensureWorkspaceMember(workspaceId, email), ensureProjectMember(projectId, email)]);
-    const resP = await projectService.findProject(email, projectId);
+    const resP = await projectService.findById(projectId);
 
     for (const node of data) {
       if (node.projectId !== projectId) throw new HttpError('BAD_INPUT', 'All nodes must belong to the same project');

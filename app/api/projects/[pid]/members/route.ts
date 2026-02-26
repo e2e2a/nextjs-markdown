@@ -13,3 +13,14 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ pid: s
     return handleError(err);
   }
 }
+
+export async function POST(req: NextRequest, context: { params: Promise<{ pid: string }> }) {
+  try {
+    await connectDb();
+    const { pid } = await context.params;
+    const res = await projectMemberController.create(req, pid);
+    return NextResponse.json(res, { status: 201 });
+  } catch (err) {
+    return handleError(err);
+  }
+}

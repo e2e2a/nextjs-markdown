@@ -65,7 +65,7 @@ export const projectController = {
   getProject: async (pid: string | null) => {
     const session = await ensureAuthenticated();
     if (!pid) throw new HttpError('BAD_INPUT');
-    const project = await projectService.findProject(session.user.email, pid);
+    const project = await projectService.findByIdWithAccess(session.user.email, pid);
     return project;
   },
 };

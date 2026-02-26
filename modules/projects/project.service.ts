@@ -122,14 +122,20 @@ export const projectService = {
     return project;
   },
 
-  findProject: async (email: string, _id: string) => {
+  findById: async (_id: string) => {
     const project = await projectRepository.findOne({ _id });
     if (!project) throw new HttpError('NOT_FOUND', 'Project not found');
-    await Promise.all([
-      ensureWorkspaceMember(project.workspaceId, email), // wCtx
-      ensureProjectMember(project._id, email), // pCtx
-    ]);
+
     return { project };
+  },
+
+  findByIdWithAccess: async (email: string, _id: string) => {
+    const res = await projectService.findById(_id);
+    await Promise.all([
+      ensureWorkspaceMember(res.project.workspaceId, email), // wCtx
+      ensureProjectMember(res.project._id, email), // pCtx
+    ]);
+    return { project: res.project };
   },
 
   pushNode: async (id: string, data: ProjectPushNodeDTO) => {

@@ -34,8 +34,7 @@ export const nodeController = {
       throw new HttpError('BAD_INPUT', errorMessage);
     }
 
-    const node = await nodeService.create(session.user.email, validatedBody.data);
-    return node;
+    return await nodeService.create(session.user.email, validatedBody.data);
   },
 
   restore: async (rawBody: { nodes: INode[] }) => {

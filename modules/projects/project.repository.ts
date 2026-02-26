@@ -36,15 +36,11 @@ export const projectRepository = {
     return res;
   },
 
-  findOne: (data: { _id: string }) => Project.findById(data),
+  findOne: (data: { _id: string }) => Project.findOne(data),
 
-  // findProject: (data:{_id}) => Project.findOne(id),
+  findProjectByIdAndUserId: (data: { _id: string; userId: string }) => Project.findOne(data).populate('nodes').lean<IProject>(),
 
-  findProjectByIdAndUserId: (data: { _id: string; userId: string }) =>
-    Project.findOne(data).populate('nodes').lean<IProject>(),
-
-  findProjectByTitle: (workspaceId: string, title: string) =>
-    Project.findOne({ workspaceId, title }, { collation: { locale: 'en', strength: 2 } }),
+  findProjectByTitle: (workspaceId: string, title: string) => Project.findOne({ workspaceId, title }, { collation: { locale: 'en', strength: 2 } }),
 
   findProjectsByUserId: (userId: string) =>
     Project.find({ userId, 'archived.isArchived': false }).populate({
@@ -59,48 +55,26 @@ export const projectRepository = {
   },
 
   pushNode(id: string, data: ProjectPushNodeDTO): Promise<IProject | null> {
-    return Project.findByIdAndUpdate(
-      id,
-      { ...(data.nodes ? { $push: { nodes: { $each: data.nodes } } } : {}) },
-      updateOptions
-    )
+    return Project.findByIdAndUpdate(id, { ...(data.nodes ? { $push: { nodes: { $each: data.nodes } } } : {}) }, updateOptions)
       .lean<IProject>()
       .exec();
   },
 
-  pullNode(
-    dataToFind: { _id: string; userId: string },
-    data: { nodes: string[] }
-  ): Promise<IProject | null> {
-    return Project.findOneAndUpdate(
-      dataToFind,
-      { ...(data.nodes ? { $pull: { nodes: { $in: data.nodes } } } : {}) },
-      updateOptions
-    )
+  pullNode(dataToFind: { _id: string; userId: string }, data: { nodes: string[] }): Promise<IProject | null> {
+    return Project.findOneAndUpdate(dataToFind, { ...(data.nodes ? { $pull: { nodes: { $in: data.nodes } } } : {}) }, updateOptions)
       .lean<IProject>()
       .exec();
   },
 
-  updateOne: async (
-    dataToFind: { _id: string; workspaceId?: string },
-    dataToUpdate: { title?: string; workspaceId?: string }
-  ) => {
+  updateOne: async (dataToFind: { _id: string; workspaceId?: string }, dataToUpdate: { title?: string; workspaceId?: string }) => {
     const session = UnitOfWork.getSession();
-    return await Project.findOneAndUpdate(
-      dataToFind,
-      { $set: dataToUpdate },
-      { ...updateOptions, session }
-    )
+    return await Project.findOneAndUpdate(dataToFind, { $set: dataToUpdate }, { ...updateOptions, session })
       .lean<IProject>()
       .exec();
   },
 
   archiveById(projectId: string, data: Partial<IProject>): Promise<IProject | null> {
-    return Project.findByIdAndUpdate(
-      projectId,
-      { $set: { archived: data.archived } },
-      updateOptions
-    )
+    return Project.findByIdAndUpdate(projectId, { $set: { archived: data.archived } }, updateOptions)
       .lean<IProject>()
       .exec();
   },
@@ -123,8 +97,6 @@ export const projectRepository = {
   },
 
   findArchivedProjectsByUserId(userId: string) {
-    return Project.find({ userId, 'archived.isArchived': true })
-      .populate('archived.archivedBy')
-      .exec();
+    return Project.find({ userId, 'archived.isArchived': true }).populate('archived.archivedBy').exec();
   },
 };

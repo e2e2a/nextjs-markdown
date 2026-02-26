@@ -4,8 +4,43 @@ import { UnitOfWork } from '@/common/UnitOfWork';
 import { ensureWorkspaceMember } from '@/modules/workspaces/workspace.context';
 import { ensureProjectMember } from '../project.context';
 import { projectRepository } from '../project.repository';
+import { User } from 'next-auth';
+import { projectService } from '../project.service';
+import { workspaceMemberService } from '@/modules/workspaces/members/member.service';
 
 export const projectMemberService = {
+  addMembers: async (
+    user: User,
+    pid: string,
+    data: {
+      members?: { email: string; role: 'owner' | 'editor' | 'viewer' }[];
+    }
+  ) => {
+    return await UnitOfWork.run(async () => {
+      const res = await projectService.findById(pid);
+      if (!res || !res.project) throw new HttpError('NOT_FOUND', 'Project Not found');
+      await ensureWorkspaceMember(res.project.workspaceId, user.email);
+      const baseMemberData = { projectId: res.project._id.toString(), workspaceId: res.project.workspaceId };
+      if (data.members && data.members.length > 0) {
+        const workspaceMembersDataToCreate = data.members.map(member => ({
+          ...member,
+          ...baseMemberData,
+          status: 'pending' as const,
+          invitedBy: user.email,
+          role: 'viewer' as const,
+        }));
+        const projectMembersDataToCreate = data.members.map(member => ({
+          ...member,
+          ...baseMemberData,
+        }));
+        await workspaceMemberService.store(workspaceMembersDataToCreate);
+        await projectMemberService.store(projectMembersDataToCreate);
+      }
+
+      return true;
+    });
+  },
+
   store: async (
     members: {
       role: 'owner' | 'editor' | 'viewer';

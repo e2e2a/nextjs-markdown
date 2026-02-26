@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, memo } from 'react';
+import React, { useEffect, useRef, memo, useState } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { AppContent } from './app-content';
@@ -12,16 +12,38 @@ import { notFound, useParams } from 'next/navigation';
 import { TabsHeader } from '../project/tabs/tab-header';
 import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
+import { Button } from '../ui/button';
+import { PanelRightCloseIcon, PanelRightOpenIcon } from 'lucide-react';
+interface MainContentAreaProps {
+  children: React.ReactNode;
+  RightSidebarRef: React.RefObject<ImperativePanelHandle | null>;
+  isRightCollapsed: boolean;
+}
 
-const MainContentArea = memo(function MainContentArea({ children }: { children: React.ReactNode }) {
+const MainContentArea = memo(function MainContentArea({ children, RightSidebarRef, isRightCollapsed }: MainContentAreaProps) {
   const params = useParams();
   const pid = params.pid as string;
+
+  const toggleRightSidebar = () => {
+    const panel = RightSidebarRef.current;
+    if (!panel) return;
+    if (panel.isCollapsed()) {
+      panel.expand();
+    } else {
+      panel.collapse();
+    }
+  };
 
   return (
     <AppContent variant="sidebar" className="text-muted-foreground h-screen overflow-hidden">
       <div className="flex flex-col h-full w-full">
-        <div className="h-10 bg-sidebar">
+        <div className="h-10 bg-sidebar flex">
           <TabsHeader pid={pid} />
+          <div className="w-fit h-10 flex items-center border-b px-1">
+            <Button type="button" variant={'ghost'} onClick={toggleRightSidebar} className=" w-5 h-5 cursor-pointer ">
+              {isRightCollapsed ? <PanelRightOpenIcon className="w-4 h-4" /> : <PanelRightCloseIcon className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 w-full overflow-hidden">{children}</div>
@@ -44,6 +66,7 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
   const { data: pData, isLoading: pLoading, error: pError } = useProjectByIdQuery(pid);
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
   const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode, clearHistory } = useNodeStore();
+  const [isRightCollapsed, setIsRightCollapsed] = useState(false);
   const { setNodes } = useNodeStore();
 
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
@@ -115,7 +138,9 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
 
         <ResizablePanel className="flex-1 h-full max-h-full p-0" minSize={8} defaultSize={60}>
           {/* These components are now frozen during DND updates */}
-          <MainContentArea>{children}</MainContentArea>
+          <MainContentArea RightSidebarRef={RightSidebarRef} isRightCollapsed={isRightCollapsed}>
+            {children}
+          </MainContentArea>
         </ResizablePanel>
 
         <ResizableHandle />
@@ -125,6 +150,8 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           minSize={16}
           defaultSize={20}
           collapsible
+          onCollapse={() => setIsRightCollapsed(true)}
+          onExpand={() => setIsRightCollapsed(false)}
           onResize={size => {
             if (size <= 1 && RightSidebarRef.current) RightSidebarRef.current.collapse();
           }}

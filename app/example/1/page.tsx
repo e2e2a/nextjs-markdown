@@ -51,20 +51,14 @@ export default function DraggableButtons() {
               console.log('Targeting:', item.id);
             }}
             onDragOver={allowDrop} // ✅ CRITICAL FIX
-            className={cn(
-              'relative w-full border-b border-amber-600/30 last:border-b-0',
-              activeDragId === item.id ? 'bg-amber-400/50' : 'bg-transparent'
-            )}
+            className={cn('relative w-full border-b border-amber-600/30 last:border-b-0', activeDragId === item.id ? 'bg-amber-400/50' : 'bg-transparent')}
           >
             <Button
               draggable
               onDragStart={e => handleDragStart(e, item.id)}
               onDragEnd={handleDragEnd}
               variant="ghost"
-              className={cn(
-                'w-full justify-start rounded-none h-12 m-0 border-none',
-                activeDragId !== null ? '[&>*]:pointer-events-none' : ''
-              )}
+              className={cn('w-full justify-start rounded-none h-12 m-0 border-none', activeDragId !== null ? '[&>*]:pointer-events-none' : '')}
               style={{
                 opacity: activeDragId === item.id ? 0.5 : 1,
               }}

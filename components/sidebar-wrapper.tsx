@@ -18,6 +18,7 @@ export function SidebarWrapper({ data, children, type }: IProps) {
   const [isMounted, setIsMounted] = useState(false);
   const params = useParams();
   const id = params?.id as string;
+  const pid = params?.pid as string;
   const { data: mData, isLoading: mLoading, error: mError } = useGetMembersInWorkspace(id);
 
   let initialLink = '';
@@ -27,6 +28,9 @@ export function SidebarWrapper({ data, children, type }: IProps) {
       break;
     case 'preferences':
       initialLink = '';
+      break;
+    case 'preferences':
+      initialLink = `/projects/${pid}`;
       break;
     default:
       initialLink = '';

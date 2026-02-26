@@ -1,10 +1,5 @@
 import { IProject } from '@/types';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EditProjectAction } from './edit-project-action';
@@ -12,6 +7,7 @@ import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries
 import { useState } from 'react';
 import { makeToastSucess } from '@/lib/toast';
 import { MoveProjectAction } from './move-project-action';
+import { useRouter } from 'next/navigation';
 
 interface IProps {
   item: IProject;
@@ -21,6 +17,7 @@ interface IProps {
 const DropdownActions = ({ item, workspaceId }: IProps) => {
   const { data: mData } = useGetMyWorkspaceMembership(workspaceId);
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger>
@@ -40,14 +37,20 @@ const DropdownActions = ({ item, workspaceId }: IProps) => {
         >
           Copy Project ID
         </Button>
+        <Button
+          variant={'ghost'}
+          className="w-full justify-start px-2 font-normal cursor-pointer"
+          onClick={() => {
+            router.push(`/projects/${item._id}/settings`);
+          }}
+        >
+          Visit Project Settings
+        </Button>
         {mData?.permissions.canEditProject && <EditProjectAction item={item} />}
         {mData?.permissions.canMoveProject && <MoveProjectAction item={item} />}
 
         <DropdownMenuSeparator />
-        <Button
-          variant={'ghost'}
-          className="w-full text-destructive-text font-bold hover:text-destructive justify-start px-2 cursor-pointer"
-        >
+        <Button variant={'ghost'} className="w-full text-destructive-text font-bold hover:text-destructive justify-start px-2 cursor-pointer">
           Leave Project
         </Button>
       </DropdownMenuContent>

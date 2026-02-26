@@ -1,5 +1,5 @@
 import { SidebarWrapper } from '@/components/sidebar-wrapper';
-import { sidebarData } from '@/data/sidebar/workspace';
+import { sidebarData } from '@/data/sidebar/project';
 
 export default async function Layout({
   children,

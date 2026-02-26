@@ -217,7 +217,8 @@ export interface ISectionItem {
 export interface INavItem {
   title: string;
   icon?: Icon;
-  items: ISectionItem[];
+  items?: ISectionItem[];
+  url?: string;
 }
 
 export interface INav {

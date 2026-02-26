@@ -2,17 +2,12 @@
 import React from 'react';
 import { Triangle } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from './ui/sidebar';
+import { SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from './ui/sidebar';
 import { INavItem } from '@/types';
 import Link from 'next/link';
 import * as LucideIcons from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 interface IProps {
   item: INavItem;
@@ -27,6 +22,16 @@ const iconMap: { [key: string]: IconComponentType } = LucideIcons as unknown as 
 export function AppSidebarSection({ item, initialLink }: IProps) {
   const IconComponent = iconMap[item?.icon];
   const pathname = usePathname();
+
+  if (!item.items || item.items.length <= 0)
+    return (
+      <SidebarMenuButton className={cn(pathname.endsWith(`${item.url}`) && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
+        {IconComponent && <IconComponent />}
+        <Link href={`${initialLink}${item.url}`} className="font-normal">
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+    );
 
   return (
     <Collapsible key={item.title} asChild defaultOpen={true} className="group/collapsible">

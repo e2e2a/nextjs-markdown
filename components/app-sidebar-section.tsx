@@ -25,11 +25,13 @@ export function AppSidebarSection({ item, initialLink }: IProps) {
 
   if (!item.items || item.items.length <= 0)
     return (
-      <SidebarMenuButton className={cn(pathname.endsWith(`${item.url}`) && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
-        {IconComponent && <IconComponent />}
-        <Link href={`${initialLink}${item.url}`} className="font-normal">
-          <span>{item.title}</span>
-        </Link>
+      <SidebarMenuButton asChild className={cn(pathname.endsWith(`${item.url}`) && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
+        <div className="">
+          {IconComponent && <IconComponent className="cursor-pointer!" />}
+          <Link href={`${initialLink}${item.url}`} className="font-normal">
+            <span>{item.title}</span>
+          </Link>
+        </div>
       </SidebarMenuButton>
     );
 

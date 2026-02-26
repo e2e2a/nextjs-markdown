@@ -15,13 +15,13 @@ export const sidebarData = [
     items: [
       {
         title: 'Activity Feed',
-        url: '#',
+        url: '/activity',
       },
     ],
   },
   {
     title: 'Settings',
     icon: 'Settings',
-    url: '#',
+    url: '/settings',
   },
 ];

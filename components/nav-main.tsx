@@ -15,7 +15,7 @@ export function NavMain({ items, initialLink }: NavMainProps) {
       <SidebarGroupContent className="flex flex-col gap-2 w-full">
         <SidebarMenu>
           {items.map((item, idx) => (
-            <div className="" key={idx}>
+            <div className="cursor-pointer" key={idx}>
               <AppSidebarSection initialLink={initialLink} item={item} />
               {idx + 1 !== items.length && <Separator className="" />}
             </div>

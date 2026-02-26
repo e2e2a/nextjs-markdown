@@ -130,12 +130,12 @@ export const projectService = {
   },
 
   findByIdWithAccess: async (email: string, _id: string) => {
-    const res = await projectService.findById(_id);
+    const project = await projectService.findById(_id);
     await Promise.all([
-      ensureWorkspaceMember(res.project.workspaceId, email), // wCtx
-      ensureProjectMember(res.project._id, email), // pCtx
+      ensureWorkspaceMember(project.workspaceId, email), // wCtx
+      ensureProjectMember(project._id, email), // pCtx
     ]);
-    return { project: res.project };
+    return { project };
   },
 
   pushNode: async (id: string, data: ProjectPushNodeDTO) => {

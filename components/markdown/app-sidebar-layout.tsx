@@ -67,6 +67,7 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
   const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode, clearHistory } = useNodeStore();
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const { setNodes } = useNodeStore();
 
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
@@ -126,6 +127,8 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           collapsedSize={0}
           defaultSize={20}
           collapsible
+          onCollapse={() => setIsLeftCollapsed(true)}
+          onExpand={() => setIsLeftCollapsed(false)}
           onResize={size => {
             if (size <= 4 && LeftSidebarRef.current) LeftSidebarRef.current.collapse();
           }}
@@ -134,16 +137,15 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           <AppSidebar projectData={pData?.project} />
         </ResizablePanel>
 
-        <ResizableHandle className="p-0" />
+        <ResizableHandle withHandle={isLeftCollapsed} />
 
         <ResizablePanel className="flex-1 h-full max-h-full p-0" minSize={8} defaultSize={60}>
-          {/* These components are now frozen during DND updates */}
           <MainContentArea RightSidebarRef={RightSidebarRef} isRightCollapsed={isRightCollapsed}>
             {children}
           </MainContentArea>
         </ResizablePanel>
 
-        <ResizableHandle />
+        <ResizableHandle className="p-0" hitAreaMargins={{ coarse: 20, fine: 10 }} withHandle={isRightCollapsed} />
 
         <ResizablePanel
           ref={RightSidebarRef}

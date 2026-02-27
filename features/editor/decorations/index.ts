@@ -13,7 +13,7 @@ function isRangeSelected(state: EditorState, from: number, to: number): boolean 
 export function getHeadingDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   const match = text.match(/^(#{1,6})\s/);
 
   if (match) {
@@ -29,7 +29,7 @@ export function getBoldDecos(state: EditorState, text: string, lineFrom: number,
   const decos: StateRange<Decoration>[] = [];
   const boldRegex = /\*\*(.*?)\*\*/g;
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   let match;
 
   while ((match = boldRegex.exec(text)) !== null) {
@@ -50,7 +50,7 @@ export function getInlineCodeDecos(state: EditorState, text: string, lineFrom: n
   const decos: StateRange<Decoration>[] = [];
   const codeRegex = /`([^`]+)`/g;
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   let match;
 
   while ((match = codeRegex.exec(text)) !== null) {
@@ -73,7 +73,7 @@ export function getItalicDecos(state: EditorState, text: string, lineFrom: numbe
   const decos: StateRange<Decoration>[] = [];
   const italicRegex = /(^|[^*_])([*_])([^*_]+)\2/g;
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   let match;
 
   while ((match = italicRegex.exec(text)) !== null) {
@@ -94,7 +94,7 @@ export function getItalicDecos(state: EditorState, text: string, lineFrom: numbe
 export function getBulletListDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   const match = text.match(/^(\s*)([-*+])(\s+)/);
 
   if (match) {
@@ -176,7 +176,7 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
       decos.push(Decoration.line({ attributes: { class: 'cm-code-block-fence' } }).range(line.from));
       const isSelected = selFrom <= line.to && selTo >= line.from;
       const sourceMode = state.field(sourceModeField, false);
-      const viewMode = !state.facet(EditorView.editable);
+      const viewMode = state.facet(EditorState.readOnly);
       if (((!isBlockActive && !isSelected) || viewMode) && !sourceMode) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
 
       isInsideBlock = !isInsideBlock;
@@ -208,7 +208,7 @@ export function getTableDecos(state: EditorState, startLine: number) {
   if (!isValidTable(lines)) return { decos: [], skipToLine: range.end };
   const sourceMode = state.field(sourceModeField, false);
   if (sourceMode) return { decos: [], skipToLine: range.end };
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   return {
     decos: [
       Decoration.replace({
@@ -225,7 +225,7 @@ export function getTableDecos(state: EditorState, startLine: number) {
 export function getBlockquoteDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   const match = text.match(/^(\s{0,3})(>+)\s?/);
 
   if (!match) return decos;
@@ -250,7 +250,7 @@ export function getBlockquoteDecos(state: EditorState, text: string, lineFrom: n
 export function getHRDecos(state: EditorState, text: string, lineFrom: number, lineTo: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   const isHR = /^(\s{0,3})([-*_])(\s*\2){2,}\s*$/.test(text);
 
   if (isHR) {
@@ -284,7 +284,7 @@ export function getLinkDecos(state: EditorState, text: string, lineFrom: number,
   const decos: StateRange<Decoration>[] = [];
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   let match;
 
   while ((match = linkRegex.exec(text)) !== null) {
@@ -316,7 +316,7 @@ export function getImageDecos(state: EditorState, text: string, lineFrom: number
   const decos: StateRange<Decoration>[] = [];
   const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
   let match;
 
   while ((match = imageRegex.exec(text)) !== null) {
@@ -343,7 +343,7 @@ export function getMermaidDecos(state: EditorState, activeLineNum: number): Stat
   const doc = state.doc;
   const selection = state.selection.main;
   const sourceMode = state.field(sourceModeField, false);
-  const viewMode = !state.facet(EditorView.editable);
+  const viewMode = state.facet(EditorState.readOnly);
 
   for (let i = 1; i <= doc.lines; i++) {
     const line = doc.line(i);

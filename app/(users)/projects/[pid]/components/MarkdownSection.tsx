@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { drawSelection, dropCursor, EditorView, keymap } from '@codemirror/view';
-import CodeMirror, { Compartment } from '@uiw/react-codemirror';
+import CodeMirror, { Compartment, EditorState } from '@uiw/react-codemirror';
 import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { createTheme } from '@uiw/codemirror-themes';
@@ -102,7 +102,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     if (!instance || !ytext || !undoManager) return [];
 
     return [
-      editableCompartment.of(EditorView.editable.of(true)),
+      editableCompartment.of(EditorState.readOnly.of(false)),
       onDocChange,
       tableBackspace,
       sourceModeField,
@@ -145,6 +145,8 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
 
               const view = editorViewRef.current;
               if (!view) return;
+              const isEditable = view.state.facet(EditorView.editable);
+              if (!isEditable) return;
 
               view.focus();
               const endPos = view.state.doc.length;

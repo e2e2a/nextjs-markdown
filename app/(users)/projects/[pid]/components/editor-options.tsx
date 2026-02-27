@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
-import { EditorView } from '@uiw/react-codemirror';
+import { EditorState, EditorView } from '@uiw/react-codemirror';
 import { sourceModeField, toggleSourceMode } from '@/features/editor/plugins';
 import { editableCompartment } from './MarkdownSection';
 
@@ -25,11 +25,19 @@ export function EditorOptions({ editorViewRef }: { editorViewRef: React.RefObjec
   };
 
   const toggleViewMode = (view: EditorView) => {
-    const isEditable = view.state.facet(EditorView.editable);
-
+    const isCurrentlyReadOnly = view.state.facet(EditorState.readOnly);
+    const nextState = !isCurrentlyReadOnly;
     view.dispatch({
-      effects: editableCompartment.reconfigure(EditorView.editable.of(!isEditable)),
+      effects: editableCompartment.reconfigure(EditorState.readOnly.of(nextState)),
     });
+
+    if (nextState) {
+      view.scrollDOM.classList.add('cm-readonly');
+      view.contentDOM.blur();
+    } else {
+      view.scrollDOM.classList.remove('cm-readonly');
+      view.focus();
+    }
   };
   return (
     <div className="flex gap-2 items-center">

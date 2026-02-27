@@ -40,7 +40,7 @@ const MainContentArea = memo(function MainContentArea({ children, RightSidebarRe
         <div className="h-12 bg-sidebar flex">
           <TabsHeader pid={pid} />
           <div className="w-fit h-12 flex items-center px-1">
-            <Button type="button" variant={'ghost'} onClick={toggleRightSidebar} className="w-8 h-8 cursor-pointer ">
+            <Button type="button" tabIndex={-1} variant={'ghost'} onClick={toggleRightSidebar} className="w-8 h-8 cursor-pointer ">
               {isRightCollapsed ? <PanelRightOpenIcon className="w-6! h-6!" /> : <PanelRightCloseIcon className="w-6! h-6!" />}
             </Button>
           </div>

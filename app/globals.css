@@ -244,7 +244,29 @@ body {
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><polygon points="2,0 2,8 8,4" fill="white"/></svg>')
       no-repeat center center;
   } */
-  /* Target the handle when it's just sitting there */
+
+  /* 1. Hide the virtual cursor drawn by drawSelection() */
+  .cm-readonly .cm-cursor,
+  .cm-readonly .cm-cursorLayer {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 2. Hide the native browser caret (the blinking line) */
+  .cm-readonly .cm-content {
+    caret-color: transparent !important;
+  }
+
+  /* 3. Hide the drop cursor (the line shown when dragging text) */
+  .cm-readonly .cm-dropCursor {
+    display: none !important;
+  }
+
+  /* 4. Ensure clicking doesn't briefly flash a cursor */
+  .cm-readonly.cm-focused .cm-content {
+    caret-color: transparent !important;
+  }
+
   .editor-scrollbar::-webkit-scrollbar-track {
     margin-top: 56px; /* Offset scrollbar handle by header height (h-14) */
   }

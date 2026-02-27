@@ -10,7 +10,7 @@ import { INode } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
-import { columnSelectionField, markdownLivePreviewField, sourceModeField, tableSelectionHighlighter, toggleSourceMode } from '@/features/editor/plugins';
+import { columnSelectionField, markdownLivePreviewField, sourceModeField, tableSelectionHighlighter } from '@/features/editor/plugins';
 import { languages } from '@codemirror/language-data';
 import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { HocuspocusProvider } from '@hocuspocus/provider';
@@ -123,14 +123,6 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     ];
   }, [instance, ytext, onDocChange, undoManager]);
 
-  const toggleSource = (view: EditorView) => {
-    const current = view.state.field(sourceModeField);
-
-    view.dispatch({
-      effects: toggleSourceMode.of(!current),
-    });
-  };
-
   return (
     <>
       <div className="absolute top-13 left-0 right-0 h-14 z-50 flex items-center px-10 border-b border-white/5 bg-sidebar/20 backdrop-blur-xs pointer-events-auto cursor-default drop-shadow-xs shadow-xs">
@@ -138,18 +130,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
           <h1 className="text-5xl font-bold tracking-tighter text-foreground truncate select-text w-fit! cursor-text">
             {(node as INode)?.title || 'Not Found'}
           </h1>
-          {/* <button
-          onClick={() => {
-            const view = editorViewRef.current;
-            if (!view) return;
-            toggleSource(view);
-          }}
-        >
-          Source Mode
-        </button> */}
-          <div className="">
-            <EditorOptions editorViewRef={editorViewRef} />
-          </div>
+          <EditorOptions editorViewRef={editorViewRef} />
         </div>
       </div>
       <div className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative editor-scrollbar">

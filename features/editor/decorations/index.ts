@@ -1,4 +1,4 @@
-import { Decoration, EditorView } from '@codemirror/view';
+import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
 import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
@@ -20,7 +20,7 @@ export function getHeadingDecos(state: EditorState, text: string, lineFrom: numb
     const level = match[1].length;
     decos.push(Decoration.line({ attributes: { class: `cm-h${level}` } }).range(lineFrom));
     const isSelected = isRangeSelected(state, lineFrom, lineFrom + match[0].length);
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) decos.push(Decoration.replace({}).range(lineFrom, lineFrom + match[0].length));
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) decos.push(Decoration.replace({}).range(lineFrom, lineFrom + match[0].length));
   }
   return decos;
 }
@@ -38,7 +38,7 @@ export function getBoldDecos(state: EditorState, text: string, lineFrom: number,
 
     decos.push(Decoration.mark({ class: 'cm-bold-text' }).range(start, end));
     const isSelected = isRangeSelected(state, start, end);
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) {
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 2));
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));
     }
@@ -61,7 +61,7 @@ export function getInlineCodeDecos(state: EditorState, text: string, lineFrom: n
 
     decos.push(Decoration.mark({ class: 'cm-inline-code' }).range(start, end));
     const isSelected = isRangeSelected(state, start, end);
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) {
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, contentStart));
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(contentEnd, end));
     }
@@ -82,7 +82,7 @@ export function getItalicDecos(state: EditorState, text: string, lineFrom: numbe
 
     decos.push(Decoration.mark({ class: 'cm-italic-text' }).range(start, end));
     const isSelected = isRangeSelected(state, start, end);
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) {
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 1));
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 1, end));
     }
@@ -102,7 +102,7 @@ export function getBulletListDecos(state: EditorState, text: string, lineFrom: n
     const markerStart = lineFrom + indent;
     const markerEnd = markerStart + match[2].length;
     const isSelected = isRangeSelected(state, markerStart, markerEnd);
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) {
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
 
       decos.push(
@@ -177,7 +177,7 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
       const isSelected = selFrom <= line.to && selTo >= line.from;
       const sourceMode = state.field(sourceModeField, false);
       const viewMode = state.facet(EditorState.readOnly);
-      if (((!isBlockActive && !isSelected) || viewMode) && !sourceMode) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
+      if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
 
       isInsideBlock = !isInsideBlock;
       continue;
@@ -207,8 +207,8 @@ export function getTableDecos(state: EditorState, startLine: number) {
 
   if (!isValidTable(lines)) return { decos: [], skipToLine: range.end };
   const sourceMode = state.field(sourceModeField, false);
-  if (sourceMode) return { decos: [], skipToLine: range.end };
   const viewMode = state.facet(EditorState.readOnly);
+  if (!viewMode && sourceMode) return { decos: [], skipToLine: range.end };
   return {
     decos: [
       Decoration.replace({
@@ -242,7 +242,7 @@ export function getBlockquoteDecos(state: EditorState, text: string, lineFrom: n
     }).range(lineFrom)
   );
   const isSelected = isRangeSelected(state, markerStart, markerEnd);
-  if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
+  if (viewMode || (!isLineActive && !isSelected && !sourceMode)) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
 
   return decos;
 }
@@ -256,7 +256,7 @@ export function getHRDecos(state: EditorState, text: string, lineFrom: number, l
   if (isHR) {
     decos.push(Decoration.line({ attributes: { class: 'cm-hr' } }).range(lineFrom));
     const isSelected = isRangeSelected(state, lineFrom, lineTo);
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(lineFrom, lineTo));
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(lineFrom, lineTo));
   }
 
   return decos;
@@ -304,7 +304,7 @@ export function getLinkDecos(state: EditorState, text: string, lineFrom: number,
     );
 
     const isSelected = isRangeSelected(state, start, end);
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) {
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, textStart));
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(textEnd, closingParen));
     }
@@ -324,7 +324,7 @@ export function getImageDecos(state: EditorState, text: string, lineFrom: number
     const end = start + match[0].length;
     const isSelected = isRangeSelected(state, start, end);
 
-    if (((!isLineActive && !isSelected) || viewMode) && !sourceMode) {
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(
         Decoration.replace({
           widget: new ImageWidget(match[2], match[1], start),
@@ -364,7 +364,7 @@ export function getMermaidDecos(state: EditorState, activeLineNum: number): Stat
       const blockTo = doc.line(endLine).to;
       const isBlockActive = activeLineNum >= startLine && activeLineNum <= endLine;
       const isSelected = !selection.empty && selection.from < blockTo && selection.to > blockFrom;
-      if (((!isBlockActive && !isSelected) || viewMode) && !sourceMode) {
+      if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) {
         for (let k = startLine; k <= endLine; k++) {
           decos.push(
             Decoration.line({

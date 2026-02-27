@@ -69,6 +69,22 @@ export function EditorOptions({ editorViewRef }: { editorViewRef: React.RefObjec
                   onSelect={() => {
                     const view = editorViewRef.current;
                     if (!view) return;
+                    toggleViewMode(view);
+                    setSelected(prev => (prev.includes('Reading View') ? prev.filter(i => i !== 'Reading View') : [...prev, 'Reading View']));
+                    setOpen(false);
+                  }}
+                  className="flex justify-between items-center bg-transparent! cursor-pointer"
+                >
+                  <div className="flex ">
+                    <BookOpen className="mr-2 h-5! w-5!" />
+                    <span>Reading View</span>
+                  </div>
+                  <Check className={cn('h-5! w-5!', selected.includes('Reading View') ? 'opacity-100' : 'opacity-0')} />
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => {
+                    const view = editorViewRef.current;
+                    if (!view) return;
                     toggleSource(view);
                     setSelected(prev => (prev.includes('Source Mode') ? prev.filter(i => i !== 'Source Mode') : [...prev, 'Source Mode']));
                     setOpen(false);

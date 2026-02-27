@@ -2,7 +2,6 @@ import { EditorView, Decoration, ViewPlugin, ViewUpdate } from '@codemirror/view
 import { StateField, RangeSet, EditorState, StateEffect } from '@codemirror/state';
 import { buildDecorations } from '../decorations';
 import { TablePreviewWidget } from '../widgets';
-import toast from 'react-hot-toast';
 
 export const setColumnSelection = StateEffect.define<{ from: number; col: number | null }>();
 export const columnSelectionField = StateField.define<{ from: number; col: number | null } | null>({

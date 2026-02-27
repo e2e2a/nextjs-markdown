@@ -1,32 +1,54 @@
 'use client';
 
 import * as React from 'react';
-import { BookOpen, Check, CodeXml, EllipsisVertical } from 'lucide-react';
+import { BookOpen, Check, CodeXml, EllipsisVertical, PencilLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandGroup, CommandItem } from '@/components/ui/command';
 import { EditorState, EditorView } from '@uiw/react-codemirror';
 import { sourceModeField, toggleSourceMode } from '@/features/editor/plugins';
 import { editableCompartment } from './MarkdownSection';
+import { Separator } from '@/components/ui/separator';
 
 export function EditorOptions({ editorViewRef }: { editorViewRef: React.RefObject<EditorView | null> }) {
   const [open, setOpen] = React.useState(false);
-  const [selected, setSelected] = React.useState<string[]>([]);
+
+  // 1. Snapshot: Convert state to a primitive string to avoid infinite loops
+  const getSnapshot = React.useCallback(() => {
+    const view = editorViewRef.current;
+    if (!view) return 'false-false';
+
+    const isReadOnly = view.state.facet(EditorState.readOnly);
+    const isSourceMode = view.state.field(sourceModeField, false);
+    return `${isReadOnly}-${isSourceMode}`;
+  }, [editorViewRef]);
+
+  // 2. Subscribe: Force React to check the snapshot when we toggle modes
+  const subscribe = React.useCallback((callback: () => void) => {
+    // We use a simple event listener to bridge the gap between CodeMirror and this React component
+    window.addEventListener('cm-state-refresh', callback);
+    return () => window.removeEventListener('cm-state-refresh', callback);
+  }, []);
+
+  const snapshot = React.useSyncExternalStore(subscribe, getSnapshot, () => 'false-false');
+
+  // 3. Derived State: Parse the string back into booleans
+  const [isReadOnly, isSourceMode] = snapshot.split('-').map(v => v === 'true');
+
+  const notifyStateChange = () => {
+    window.dispatchEvent(new CustomEvent('cm-state-refresh'));
+  };
 
   const toggleSource = (view: EditorView) => {
-    const current = view.state.field(sourceModeField);
-
     view.dispatch({
-      effects: toggleSourceMode.of(!current),
+      effects: toggleSourceMode.of(!isSourceMode),
     });
+    notifyStateChange();
   };
 
   const toggleViewMode = (view: EditorView) => {
-    const isCurrentlyReadOnly = view.state.facet(EditorState.readOnly);
-    const nextState = !isCurrentlyReadOnly;
+    const nextState = !isReadOnly;
     view.dispatch({
       effects: editableCompartment.reconfigure(EditorState.readOnly.of(nextState)),
     });
@@ -38,67 +60,62 @@ export function EditorOptions({ editorViewRef }: { editorViewRef: React.RefObjec
       view.scrollDOM.classList.remove('cm-readonly');
       view.focus();
     }
+    notifyStateChange();
   };
+
   return (
     <div className="flex gap-2 items-center">
       <Button
         variant="ghost"
         onClick={() => {
-          const view = editorViewRef.current;
-          if (!view) return;
-          toggleViewMode(view);
+          if (editorViewRef.current) toggleViewMode(editorViewRef.current);
         }}
         tabIndex={-1}
-        className="w-8 h-8 flex-wrap gap-1 flex items-center text-foreground"
+        className="w-8 h-8 flex items-center text-foreground"
       >
-        <BookOpen className="ml-auto w-6! h-6! opacity-50" />
+        {isReadOnly ? <PencilLine className="w-6! h-6! opacity-50" /> : <BookOpen className="w-6! h-6! opacity-50" />}
       </Button>
-      <DropdownMenu modal={true} open={open} onOpenChange={setOpen}>
+
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger tabIndex={-1} asChild>
-          <Button variant="ghost" className="w-8 h-8 flex-wrap gap-1 flex items-center text-foreground">
-            <EllipsisVertical className="ml-auto w-6! h-6! opacity-50" />
+          <Button variant="ghost" className="w-8 h-8 flex items-center text-foreground">
+            <EllipsisVertical className="w-6 h-6 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="w-[200px] p-0">
           <Command>
-            <CommandList>
-              <CommandEmpty>No framework found.</CommandEmpty>
-              <CommandGroup>
+            <CommandGroup>
+              <CommandItem
+                onSelect={() => {
+                  if (editorViewRef.current) toggleViewMode(editorViewRef.current);
+                  setOpen(false);
+                }}
+                className="flex justify-between items-center cursor-pointer"
+              >
+                <div className="flex items-center">
+                  <BookOpen className="mr-2 h-5 w-5" />
+                  <span>Reading View</span>
+                </div>
+                <Check className={cn('h-5 w-5', isReadOnly ? 'opacity-100' : 'opacity-0')} />
+              </CommandItem>
+              {!isReadOnly && (
                 <CommandItem
                   onSelect={() => {
-                    const view = editorViewRef.current;
-                    if (!view) return;
-                    toggleViewMode(view);
-                    setSelected(prev => (prev.includes('Reading View') ? prev.filter(i => i !== 'Reading View') : [...prev, 'Reading View']));
+                    if (editorViewRef.current) toggleSource(editorViewRef.current);
                     setOpen(false);
                   }}
-                  className="flex justify-between items-center bg-transparent! cursor-pointer"
+                  className="flex justify-between items-center cursor-pointer"
                 >
-                  <div className="flex ">
-                    <BookOpen className="mr-2 h-5! w-5!" />
-                    <span>Reading View</span>
-                  </div>
-                  <Check className={cn('h-5! w-5!', selected.includes('Reading View') ? 'opacity-100' : 'opacity-0')} />
-                </CommandItem>
-                <CommandItem
-                  onSelect={() => {
-                    const view = editorViewRef.current;
-                    if (!view) return;
-                    toggleSource(view);
-                    setSelected(prev => (prev.includes('Source Mode') ? prev.filter(i => i !== 'Source Mode') : [...prev, 'Source Mode']));
-                    setOpen(false);
-                  }}
-                  className="flex justify-between items-center bg-transparent! cursor-pointer"
-                >
-                  <div className="flex ">
-                    <CodeXml className="mr-2 h-5! w-5!" />
+                  <div className="flex items-center">
+                    <CodeXml className="mr-2 h-5 w-5" />
                     <span>Source Mode</span>
                   </div>
-                  <Check className={cn('h-5! w-5!', selected.includes('Source Mode') ? 'opacity-100' : 'opacity-0')} />
+                  <Check className={cn('h-5 w-5', isSourceMode ? 'opacity-100' : 'opacity-0')} />
                 </CommandItem>
-              </CommandGroup>
-            </CommandList>
+              )}
+              <Separator />
+            </CommandGroup>
           </Command>
         </DropdownMenuContent>
       </DropdownMenu>

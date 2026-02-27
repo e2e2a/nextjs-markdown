@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { EditorView } from '@uiw/react-codemirror';
 import { sourceModeField, toggleSourceMode } from '@/features/editor/plugins';
+import { editableCompartment } from './MarkdownSection';
 
 export function EditorOptions({ editorViewRef }: { editorViewRef: React.RefObject<EditorView | null> }) {
   const [open, setOpen] = React.useState(false);
@@ -23,9 +24,24 @@ export function EditorOptions({ editorViewRef }: { editorViewRef: React.RefObjec
     });
   };
 
+  const toggleViewMode = (view: EditorView) => {
+    const isEditable = view.state.facet(EditorView.editable);
+
+    view.dispatch({
+      effects: editableCompartment.reconfigure(EditorView.editable.of(!isEditable)),
+    });
+  };
   return (
     <div className="flex gap-2 items-center">
-      <Button variant="ghost" className="w-8 h-8 flex-wrap gap-1 flex items-center text-foreground">
+      <Button
+        variant="ghost"
+        onClick={() => {
+          const view = editorViewRef.current;
+          if (!view) return;
+          toggleViewMode(view);
+        }}
+        className="w-8 h-8 flex-wrap gap-1 flex items-center text-foreground"
+      >
         <BookOpen className="ml-auto w-6! h-6! opacity-50" />
       </Button>
       <DropdownMenu modal={true} open={open} onOpenChange={setOpen}>

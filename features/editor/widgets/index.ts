@@ -36,7 +36,8 @@ export class TablePreviewWidget extends WidgetType {
   constructor(
     readonly rawText: string,
     readonly from: number,
-    readonly to: number
+    readonly to: number,
+    readonly isViewMode: boolean
   ) {
     super();
   }
@@ -44,7 +45,6 @@ export class TablePreviewWidget extends WidgetType {
   toDOM(view: EditorView): HTMLElement {
     const lines = this.rawText.split('\n').filter(l => l.trim());
     const tableData = lines.map(line => splitRow(line));
-
     const container = document.createElement('div');
     container.className = 'cm-table-widget-container';
     container.setAttribute('data-from', String(this.from));
@@ -127,7 +127,7 @@ export class TablePreviewWidget extends WidgetType {
 
         if (this.selectedColumn === cIdx) td.classList.add('cm-table-col-selected');
 
-        if (rIdx === 0) {
+        if (rIdx === 0 && !this.isViewMode) {
           const grip = document.createElement('div');
           grip.className = 'cm-table-col-grip';
           grip.draggable = true;
@@ -182,7 +182,7 @@ export class TablePreviewWidget extends WidgetType {
 
         const editor = document.createElement('div');
         editor.className = 'cm-table-cell-editor';
-        editor.contentEditable = 'true';
+        editor.contentEditable = `${!this.isViewMode}`;
         editor.textContent = cellText.replace(/\\\|/g, '|');
 
         let debounceTimer: ReturnType<typeof setTimeout>;
@@ -241,6 +241,7 @@ export class TablePreviewWidget extends WidgetType {
           }
 
           if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key)) return e.stopPropagation();
+          if (this.isViewMode) return;
           const isUp = e.key === 'ArrowUp';
           const isDown = e.key === 'ArrowDown';
           const isTab = e.key === 'Tab';
@@ -305,6 +306,7 @@ export class TablePreviewWidget extends WidgetType {
         editor.addEventListener('cut', e => e.stopPropagation());
         editor.addEventListener('copy', e => e.stopPropagation());
         editor.onmousedown = e => {
+          if (this.isViewMode) return;
           e.stopPropagation();
           if (this.selectedColumn !== null) {
             this.selectedColumn = null;
@@ -363,23 +365,23 @@ export class TablePreviewWidget extends WidgetType {
           selection: view.state.selection,
         });
     });
+    if (!this.isViewMode) {
+      inner.appendChild(
+        createTableActionButton('col', () => {
+          const next = addTableColumn(tableData);
+          updateTable(view, this.from, this.to, next);
+          focusTableCell(view, this.from, 0, next[0].length - 1);
+        })
+      );
 
-    inner.appendChild(
-      createTableActionButton('col', () => {
-        const next = addTableColumn(tableData);
-        updateTable(view, this.from, this.to, next);
-        focusTableCell(view, this.from, 0, next[0].length - 1);
-      })
-    );
-
-    inner.appendChild(
-      createTableActionButton('row', () => {
-        const next = addTableRow(tableData);
-        updateTable(view, this.from, this.to, next);
-        focusTableCell(view, this.from, next.length - 1, 0);
-      })
-    );
-
+      inner.appendChild(
+        createTableActionButton('row', () => {
+          const next = addTableRow(tableData);
+          updateTable(view, this.from, this.to, next);
+          focusTableCell(view, this.from, next.length - 1, 0);
+        })
+      );
+    }
     inner.appendChild(table);
     scrollWrapper.appendChild(inner);
     container.appendChild(scrollWrapper);
@@ -400,7 +402,13 @@ export class TablePreviewWidget extends WidgetType {
   }
 
   eq(other: TablePreviewWidget) {
-    return other.from === this.from && other.to === this.to && other.rawText === this.rawText && other.selectedColumn === this.selectedColumn;
+    return (
+      other.from === this.from &&
+      other.to === this.to &&
+      other.rawText === this.rawText &&
+      other.selectedColumn === this.selectedColumn &&
+      other.isViewMode === this.isViewMode
+    );
   }
 }
 

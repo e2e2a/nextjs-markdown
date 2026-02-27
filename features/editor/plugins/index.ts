@@ -41,7 +41,7 @@ export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>(
     return buildDecorations(state);
   },
   update(decos, tr) {
-    if (tr.docChanged || tr.selection || tr.effects.some(e => e.is(toggleSourceMode))) {
+    if (tr.docChanged || tr.selection || tr.reconfigured || tr.effects.some(e => e.is(toggleSourceMode))) {
       return buildDecorations(tr.state);
     }
     return decos.map(tr.changes);

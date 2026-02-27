@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { drawSelection, dropCursor, EditorView, keymap } from '@codemirror/view';
-import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror, { Compartment } from '@uiw/react-codemirror';
 import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { createTheme } from '@uiw/codemirror-themes';
@@ -44,7 +44,7 @@ const myOwnDarkTheme = createTheme({
     { tag: [t.atom, t.bool, t.number], color: '#b5cea8' },
   ],
 });
-
+export const editableCompartment = new Compartment();
 export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
   const [synced, setSynced] = useState(false);
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
@@ -102,6 +102,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     if (!instance || !ytext || !undoManager) return [];
 
     return [
+      editableCompartment.of(EditorView.editable.of(true)),
       onDocChange,
       tableBackspace,
       sourceModeField,

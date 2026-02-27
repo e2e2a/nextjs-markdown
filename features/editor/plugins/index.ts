@@ -16,23 +16,49 @@ export const columnSelectionField = StateField.define<{ from: number; col: numbe
     return value;
   },
 });
+export const toggleSourceMode = StateEffect.define<boolean>();
 
+export const sourceModeField = StateField.define<boolean>({
+  create() {
+    return false;
+  },
+  update(value, tr) {
+    for (const e of tr.effects) {
+      if (e.is(toggleSourceMode)) return e.value;
+    }
+    return value;
+  },
+});
 // ------------------------------
 // Main StateField
 // ------------------------------
+// export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>({
+//   create(state: EditorState) {
+//     return buildDecorations(state);
+//   },
+//   update(decos, tr) {
+//     if (tr.docChanged || tr.selection) {
+//       return buildDecorations(tr.state);
+//     }
+//     return decos.map(tr.changes);
+//   },
+//   provide: f => EditorView.decorations.from(f),
+// });
 export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>({
   create(state: EditorState) {
+    if (state.field(sourceModeField, false)) {
+      return RangeSet.empty;
+    }
     return buildDecorations(state);
   },
   update(decos, tr) {
-    if (tr.docChanged || tr.selection) {
+    if (tr.docChanged || tr.selection || tr.effects.some(e => e.is(toggleSourceMode))) {
       return buildDecorations(tr.state);
     }
     return decos.map(tr.changes);
   },
   provide: f => EditorView.decorations.from(f),
 });
-
 export const tableSelectionHighlighter = ViewPlugin.fromClass(
   class {
     constructor(readonly view: EditorView) {

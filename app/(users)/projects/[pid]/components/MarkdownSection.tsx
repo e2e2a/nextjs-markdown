@@ -10,13 +10,14 @@ import { INode } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
-import { columnSelectionField, markdownLivePreviewField, tableSelectionHighlighter } from '@/features/editor/plugins';
+import { columnSelectionField, markdownLivePreviewField, sourceModeField, tableSelectionHighlighter, toggleSourceMode } from '@/features/editor/plugins';
 import { languages } from '@codemirror/language-data';
 import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
 import { useTabStore } from '@/features/editor/stores/tabs';
 import { useParams } from 'next/navigation';
+import { EditorOptions } from './editor-options';
 
 const myOwnDarkTheme = createTheme({
   theme: 'dark',
@@ -103,6 +104,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     return [
       onDocChange,
       tableBackspace,
+      sourceModeField,
       tableSelectionHighlighter,
       tableKeyboardHandler,
       keymap.of([{ key: 'Mod-a', run: selectAllToTop }, ...yUndoManagerKeymap]),
@@ -121,50 +123,47 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     ];
   }, [instance, ytext, onDocChange, undoManager]);
 
+  const toggleSource = (view: EditorView) => {
+    const current = view.state.field(sourceModeField);
+
+    view.dispatch({
+      effects: toggleSourceMode.of(!current),
+    });
+  };
+
   return (
-    <div className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative editor-scrollbar">
-      <div
-        className="w-full h-auto pb-4 flex flex-col"
-        onMouseDown={e => {
-          const target = e.target as HTMLElement;
-
-          if (target.classList.contains('cm-scroller')) {
-            e.preventDefault();
-
+    <>
+      <div className="absolute top-13 left-0 right-0 h-14 z-50 flex items-center px-10 border-b border-white/5 bg-sidebar/20 backdrop-blur-xs pointer-events-auto cursor-default drop-shadow-xs shadow-xs">
+        <div className="flex justify-between items-center w-full">
+          <h1 className="text-5xl font-bold tracking-tighter text-foreground truncate select-text w-fit! cursor-text">
+            {(node as INode)?.title || 'Not Found'}
+          </h1>
+          {/* <button
+          onClick={() => {
             const view = editorViewRef.current;
             if (!view) return;
-
-            view.focus();
-            const endPos = view.state.doc.length;
-
-            view.dispatch({
-              selection: { anchor: endPos, head: endPos },
-              scrollIntoView: true,
-              userEvent: 'select',
-            });
-          }
-        }}
-      >
-        {synced && instance && ytext && (
-          <CodeMirror
-            key={node._id}
-            value={instance?.ydoc.getText('codemirror').toString() ?? ''}
-            onCreateEditor={view => {
-              editorViewRef.current = view;
-            }}
-            theme={myOwnDarkTheme}
-            basicSetup={false}
-            extensions={editorExtensions}
-            className="h-auto!"
-          />
-        )}
-        {!synced && <div className="min-h-full flex items-center justify-center text-5xl leading-1 w-full">Syncing Document...</div>}
+            toggleSource(view);
+          }}
+        >
+          Source Mode
+        </button> */}
+          <div className="">
+            <EditorOptions editorViewRef={editorViewRef} />
+          </div>
+        </div>
+      </div>
+      <div className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative editor-scrollbar">
         <div
-          onMouseDown={() => {
-            // e.preventDefault();
-            const view = editorViewRef.current;
-            if (!view) return;
-            setTimeout(() => {
+          className="w-full h-auto pb-4 flex flex-col"
+          onMouseDown={e => {
+            const target = e.target as HTMLElement;
+
+            if (target.classList.contains('cm-scroller')) {
+              e.preventDefault();
+
+              const view = editorViewRef.current;
+              if (!view) return;
+
               view.focus();
               const endPos = view.state.doc.length;
 
@@ -173,37 +172,69 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
                 scrollIntoView: true,
                 userEvent: 'select',
               });
-            }, 0);
+            }
           }}
-          className="cursor-text flex-1  h-full"
-        />
-      </div>
+        >
+          {synced && instance && ytext && (
+            <CodeMirror
+              key={node._id}
+              value={instance?.ydoc.getText('codemirror').toString() ?? ''}
+              onCreateEditor={view => {
+                editorViewRef.current = view;
+              }}
+              theme={myOwnDarkTheme}
+              basicSetup={false}
+              extensions={editorExtensions}
+              className="h-auto!"
+            />
+          )}
+          {!synced && <div className="min-h-full flex items-center justify-center text-5xl leading-1 w-full">Syncing Document...</div>}
+          <div
+            onMouseDown={() => {
+              // e.preventDefault();
+              const view = editorViewRef.current;
+              if (!view) return;
+              setTimeout(() => {
+                view.focus();
+                const endPos = view.state.doc.length;
 
-      <div className="pb-12 ">
-        <Separator className="w-full border-border" />
-        <div className="flex items-center justify-end py-5 gap-x-2">
-          <List className="h-5 w-5" />
-          <ArrowUpNarrowWide className="h-5 w-5" />
-          <Search className="h-5 w-5" />
+                view.dispatch({
+                  selection: { anchor: endPos, head: endPos },
+                  scrollIntoView: true,
+                  userEvent: 'select',
+                });
+              }, 0);
+            }}
+            className="cursor-text flex-1  h-full"
+          />
         </div>
 
-        <div className="space-y-5">
-          <div className="flex flex-col">
-            <div className="flex gap-x-1 items-center">
-              <h3 className="text-foreground">Linked Mentions</h3>
-              <p>0</p>
-            </div>
-            <p className="text-muted-foreground/80">No backlinks found.</p>
+        <div className="pb-12 ">
+          <Separator className="w-full border-border" />
+          <div className="flex items-center justify-end py-5 gap-x-2">
+            <List className="h-5 w-5" />
+            <ArrowUpNarrowWide className="h-5 w-5" />
+            <Search className="h-5 w-5" />
           </div>
-          <div className="flex flex-col">
-            <div className="flex gap-x-1 items-center">
-              <h3 className="text-foreground">Unlinked Mentions</h3>
-              <p>0</p>
+
+          <div className="space-y-5">
+            <div className="flex flex-col">
+              <div className="flex gap-x-1 items-center">
+                <h3 className="text-foreground">Linked Mentions</h3>
+                <p>0</p>
+              </div>
+              <p className="text-muted-foreground/80">No backlinks found.</p>
             </div>
-            <p className="text-muted-foreground/80">No backlinks found.</p>
+            <div className="flex flex-col">
+              <div className="flex gap-x-1 items-center">
+                <h3 className="text-foreground">Unlinked Mentions</h3>
+                <p>0</p>
+              </div>
+              <p className="text-muted-foreground/80">No backlinks found.</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

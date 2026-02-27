@@ -40,12 +40,13 @@ export function EditorOptions({ editorViewRef }: { editorViewRef: React.RefObjec
           if (!view) return;
           toggleViewMode(view);
         }}
+        tabIndex={-1}
         className="w-8 h-8 flex-wrap gap-1 flex items-center text-foreground"
       >
         <BookOpen className="ml-auto w-6! h-6! opacity-50" />
       </Button>
       <DropdownMenu modal={true} open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger tabIndex={-1} asChild>
           <Button variant="ghost" className="w-8 h-8 flex-wrap gap-1 flex items-center text-foreground">
             <EllipsisVertical className="ml-auto w-6! h-6! opacity-50" />
           </Button>

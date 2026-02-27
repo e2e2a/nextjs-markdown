@@ -134,7 +134,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
           <EditorOptions editorViewRef={editorViewRef} />
         </div>
       </div>
-      <div className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative editor-scrollbar">
+      <div tabIndex={-1} className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative editor-scrollbar">
         <div
           className="w-full h-auto pb-4 flex flex-col"
           onMouseDown={e => {

@@ -52,6 +52,7 @@ export class TablePreviewWidget extends WidgetType {
     container.tabIndex = -1;
     const scrollWrapper = document.createElement('div');
     scrollWrapper.className = 'cm-table-scroll-wrapper';
+    scrollWrapper.tabIndex = -1;
     const inner = document.createElement('div');
     inner.className = 'cm-table-inner';
 

@@ -27,10 +27,11 @@ export class MermaidWidget extends WidgetType {
     const container = document.createElement('div');
     container.className =
       'group border border-transparent hover:border-border transition-colors relative block w-full max-w-full box-border z-10 select-none leading-[0] overflow-x-auto! overflow-y-hidden!';
-
+    container.tabIndex = -1;
     const btn = document.createElement('button');
     btn.className = 'mermaid-toggle-btn';
     btn.innerHTML = `<span>&lt;/&gt;</span>`;
+    btn.tabIndex = -1;
     btn.onclick = e => {
       e.preventDefault();
       e.stopPropagation();

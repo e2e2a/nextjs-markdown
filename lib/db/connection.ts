@@ -4,7 +4,6 @@ import '@/modules/projects/project.model';
 import '@/models/account';
 import '@/modules/users/user.model';
 import '@/modules/rateLimits/rateLimit.model';
-import '@/models/member';
 import '@/modules/workspaces/workspace.model';
 import '@/modules/workspaces/members/member.model';
 import '@/modules/tokens/token.model';

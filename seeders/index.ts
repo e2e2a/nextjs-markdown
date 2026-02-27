@@ -1,22 +1,71 @@
 import mongoose from 'mongoose';
 import Node from '@/modules/projects/nodes/node.model';
 import dotenv from 'dotenv';
+import User from '@/modules/users/user.model';
+import Workspace from '@/modules/workspaces/workspace.model';
+import Project from '@/modules/projects/project.model';
+import WorkspaceMember from '@/modules/workspaces/members/member.model';
+import ProjectMember from '@/modules/projects/member/member.model';
 
 dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/testdb';
-
-const BASE = {
-  workspaceId: '693ac82516a8418a9bc8df99',
-  projectId: '69540959741645fa714e04d2',
+const userData = {
+  email: 'emonawong1@gmail.com',
+  isOnboard: true,
+  password: '$2b$10$yUsW60uI3mIQPs0BeY3te.Re8c2tz2hV6TbjcV3ZUey2sRApgBuT6', //qweqwe
+  role: 'user',
+  email_verified: true,
+  image: null,
+  company: '',
+  country: '',
+  phoneNumber: '',
+  family_name: 'User1',
+  given_name: 'User1',
+  goal: 'Real-time collaboration',
+  last_login: '2025-12-27T06:53:06.347Z',
 };
 
+const workspaceData = {
+  title: 'workspace 1',
+};
+
+const projectData = {
+  title: 'project 1',
+};
+const workspaceMemberData = {
+  role: 'owner',
+  status: 'accepted',
+};
+
+const projectMemberData = {
+  role: 'owner',
+};
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
     console.log('🚀 Connected to MongoDB');
 
-    // 1. Clear existing nodes to start fresh
+    await User.deleteOne({ email: userData.email }, { new: true });
+    const user = await User.create(userData);
+
+    await Workspace.deleteOne({ title: workspaceData.title }, { new: true });
+    const workspace = await Workspace.create({ ...workspaceData, ownerUserId: user._id });
+
+    await WorkspaceMember.deleteMany();
+    await WorkspaceMember.create({ ...workspaceMemberData, workspaceId: workspace._id, email: user.email });
+
+    await Project.deleteOne({ title: projectData.title }, { new: true });
+    const project = await Project.create({ ...projectData, workspaceId: workspace._id, createdBy: user._id });
+
+    await ProjectMember.deleteMany();
+    await ProjectMember.create({ ...projectMemberData, workspaceId: workspace._id, projectId: project._id, email: user.email });
+
+    const BASE = {
+      workspaceId: workspace._id,
+      projectId: project._id,
+    };
+
     await Node.deleteMany({ projectId: BASE.projectId });
     console.log('🧹 Cleaned existing project nodes');
 

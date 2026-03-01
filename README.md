@@ -57,6 +57,12 @@ The Docker setup automatically initializes the Database, the App, and the Hocusp
 - **Mongo Express (GUI)**: [[localhost:8081](http://localhost:8081/)]
 - **Hocuspocus WebSocket**: [[ws://localhost:1234](ws://localhost:1234)]
 
+### 4. Seed initial Data
+
+```bash
+docker exec -it nextjs_app npm run seed
+```
+
 ## 🛠️ Local Installation (Manual Windows/macOS)
 
 If you are not using Docker, you must have a local MongoDB instance with a Replica Set configured.
@@ -87,4 +93,10 @@ npm run dev
 
 ```bash
 npm run y-server
+```
+
+### 6. Seed initial Data
+
+```bash
+npm run seed
 ```

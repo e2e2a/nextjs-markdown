@@ -1,68 +1,90 @@
-# Collaborative Markdown Editor
+# 📝 Collaborative Markdown Workspace (Obsidian-Style)
 
-A real-time, collaborative markdown editor featuring a live preview, designed to emulate a lightweight development environment for project documentation and co-editing.
+A real-time, multi-user markdown editor that merges the powerful knowledge-management feel of **Obsidian** with the structural agility of **VS-Code**. Built for developers and teams who need a "second brain" that stays in sync across every device.
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **Real-time Collaboration:** Multiple users can edit the same project simultaneously.
-- **Live Markdown Preview:** Instant rendering of markdown content as you type.
-- **Project-Based Collaboration:** Users must create a project and invite collaborators to start editing.
-- **Visual Editor Interface:** An interface designed to feel like a lightweight code editor, allowing users to navigate, create, edit, update, and remove files within a project structure (tree view).
-- **Authentication:** Secure sign-in using Google OAuth.
+- **Obsidian-Inspired Editor:** A sleek, minimal markdown interface focused on writing, linking, and organization.
+- **Real-time Collaboration:** Powered by **Yjs** and **Hocuspocus (WebSockets)**—see your team's cursors and edits with zero latency.
+- **VS-Code File System:** A robust tree-view interface to create, move, and manage files within collaborative projects.
+- **Docker-Ready:** One-command setup including a **MongoDB Replica Set** (required for transaction support).
+- **Live Preview:** Instant, high-fidelity rendering of markdown syntax as you type.
+- **Secure Auth:** Integration with **Next-Auth** for protected, project-based workspaces.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Category               | Technology                                                    |
-| :--------------------- | :------------------------------------------------------------ |
-| **Frontend Framework** | **Next.js**                                                   |
-| **Database**           | **MongoDB**, **Supabase**                                     |
-| **Authentication**     | **Next-Auth**, **Google OAuth**                               |
-| **Real-time Engine**   | **Yjs** (using Supabase for temporary Real-time capabilities) |
+| Category               | Technology                                   |
+| :--------------------- | :------------------------------------------- |
+| **Frontend Framework** | **Next.js (App Router)**                     |
+| **Real-time Engine**   | **Yjs** + **Hocuspocus Server** (WebSockets) |
+| **Database**           | **MongoDB** (Replica Set enabled)            |
+| **Authentication**     | **Next-Auth**                                |
+| **Infrastructure**     | **Docker Compose**                           |
 
 ---
 
-## ⚠️ Collaboration Engine Note
+## ⚙️ Quick Start (Docker - Recommended)
 
-This project utilizes **Yjs** for collaborative editing. Due to deployment constraints (specifically, Vercel's lack of support for persistent WebSockets on the free tier), the initial real-time connection is currently routed through **Supabase Realtime**.
+To avoid "it works on my machine" issues with MongoDB Replica Sets and WebSockets, use the containerized setup.
 
-> 💡 **Future Plan:** Upon securing investment, the plan is to transition the deployment to **AWS** and implement a dedicated WebSocket server for Yjs, bypassing the limitations of Supabase's free connection limit (currently 100 connections).
+### 1. Clone & Prep
 
----
+```bash
+git clone [https://github.com/e2e2a/nextjs-markdown](https://github.com/e2e2a/nextjs-markdown)
+cd nextjs-markdown
+# Create your .env file based on the section below
+```
 
-## ⚙️ Getting Started
+### 2. 🔑 Environment Variables (.env)
 
-### Prerequisites
+```bash
+cp .env.example .env
+```
 
-You need **Node.js** and **npm** installed on your machine.
+### 3. Launch the Infrastructure
 
-### Installation
+The Docker setup automatically initializes the Database, the App, and the Hocuspocus WebSocket server.
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/e2e2a/nextjs-markdown
-    cd nextjs-markdown
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
+```bash
+    docker compose up -d --build
+```
 
-### Environment Variables
+- **App**: [localhost:3000](http://localhost:3000/)
+- **Mongo Express (GUI)**: [[localhost:8081](http://localhost:8081/)]
+- **Hocuspocus WebSocket**: [[ws://localhost:1234](ws://localhost:1234)]
 
-Create a file named `.env.local` in the root of your project and populate it with the following environment variables.
+## 🛠️ Local Installation (Manual Windows/macOS)
 
-| Variable                   | Description                                                                |
-| :------------------------- | :------------------------------------------------------------------------- |
-| `MONGO_URI`                | Connection string for your MongoDB database.                               |
-| `JWT_SECRET`               | A secret key used for signing JWTs (e.g., for general API tokens).         |
-| `NEXTAUTH_URL`             | The URL of your app (e.g., `http://localhost:3000`).                       |
-| `NEXTAUTH_SECRET`          | A secret used to encrypt Next-Auth cookies and tokens. **Must be strong.** |
-| `GOOGLE_CLIENT_ID`         | Your Google OAuth client ID.                                               |
-| `GOOGLE_CLIENT_SECRET`     | Your Google OAuth client secret.                                           |
-| `NEXT_PUBLIC_BASE_URL`     | The public base URL for API calls.                                         |
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL for the Real-time connection.                    |
-| `NEXT_PUBLIC_SUPABASE_KEY` | Your Supabase public anonymous key.                                        |
+If you are not using Docker, you must have a local MongoDB instance with a Replica Set configured.
+
+### 1. Install MongoDB Compass application
+
+### 2. Install Dependencies:
+
+```bash
+npm install && npm run build
+```
+
+### 3. Environment Variables (.env)
+
+```bash
+cp .env.example .env
+```
+
+### 4. Start Next.js (Terminal 1):
+
+```bash
+npm run dev
+```
+
+- **App**: [localhost:3000](http://localhost:3000/)
+
+### 5. Start Hocuspocus WebSocket Server (Terminal 2):
+
+```bash
+npm run y-server
+```

@@ -6,6 +6,7 @@ import Workspace from '@/modules/workspaces/workspace.model';
 import Project from '@/modules/projects/project.model';
 import WorkspaceMember from '@/modules/workspaces/members/member.model';
 import ProjectMember from '@/modules/projects/member/member.model';
+import { hashText } from '@/lib/server/bcrypt';
 
 dotenv.config();
 
@@ -13,7 +14,6 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/testdb';
 const userData = {
   email: 'emonawong1@gmail.com',
   isOnboard: true,
-  password: '$2b$10$yUsW60uI3mIQPs0BeY3te.Re8c2tz2hV6TbjcV3ZUey2sRApgBuT6', //qweqwe
   role: 'user',
   email_verified: true,
   image: null,
@@ -46,8 +46,10 @@ async function seed() {
     await mongoose.connect(MONGO_URI);
     console.log('🚀 Connected to MongoDB');
 
+    const userInitialPassword = 'password';
     await User.deleteOne({ email: userData.email }, { new: true });
-    const user = await User.create(userData);
+    const hashedPassword = await hashText(userInitialPassword);
+    const user = await User.create({ ...userData, password: hashedPassword });
 
     await Workspace.deleteOne({ title: workspaceData.title }, { new: true });
     const workspace = await Workspace.create({ ...workspaceData, ownerUserId: user._id });

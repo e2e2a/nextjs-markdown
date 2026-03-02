@@ -12,5 +12,5 @@ COPY . .
 # Next.js dev port
 EXPOSE 3000
 
-# This is where your 'npm run dev' lives
-CMD ["npm", "run", "dev"]
+# Change to npm run dev if you want to enable nextjs development logs
+CMD ["npm", "run", "start"]

@@ -1,7 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
 import '@/modules/projects/nodes/node.model';
 import '@/modules/projects/project.model';
-import '@/models/account';
 import '@/modules/users/user.model';
 import '@/modules/rateLimits/rateLimit.model';
 import '@/modules/workspaces/workspace.model';

@@ -63,6 +63,17 @@ The Docker setup automatically initializes the Database, the App, and the Hocusp
 docker exec -it nextjs_app npm run seed
 ```
 
+### 🏁 5. Access & Testing
+
+Once the database is seeded, you can log in and start collaborating immediately.
+
+1. **Open the App:** Navigate to [http://localhost:3000/login](http://localhost:3000/login)
+2. **Use Test Credentials:**
+
+| Account    | Email                | Password   |
+| :--------- | :------------------- | :--------- |
+| **User A** | `example1@gmail.com` | `password` |
+
 ## 🛠️ Local Installation (Manual Windows/macOS)
 
 If you are not using Docker, you must have a local MongoDB instance with a Replica Set configured.
@@ -100,3 +111,17 @@ npm run y-server
 ```bash
 npm run seed
 ```
+
+### 🏁 5. Access & Testing
+
+Once the database is seeded, you can log in and start collaborating immediately.
+
+1. **Open the App:** Navigate to [http://localhost:3000/login](http://localhost:3000/login)
+2. **Use Test Credentials:**
+
+| Account    | Email                | Password   |
+| :--------- | :------------------- | :--------- |
+| **User A** | `example1@gmail.com` | `password` |
+
+> [!TIP]
+> **Test Real-time Sync:** Open the app in two different browser windows (or one in Incognito mode). Log in with both accounts to see live cursor tracking and instant Markdown syncing powered by **Yjs**.

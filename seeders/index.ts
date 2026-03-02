@@ -12,7 +12,7 @@ dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/testdb';
 const userData = {
-  email: 'emonawong1@gmail.com',
+  email: 'example1@gmail.com',
   isOnboard: true,
   role: 'user',
   email_verified: true,

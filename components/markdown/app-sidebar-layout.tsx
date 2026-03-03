@@ -14,6 +14,7 @@ import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 import { Button } from '../ui/button';
 import { PanelRightCloseIcon, PanelRightOpenIcon } from 'lucide-react';
+
 interface MainContentAreaProps {
   children: React.ReactNode;
   RightSidebarRef: React.RefObject<ImperativePanelHandle | null>;
@@ -41,7 +42,7 @@ const MainContentArea = memo(function MainContentArea({ children, RightSidebarRe
           <TabsHeader pid={pid} />
           <div className="w-fit h-12 flex items-center px-1">
             <Button type="button" tabIndex={-1} variant={'ghost'} onClick={toggleRightSidebar} className="w-8 h-8 cursor-pointer ">
-              {isRightCollapsed ? <PanelRightOpenIcon className="w-6! h-6!" /> : <PanelRightCloseIcon className="w-6! h-6!" />}
+              {isRightCollapsed ? <PanelRightOpenIcon className="w-7! h-7!" /> : <PanelRightCloseIcon className="w-7! h-7!" />}
             </Button>
           </div>
         </div>
@@ -118,7 +119,7 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           }
         }}
       >
-        <MiniSidebarTemplate />
+        <MiniSidebarTemplate LeftSidebarRef={LeftSidebarRef} isLeftCollapsed={isLeftCollapsed} />
 
         <ResizablePanel
           ref={LeftSidebarRef}

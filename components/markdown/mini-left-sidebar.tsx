@@ -10,46 +10,62 @@ import {
 } from '@/components/ui/sidebar';
 import { Blocks, Bot, Calendar, FileBox, Files, GitBranch, Terminal } from 'lucide-react';
 import Link from 'next/link';
+import { ImperativePanelHandle } from 'react-resizable-panels';
+import { PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
+import { Button } from '../ui/button';
 
 const MiniSidebarIconItems = [
   {
     title: 'Documentation',
-    href: 'https://laravel.com/docs/starter-kits',
+    href: '#',
     icon: FileBox,
   },
   {
     title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
+    href: '#',
     icon: GitBranch,
   },
   {
     title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
+    href: '#',
     icon: Blocks,
   },
   {
     title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
+    href: '#',
     icon: Calendar,
   },
   {
     title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
+    href: '#',
     icon: Files,
   },
   {
     title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
+    href: '#',
     icon: Terminal,
   },
   {
     title: 'Bot',
-    href: 'https://github.com/laravel/react-starter-kit',
+    href: '#',
     icon: Bot,
   },
 ];
+interface IProps {
+  LeftSidebarRef: React.RefObject<ImperativePanelHandle | null>;
+  isLeftCollapsed: boolean;
+}
+const MiniSidebarTemplate = ({ LeftSidebarRef, isLeftCollapsed }: IProps) => {
+  const toggleRightSidebar = () => {
+    const panel = LeftSidebarRef.current;
+    if (!panel) return;
+    if (panel.isCollapsed()) {
+      panel.expand();
+    } else {
+      panel.collapse();
+    }
+  };
 
-const MiniSidebarTemplate = () => {
   return (
     <Sidebar className="w-12 border-r p-0 " collapsible="none" variant="floating">
       <div className="flex min-h-screen flex-col text-neutral-400 rounded-l-none ">
@@ -64,6 +80,11 @@ const MiniSidebarTemplate = () => {
         <SidebarContent className="ml-0 p-0">
           <SidebarGroup className="gap-0 p-0">
             <SidebarMenu className="mt-3 gap-y-3">
+              <div className="h-12 flex items-center justify-center w-full">
+                <Button type="button" tabIndex={-1} variant={'ghost'} onClick={toggleRightSidebar} className="w-8 h-8 cursor-pointer ">
+                  {isLeftCollapsed ? <PanelLeftOpenIcon className="w-7! h-7!" /> : <PanelLeftCloseIcon className="w-7! h-7!" />}
+                </Button>
+              </div>
               {MiniSidebarIconItems &&
                 MiniSidebarIconItems.map((item, index) => {
                   /**
@@ -79,7 +100,7 @@ const MiniSidebarTemplate = () => {
                         className="flex w-full items-center justify-center hover:brightness-120 dark:hover:text-white"
                         prefetch
                       >
-                        <item.icon className="h-6 w-6 stroke-[0.8px]" />
+                        <item.icon className="h-6! w-6! stroke-[0.8px]" />
                       </Link>
                     </SidebarMenuItem>
                   );

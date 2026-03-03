@@ -88,6 +88,7 @@
 
   --destructive: var(--color-red-600);
   --destructive-foreground: oklch(0.9848 0 0);
+  --destructive-text: var(--color-red-700);
   --destructive-muted: var(--color-red-500);
 
   --border: oklch(0.87 0.01 258);

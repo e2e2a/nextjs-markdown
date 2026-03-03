@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Menu, X } from 'lucide-react';
 import { PagesData } from '@/data/publicNavbar';
-import LogoutButton from './logout-button';
+import NavbarAction from './navbar-action';
 
 export const Navbar = () => {
   const { data: session } = useSession();
@@ -22,10 +22,10 @@ export const Navbar = () => {
   }, []);
 
   // Dynamic Styles
-  const navStyles = isScrolled ? 'bg-background/80 backdrop-blur-md border-b shadow-sm py-2' : 'bg-transparent py-4';
+  const navStyles = isScrolled ? 'border-b shadow-sm py-2' : '';
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-0 h-20 flex items-center ${navStyles}`}>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-0 h-20 bg-background flex items-center ${navStyles}`}>
       <div className="w-full flex items-center justify-center px-6">
         <div className="flex justify-between items-center max-w-280 w-full">
           {/* Logo Section */}
@@ -36,7 +36,7 @@ export const Navbar = () => {
             </Link>
 
             {/* Desktop Menu */}
-            <ul className="space-x-6 text-foreground hidden md:flex font-medium">
+            <ul className="space-x-6 text-foreground hidden lg:flex font-medium">
               {PagesData.map((item, idx) => (
                 <li key={idx}>
                   <Link href={item.href} className="hover:text-primary transition-colors">
@@ -48,18 +48,18 @@ export const Navbar = () => {
           </div>
 
           {/* Desktop Auth/Actions */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             {!session ? (
-              <Link href={'/login'} className="rounded-md px-5 py-2 bg-white hover:bg-white/90 text-black font-semibold shadow-md transition">
+              <Link href={'/login'} className="hover:text-primary transition-colors">
                 Sign in
               </Link>
             ) : (
-              <LogoutButton />
+              <NavbarAction menu={false} />
             )}
           </div>
 
           {/* Mobile Menu Trigger */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <Drawer direction="right">
               <DrawerTrigger title="Menu" className="cursor-pointer p-2">
                 <Menu className="h-6 w-6" />
@@ -83,13 +83,15 @@ export const Navbar = () => {
                         </Link>
                       </li>
                     ))}
-                    <hr className="my-2 border-border" />
+
                     {!session ? (
-                      <Link href={'/login'} className="w-full py-3 text-center bg-white text-black rounded-md">
-                        Sign in
-                      </Link>
+                      <li>
+                        <Link href={'/login'} className="hover:text-primary transition-colors">
+                          Sign in
+                        </Link>
+                      </li>
                     ) : (
-                      <LogoutButton className="w-full py-3" />
+                      <NavbarAction menu={true} />
                     )}
                   </ul>
                 </div>

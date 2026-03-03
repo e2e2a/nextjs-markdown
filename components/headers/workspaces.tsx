@@ -39,7 +39,7 @@ export function WorkspacesHeader() {
         {isMobile ? (
           <div className="">
             <Link href={'/preferences/workspaces'}>
-              <Image alt="Project Logo" src={'/images/logo.png'} width={500} height={500} priority className="w-9.5! h-8! rounded-sm" />
+              <Image alt="Project Logo" src={'/images/logo-v1.png'} width={500} height={500} priority className="w-9.5! h-8! rounded-sm" />
             </Link>
           </div>
         ) : (
@@ -48,7 +48,7 @@ export function WorkspacesHeader() {
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink href="/preferences/workspaces">
-                    <Image alt="Project Logo" src={'/images/logo.png'} width={500} height={500} priority className="w-9.5! h-8! rounded-sm" />
+                    <Image alt="Project Logo" src={'/images/logo-v1.png'} width={500} height={500} priority className="w-9.5! h-8! rounded-sm" />
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />

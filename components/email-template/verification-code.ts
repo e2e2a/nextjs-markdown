@@ -1,7 +1,4 @@
-export async function verificationTemplate(
-  vericationCode: string,
-  type: 'EmailVerification' | 'ChangeEmailVerification'
-) {
+export async function verificationTemplate(vericationCode: string, type: 'EmailVerification' | 'ChangeEmailVerification') {
   let contentHeader;
   let contentFooter;
   let titleLabel;
@@ -129,7 +126,7 @@ table, td { color: #000000; } @media (max-width: 480px) { #u_content_image_1 .v-
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr>
     <td style="padding-right: 0px;padding-left: 0px;" align="center">
-      <a href="https://markdown.mondrey.dev" target="_blank" style="color: rgb(0, 0, 238); text-decoration: underline; line-height: inherit;"><img align="center" border="0" src="https://markdown.mondrey.dev/images/logo.png" alt="MarkdowndMD logo" title="MarkdowndMD logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 14%;max-width: 81.2px;" width="81.2"/>
+      <a href="https://markdown.mondrey.dev" target="_blank" style="color: rgb(0, 0, 238); text-decoration: underline; line-height: inherit;"><img align="center" border="0" src="https://markdown.mondrey.dev/images/logo-v1.png" alt="MarkdowndMD logo" title="MarkdowndMD logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 14%;max-width: 81.2px;" width="81.2"/>
       </a>
     </td>
   </tr>

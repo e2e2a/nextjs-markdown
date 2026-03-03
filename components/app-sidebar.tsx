@@ -1,14 +1,7 @@
 'use client';
 import * as React from 'react';
 import { NavMain } from '@/components/nav-main';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { INavItem } from '@/types';
 import { PanelLeftIcon } from 'lucide-react';
 
@@ -21,7 +14,7 @@ type IProps = React.ComponentProps<typeof Sidebar> & {
 export function AppSidebar({ data, collapsible, initialLink, ...props }: IProps) {
   const { setOpen, open } = useSidebar();
   const [expanded, setExpanded] = React.useState(false);
-
+  const { isMobile } = useSidebar();
   return (
     <Sidebar
       collapsible={collapsible}
@@ -38,13 +31,15 @@ export function AppSidebar({ data, collapsible, initialLink, ...props }: IProps)
       <SidebarContent>
         <NavMain initialLink={initialLink} items={data} />
       </SidebarContent>
-      <SidebarFooter className="sm:flex hidden">
-        <SidebarMenuItem className="data-[slot=sidebar-menu-button]:p-0.5!">
-          <SidebarMenuButton asChild className="w-auto" onClick={() => setExpanded(!expanded)}>
-            <PanelLeftIcon />
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarFooter>
+      {!isMobile && (
+        <SidebarFooter className="sm:flex hidden">
+          <SidebarMenuItem className="data-[slot=sidebar-menu-button]:p-0.5!">
+            <SidebarMenuButton asChild className="w-auto" onClick={() => setExpanded(!expanded)}>
+              <PanelLeftIcon />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

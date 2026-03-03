@@ -104,9 +104,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
         activeNode?._id === item._id
           ? 'bg-accent hover:bg-accent! text-foreground focus:bg-primary focus:text-primary-foreground focus:hover:bg-primary!'
           : 'hover:bg-accent/50! hover:text-accent-foreground',
-        !activeNode && selectedNode?._id === item._id
-          ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20'
-          : 'active:ring-0'
+        selectedNode?._id === item._id ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20' : 'active:ring-0'
       )}
       tabIndex={0}
       style={{

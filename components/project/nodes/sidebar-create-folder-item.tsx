@@ -54,6 +54,18 @@ const SidebarCreateFolderItem = ({ depth }: IProps) => {
     });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      create();
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsCreating(null);
+    }
+  };
+
   return (
     <div
       id={`sidebar-creating-folder-item`}
@@ -66,17 +78,12 @@ const SidebarCreateFolderItem = ({ depth }: IProps) => {
       }}
     >
       <ChevronRight className="rotate-0" />
-      <Image
-        src="/images/closed-folder.svg"
-        alt="Folder Icon"
-        className="w-4.5 h-4.5"
-        width={20}
-        height={20}
-      />
+      <Image src="/images/closed-folder.svg" alt="Folder Icon" className="w-4.5 h-4.5" width={20} height={20} />
       <div className="truncate bg-transparent w-full">
         <Input
           onBlur={create}
           autoFocus
+          onKeyDown={handleKeyDown}
           disabled={disabled}
           value={title}
           onChange={e => setTitle(e.target.value)}

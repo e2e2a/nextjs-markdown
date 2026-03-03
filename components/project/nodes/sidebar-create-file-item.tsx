@@ -55,6 +55,18 @@ const SidebarCreateFileItem = ({ depth }: IProps) => {
     });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      create();
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsCreating(null);
+    }
+  };
+
   return (
     <div
       id={`sidebar-creating-file-item`}
@@ -66,17 +78,12 @@ const SidebarCreateFileItem = ({ depth }: IProps) => {
         paddingLeft: `${depth * 8}px`,
       }}
     >
-      <Image
-        src={'/images/file.svg'}
-        alt="File Icon"
-        className="w-4.5! h-4.5"
-        width={5}
-        height={5}
-      />
+      <Image src={'/images/file.svg'} alt="File Icon" className="w-4.5! h-4.5" width={5} height={5} />
       <div className="truncate bg-transparent w-full">
         <Input
           onBlur={create}
           autoFocus
+          onKeyDown={handleKeyDown}
           value={title}
           disabled={disabled}
           onChange={e => setTitle(e.target.value)}

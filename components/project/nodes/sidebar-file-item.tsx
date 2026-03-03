@@ -111,7 +111,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
   return (
     <Button
       onClick={() => handleNodeClick(item)}
-      // tabIndex={0}
+      tabIndex={0}
       className={cn(
         'transition-none pointer-events-auto gap-0 flex duration-0 h-fit leading-none py-0.5 rounded-none bg-transparent active:ring-0 text-inherit border-none outline-none shadow-none focus:outline-none ring-0 focus:ring-0 cursor-pointer w-full justify-start truncate',
         activeNode?._id === item._id
@@ -119,7 +119,6 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
           : 'hover:bg-accent/50! hover:text-accent-foreground',
         selectedNode?._id === item._id ? 'ring-2 active:ring-2 hover:ring-2 ring-inset ring-primary shadow-md shadow-primary/20' : 'active:ring-0'
       )}
-      tabIndex={0}
       style={{
         paddingLeft: `${depth * 8}px`,
       }}

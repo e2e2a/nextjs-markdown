@@ -69,6 +69,18 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      update();
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsUpdatingNode(null);
+    }
+  };
+
   if (isUpdatingNode && isUpdatingNode._id === item._id)
     return (
       <div
@@ -88,6 +100,7 @@ const SidebarFileItemComponent = ({ item, depth }: IProps) => {
             disabled={disabled}
             autoFocus
             value={title || item?.title || ''}
+            onKeyDown={handleKeyDown}
             onChange={e => setTitle(e.target.value)}
             className="h-4 text-sm text-primary-foreground text-start w-full px-0 focus-visible:ring-0 rounded-none"
           />

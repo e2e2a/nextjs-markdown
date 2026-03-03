@@ -6,148 +6,150 @@ import { aboutBoxes } from '@/data/about';
 import Footer from '@/components/public-pages/footer';
 import BodyPublicLink from '@/components/public-pages/body-public-link';
 import { Metadata } from 'next';
+import { Separator } from '@/components/ui/separator';
 
 export const metadata: Metadata = {
   title: 'About MondreyMD Collaborative Markdown Platform',
   description:
-    'Learn about MondreyMD a real-time Markdown editor with team collaboration. Discover our mission to simplify writing and productivity for everyone.',
+    'Learn about MondreyMD, a real-time Markdown editor with team collaboration. Discover our mission to simplify writing and productivity for everyone.',
 };
 
 export default function AboutPage() {
   return (
-    <main className="bg-gray-200">
+    <div className="h-auto text-foreground bg-background">
       <Navbar />
-      <div className="grid grid-cols-1 gap-y-10 lg:px-[1%] flex-col place-items-center h-auto">
-        <section className="flex w-full h-[420px]">
-          <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
-            <Image src="/images/banner.png" alt="About Page Hero Background" fill={true} priority />
-            <div className="grid grid-cols-1 place-items-center lg:px-[8%] justify-end h-full">
-              <div className="relative pt-35 h-full max-w-3xl w-full flex flex-col pb-12 gap-4">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg">
-                  About MondreyMD
-                </h1>
-                <p className="text-sm md:text-[16px] text-slate-200 drop-shadow-md">
-                  Learn how MondreyMD, the powerful real-time Markdown editor with built-in team
-                  collaboration, helps you create, edit, and publish together, effortlessly.
-                </p>
-                <div className="">
-                  <BodyPublicLink title="Get started" href={'/login'} Icon={ArrowRight} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <section className="py-10 rounded-3xl bg-slate-50 text-center">
-          <div className="max-w-5xl mx-auto px-6 flex flex-col items-center gap-12">
-            <h2 className="text-4xl font-bold text-slate-800">What Drives MondreyMD</h2>
-            <p className="text-gray-600 max-w-3xl">
-              Learn more about who we are, what we stand for, and the journey that brought MondreyMD
-              to life.
+      <div className="flex flex-col px-6 items-center">
+        {/* HERO: Clean & Personal */}
+        <section className="relative w-full max-w-280 pt-24 pb-16">
+          <div className="flex flex-col items-start space-y-6 max-w-4xl">
+            <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] font-bold">Our Story</span>
+            <h1 className="text-[2.75rem] md:text-[5rem] font-black tracking-tighter leading-[0.9] text-start">
+              The Mission behind <br />
+              <span className="text-primary">MondreyMD.</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed text-start max-w-3xl">
+              We believe documentation shouldn&apos;t be a chore. MondreyMD was built to bridge the gap between personal thought and team execution—giving
+              you a workspace that is as fast as your ideas.
             </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-              {aboutBoxes.map((box, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-transform hover:-translate-y-2"
-                >
-                  <box.icon className="h-10 w-10 text-blue-600 mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-800 mb-2">{box.title}</h3>
-                  <p className="text-gray-600">{box.description}</p>
-                </div>
-              ))}
+            <div className="pt-4">
+              <BodyPublicLink
+                title="Get started"
+                href="/login"
+                classname="h-14 px-10 text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xl shadow-primary/20"
+                Icon={ArrowRight}
+              />
             </div>
           </div>
         </section>
-        <section className="relative py-10 w-full max-w-5xl rounded-3xl flex items-center justify-center bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white mb-8">
-          <div className="mx-auto w-full px-6 flex flex-col items-center gap-6">
-            <div className="flex flex-col items-center gap-6">
+
+        <Separator className="max-w-280" />
+
+        <section className="w-full max-w-280 py-24">
+          <div className="mb-16">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tighter mb-4">What Drives Us</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl">
+              Our principles are simple: speed, privacy, and collaboration. We build tools that we use ourselves every single day.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {aboutBoxes.map((box, idx) => (
+              <div
+                key={idx}
+                className="group flex flex-col items-start space-y-4 p-8 rounded-3xl bg-sidebar border border-border/50 transition-all hover:border-primary/80"
+              >
+                <div className="p-3 rounded-xl bg-primary/20 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                  <box.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight">{box.title}</h3>
+                <p className="text-muted-foreground leading-relaxed text-start">{box.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Separator className="max-w-280" />
+
+        <section className="w-full max-w-280 py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
               <Image
                 src="/images/profile.jpg"
-                alt="Founder"
+                alt="Mondrey - Founder"
                 width={500}
                 height={500}
-                className="rounded-full border-4 border-slate-300 h-auto w-[250px] shadow-md object-cover"
+                className="relative rounded-[2.5rem] border border-border h-auto w-full max-w-[450px] shadow-2xl grayscale hover:grayscale-0 transition-all duration-700 object-cover"
               />
-              <h2 className="text-3xl font-bold">Hi, I’m Mondrey 👋</h2>
-              <p className="max-w-2xl">
-                I’m the solo developer behind MondreyMD. I built this platform to make Markdown more
-                accessible and collaborative, a tool that helps individuals and teams focus on their
-                content, not their setup.
-              </p>
             </div>
 
-            {/* Social Links */}
-            <div className="grid grid-cols-1 md:grid-cols-2 w-full">
-              <div className="md:order-2">
-                <div className="flex items-center justify-center md:justify-start gap-5 mb-2 w-full ">
-                  <div className="text-sm">Follow us on</div>
-                  <Link href="https://github.com/e2e2a" rel="nofollow" target="_blank">
-                    <div className="rounded-full border brder-white px-2 py-2">
-                      <Github className="w-6 h-6 text-white hover:text-blue-600 transition" />
-                    </div>
-                  </Link>
-                  <Link
-                    href="https://www.linkedin.com/in/reymond-godoy-5764b935a"
-                    rel="nofollow"
-                    target="_blank"
-                  >
-                    <div className="rounded-full border brder-white px-2 py-2">
-                      <Linkedin className="w-6 h-6 text-white hover:text-blue-600 transition" />
-                    </div>
-                  </Link>
-                  <Link
-                    href="https://www.facebook.com/reymond.godoy.71"
-                    rel="nofollow"
-                    target="_blank"
-                  >
-                    <div className="rounded-full border brder-white px-2 py-2">
-                      <Facebook className="w-6 h-6 text-white hover:text-blue-600 transition" />
-                    </div>
-                  </Link>
-                  <Link href="https://portfolio.mondrey.dev" rel="nofollow" target="_blank">
-                    <div className="rounded-full border brder-white px-2 py-2">
-                      <Briefcase className="w-6 h-6 text-white hover:text-blue-600 transition" />
-                    </div>
-                  </Link>
-                </div>
-                <div className="text-center md:text-start pb-10 md:pb-0">
-                  <p className="max-w-2xl text-sm">
-                    For more inquries, please contact us at{' '}
-                    <Link
-                      href={'mailto:e2e2a@mondrey.dev'}
-                      rel="nofollow"
-                      className="hover:underline"
-                    >
-                      e2e2a@mondrey.dev
-                    </Link>
-                    .
-                  </p>
-                </div>
+            <div className="flex flex-col items-start space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-[2.5rem] font-black tracking-tighter leading-none">Hi, I’m Mondrey 👋</h2>
+                <p className="text-xl text-muted-foreground leading-relaxed">
+                  I&apos;m the solo developer behind this platform. I built MondreyMD because I was tired of choosing between &quot;simple&quot; markdown
+                  editors and &quot;collaborative&quot; team tools. I wanted both.
+                </p>
+                <p className="text-lg text-muted-foreground/80 italic">&quot;No complex setup, no data silos—just pure focus on the content.&quot;</p>
               </div>
-              <div className="flex  justify-center items-center w-full md:order-1">
-                <BodyPublicLink title="Join the Team" href={'#'} Icon={ArrowRight} />
+
+              {/* Social Links Standardized */}
+              <div className="flex flex-wrap gap-4">
+                {[
+                  { icon: Github, href: 'https://github.com/e2e2a' },
+                  { icon: Linkedin, href: 'https://www.linkedin.com/in/reymond-godoy-5764b935a' },
+                  { icon: Facebook, href: 'https://www.facebook.com/reymond.godoy.71' },
+                  { icon: Briefcase, href: 'https://portfolio.mondrey.dev' },
+                ].map((social, i) => (
+                  <Link
+                    key={i}
+                    href={social.href}
+                    target="_blank"
+                    className="p-3 rounded-full border border-border bg-sidebar hover:text-primary hover:border-primary transition-all"
+                  >
+                    <social.icon className="w-5 h-5" />
+                  </Link>
+                ))}
+              </div>
+
+              <div className="text-sm font-mono text-muted-foreground">
+                Inquiries:{' '}
+                <Link href="mailto:e2e2a@mondrey.dev" className="text-primary hover:underline">
+                  e2e2a@mondrey.dev
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="py-10 mb-10 w-full rounded-3xl bg-white text-center">
-          <div className="mx-auto px-6">
-            <h2 className="text-3xl font-bold text-slate-800 mb-4">Our Investors</h2>
-            <p className="text-gray-600 mb-8">
-              We’re currently self-funded and focused on growth. Investor partnerships are on the
-              horizon, if you believe in what we’re building, stay tuned or reach out to
-              collaborate.
-            </p>
-            <div className="inline-block px-6 py-3 rounded-md bg-slate-200 text-slate-600 font-semibold">
-              🚀 Coming Soon
+        <Separator className="max-w-280" />
+
+        {/* INVESTORS / FUTURE SECTION: Honest & Direct */}
+        <section className="w-full max-w-280 py-24 mb-10">
+          <div className="bg-sidebar border border-border rounded-[3rem] p-12 md:p-20 text-start flex flex-col md:flex-row gap-12 items-center justify-between">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-black tracking-tighter mb-4">Investment & Growth</h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                MondreyMD is currently <span className="font-bold text-foreground">100% self-funded</span>. This allows us to prioritize user experience
+                over quarterly profits. We are focused on sustainable growth and long-term partnership.
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="px-6 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-widest">
+                🚀 Stage: Fresh Deploy
+              </div>
+              <Link
+                href="mailto:e2e2a@mondrey.dev"
+                className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+              >
+                Partner with us
+              </Link>
             </div>
           </div>
         </section>
       </div>
       <Footer />
-    </main>
+    </div>
   );
 }

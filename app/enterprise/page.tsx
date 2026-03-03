@@ -1,105 +1,114 @@
 import Navbar from '@/components/public-pages/navbar';
 import Footer from '@/components/public-pages/footer';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, FileText, UserPlus, Users, ShieldCheck } from 'lucide-react';
 import BodyPublicLink from '@/components/public-pages/body-public-link';
-import { Card } from '@/components/ui/card';
-import Image from 'next/image';
-import { IconFileText, IconUserPlus, IconUsers } from '@tabler/icons-react';
 import { Metadata } from 'next';
+import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
+
 const teamFeatures = [
   {
     title: 'Real-Time Team Collaboration',
     description:
       'Work together on Markdown documents in real-time. Your team can edit and see changes instantly, making collaboration simple and seamless.',
-    icon: IconUsers,
+    icon: Users,
   },
   {
     title: 'Organized Project Files',
-    description:
-      'Keep your documents structured and easy to access. Your team can create, organize, and navigate files effortlessly.',
-    icon: IconFileText,
+    description: 'Keep your documents structured and easy to access. Your team can create, organize, and navigate files effortlessly.',
+    icon: FileText,
   },
   {
     title: 'Invite Team Members',
-    description:
-      'Easily invite colleagues to your project. Collaborate on documents with your team instantly, without complex setup or permissions.',
-    icon: IconUserPlus,
+    description: 'Easily invite colleagues to your project. Collaborate on documents with your team instantly, without complex setup or permissions.',
+    icon: UserPlus,
   },
 ];
 
 export const metadata: Metadata = {
   title: 'Enterprise Collaboration for Teams and Markdown Projects',
-  description:
-    'Discover enterprise features for real-time Markdown collaboration. Empower your team to create, share, and work together efficiently online.',
+  description: 'Scale your team writing workflow with MondreyMD Enterprise. Real-time collaboration, secure syncing, and organized project management.',
 };
 
 export default function EnterprisePage() {
   return (
-    <div className="h-auto bg-gray-200">
+    <div className="h-auto text-foreground bg-background">
       <Navbar />
 
-      {/* Hero Section */}
-      <div className="grid grid-cols-1 gap-y-10 flex-col lg:px-[1%] place-items-center h-auto">
-        <section className="flex w-full h-[420px]">
-          <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
-            <Image
-              src="/images/banner.png"
-              alt="Solution Page Hero Background"
-              fill={true}
-              priority
-            />
-            <div className="grid grid-cols-1 place-items-center lg:px-[8%] justify-end h-full">
-              <div className="relative pt-35 h-full max-w-3xl w-full flex flex-col pb-12 gap-4">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg">
-                  MondreyMD for Teams & Enterprises
-                </h1>
-                <p className="text-sm md:text-[16px] text-slate-200 drop-shadow-md">
-                  Streamline your team’s Markdown workflow, collaborate in real-time, and manage
-                  your documents securely with MondreyMD Enterprise.
-                </p>
-                <div className="pb-15">
-                  <BodyPublicLink title="Get Started For Free" href={'/login'} Icon={ArrowRight} />
-                </div>
-              </div>
+      <div className="flex flex-col px-6 items-center">
+        {/* HERO: Single Column - Bold & Transparent */}
+        <section className="relative w-full max-w-280 pt-24 pb-16 text-start">
+          <div className="flex flex-col items-start space-y-6 max-w-4xl">
+            <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-[0.3em] font-bold">
+              <ShieldCheck className="w-4 h-4" />
+              Enterprise Standard
+            </div>
+            <h1 className="text-[2.75rem] md:text-[5rem] font-black tracking-tighter leading-[0.9]">
+              Built for the <br />
+              <span className="text-primary">Next Generation</span> of Teams.
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl">
+              MondreyMD Enterprise provides the infrastructure for high-velocity teams to document, collaborate, and scale without the friction of
+              traditional editors. Ownership of your data starts here.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-6 pt-6">
+              <BodyPublicLink
+                title="Deploy for your Team"
+                href="/login"
+                Icon={ArrowRight}
+                classname="h-14 px-10 text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xl shadow-primary/20"
+              />
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-12 rounded-3xl max-w-5xl bg-white flex flex-col items-center text-center px-6 lg:px-0">
-          <h2 className="text-4xl font-bold mb-6">Enterprise Features</h2>
-          <p className="text-gray-600 max-w-3xl mb-12">
-            Designed for teams of all sizes, MondreyMD Enterprise offers advanced collaboration,
-            security, and administrative tools to keep your workflow organized and efficient.
-          </p>
+        <Separator className="max-w-280" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full px-6">
+        <section className="w-full max-w-280 py-24">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 ">
             {teamFeatures.map((feature, idx) => (
-              <Card
-                key={idx}
-                className="flex flex-col items-start p-6 rounded-2xl shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
-              >
-                <div className="mb-4 p-3 bg-blue-600/90 rounded-md">
-                  <feature.icon className="h-7 w-7 text-white" />
+              <div key={idx} className="group flex flex-col items-start space-y-5 h-full">
+                <div className="p-4 rounded-2xl bg-sidebar border border-border group-hover:border-primary/50 transition-all duration-300 transform group-hover:-translate-y-1">
+                  <feature.icon className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </Card>
+                <h3 className="text-2xl font-bold tracking-tight">{feature.title}</h3>
+                <p className="text-muted-foreground text-lg leading-relaxed">{feature.description}</p>
+
+                <div className="flex-1 h-full flex items-end">
+                  <Link
+                    href="/login"
+                    className="group/link text-sm font-bold uppercase tracking-widest text-primary/70 hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    Get Started <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Security & Collaboration Section */}
-        <section className="relative py-10 rounded-3xl w-full flex items-center justify-center bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white mb-8">
-          <div className="relative px-6 flex flex-col items-center gap-6">
-            <h2 className="text-3xl md:text-4xl font-extrabold drop-shadow-lg">
-              Security & Collaboration You Can Trust
+        <Separator className="max-w-280" />
+        {/* CTA SECTION: Enterprise */}
+        <section className="w-full max-w-280 py-24">
+          <div className="relative bg-sidebar border border-border rounded-[3.5rem] p-10 md:p-20 overflow-hidden flex flex-col items-start text-start gap-8">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/5 blur-[120px] -z-10" />
+
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
+              Ready for <span className="text-primary italic">enterprise-grade</span> collaboration?
             </h2>
-            <p className="text-gray-300 text-sm md:text-[16px] leading-relaxed max-w-2xl">
-              Enterprise-grade encryption, permission management, and team collaboration features
-              ensure that your content stays safe while your team works seamlessly together.
+
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+              Deploy MondreyMD across your organization with structured workflows, controlled access, and scalable Markdown infrastructure.
             </p>
-            <BodyPublicLink title="Request a Demo" href={'/login'} />
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <BodyPublicLink
+                title="Request Access"
+                href="/contact"
+                classname="h-12 px-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+              />
+            </div>
           </div>
         </section>
       </div>

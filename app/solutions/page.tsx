@@ -1,11 +1,11 @@
 import Navbar from '@/components/public-pages/navbar';
 import Footer from '@/components/public-pages/footer';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Zap } from 'lucide-react';
 import { features } from '@/data/features';
 import BodyPublicLink from '@/components/public-pages/body-public-link';
-import Image from 'next/image';
 import { Metadata } from 'next';
 import CarouselSection from './components/carousel-section';
+import { Separator } from '@/components/ui/separator';
 
 export const metadata: Metadata = {
   title: 'Markdown Solutions for Teams and Collaborative Projects',
@@ -13,78 +13,88 @@ export const metadata: Metadata = {
     'Explore solutions to streamline team collaboration and documentation. Write, preview, and manage Markdown projects efficiently in real time.',
 };
 
-export default function Page() {
+export default function SolutionsPage() {
   return (
-    <div className="h-auto bg-gray-200">
+    <div className="h-auto text-foreground bg-background">
       <Navbar />
-      <div className="grid grid-cols-1 gap-y-10 flex-col lg:px-[1%] place-items-center h-auto">
-        <section className="flex w-full h-[420px]">
-          <div className="relative rounded-b-3xl w-full flex items-center px-6 overflow-hidden">
-            <Image
-              src="/images/banner.png"
-              alt="Solution Page Hero Background"
-              fill={true}
-              priority
-            />
-            <div className="grid grid-cols-1 place-items-center lg:px-[8%] justify-end h-full">
-              <div className="relative pt-35 h-full max-w-3xl w-full flex flex-col pb-12 gap-4">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 drop-shadow-lg">
-                  Mondrey Markdown Solutions to Accelerate Your Workflow
-                </h1>
-                <p className="text-sm md:text-[16px] text-slate-200 drop-shadow-md">
-                  Mondrey helps teams and individuals streamline their writing workflow, stay
-                  organized, and collaborate effectively. Whether you’re creating documentation,
-                  notes, or project content, Mondrey makes Markdown simple, intuitive, and
-                  productive, empowering you to focus on what truly matters.
-                </p>
-                <div className="pb-15">
-                  <BodyPublicLink title="Get Started For Free" href={'/login'} Icon={ArrowRight} />
-                </div>
-              </div>
+
+      <div className="flex flex-col px-6 items-center">
+        {/* HERO: Clean & SEO Optimized */}
+        <section className="relative w-full max-w-280 pt-24 pb-16">
+          <div className="flex flex-col items-start space-y-6 max-w-4xl">
+            <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-[0.3em] font-bold">
+              <Zap className="w-4 h-4" />
+              Workflow Optimization
+            </div>
+            <h1 className="text-[2.75rem] md:text-[4.5rem] font-black tracking-tighter leading-[0.9] text-start">
+              Accelerate your <br />
+              <span className="text-primary">Markdown Workflow.</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed text-start max-w-3xl">
+              Mondrey helps teams and individuals streamline their writing, stay organized, and collaborate effectively. Everything you need for modern
+              documentation, delivered in a seamless, high-performance platform.
+            </p>
+            <div className="pt-4">
+              <BodyPublicLink
+                title="Get Started For Free"
+                href="/login"
+                classname="h-14 px-10 text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xl shadow-primary/20"
+                Icon={ArrowRight}
+              />
             </div>
           </div>
         </section>
 
-        <section className="py-10 rounded-3xl bg-white flex flex-col items-center text-center">
-          <h2 className="text-4xl font-bold mb-6">Why Teams Choose Mondrey</h2>
-          <p className="text-gray-600 max-w-2xl mb-12">
-            Empower your team to create, collaborate, and deliver faster with a modern Markdown
-            workspace built for clarity, speed, and teamwork.
-          </p>
+        <Separator className="max-w-280" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-5xl w-full px-6">
+        {/* SOLUTIONS GRID: 2-Column Professional Layout */}
+        <section className="w-full max-w-280 py-24">
+          <div className="mb-16 text-start">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tighter mb-4">Why Teams Choose Mondrey</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl">
+              Empower your collective intelligence with a modern workspace built for clarity, speed, and engineering-grade teamwork.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
             {features.map((feature, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col md:flex-row items-start gap-4 p-6 rounded-2xl bg-linear-to-r from-slate-100 to-slate-200 shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
-              >
-                <div className="shrink-0 p-3 bg-blue-600/90 rounded-md">
-                  <feature.icon className="h-7 w-7 text-white" />
+              <div key={idx} className="group flex flex-col md:flex-row items-start gap-6">
+                <div className="shrink-0 p-4 rounded-2xl bg-sidebar border border-border group-hover:border-primary/50 transition-all shadow-sm">
+                  <feature.icon className="h-7 w-7 text-primary" />
                 </div>
-                <div className="text-left">
-                  <h3 className="text-xl font-semibold text-slate-800 mb-1">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-bold tracking-tight text-foreground">{feature.title}</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">{feature.description}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="relative py-10 rounded-3xl w-full flex items-center justify-center bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white mb-8">
-          <div className="relative px-6 flex flex-col items-center gap-6">
-            <h2 className="text-3xl md:text-4xl font-extrabold drop-shadow-lg">
-              Bring Clarity and Speed to Your Workflow
+        <Separator className="max-w-280" />
+
+        <section className="w-full max-w-280 py-24">
+          <div className="relative bg-sidebar border border-border rounded-[3.5rem] p-10 md:p-20 overflow-hidden flex flex-col items-start text-start gap-8">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/5 blur-[120px] -z-10" />
+
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
+              Bring <span className="text-primary italic">Clarity and Speed</span> to Your Next Project.
             </h2>
-            <p className="text-gray-300 text-sm md:text-[16px] leading-relaxed max-w-2xl">
-              Skip the setup, skip the mess, Mondrey Markdown helps you write, preview, and
-              collaborate in real time. Everything you need for modern documentation, all in one
-              seamless platform.
+
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+              Skip the setup and the manual syncing. Mondrey handles the infrastructure so you can focus on the writing.
             </p>
-            <BodyPublicLink title="Get Started For Free" href={'/login'} Icon={ArrowRight} />
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <BodyPublicLink title="Start Now" href="/login" classname="h-12 px-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90" />
+            </div>
           </div>
         </section>
 
-        <CarouselSection />
+        {/* Carousel Section stays at the bottom to maintain engagement */}
+        <section className="w-full py-12">
+          <CarouselSection />
+        </section>
       </div>
       <Footer />
     </div>

@@ -8,6 +8,10 @@ export const resources = [
     href: '/enterprise',
   },
   {
+    title: 'Pricing',
+    href: '/pricing',
+  },
+  {
     title: 'Solutions',
     href: '/solutions',
   },
@@ -20,7 +24,7 @@ export const company = [
   },
   {
     title: 'Contact Us',
-    href: '#',
+    href: '/contact',
   },
   {
     title: 'Privacy Policy',

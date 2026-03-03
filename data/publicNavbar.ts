@@ -4,6 +4,10 @@ export const PagesData = [
     href: '/solutions',
   },
   {
+    title: 'Pricing',
+    href: '/pricing',
+  },
+  {
     title: 'Enterprise',
     href: '/enterprise',
   },

@@ -79,7 +79,7 @@ const MiniSidebarTemplate = ({ LeftSidebarRef, isLeftCollapsed }: IProps) => {
 
         <SidebarContent className="ml-0 p-0">
           <SidebarGroup className="gap-0 p-0">
-            <SidebarMenu className="mt-3 gap-y-3">
+            <SidebarMenu className="gap-y-3">
               <div className="h-12 flex items-center justify-center w-full">
                 <Button type="button" tabIndex={-1} variant={'ghost'} onClick={toggleRightSidebar} className="w-8 h-8 cursor-pointer ">
                   {isLeftCollapsed ? <PanelLeftOpenIcon className="w-7! h-7!" /> : <PanelLeftCloseIcon className="w-7! h-7!" />}

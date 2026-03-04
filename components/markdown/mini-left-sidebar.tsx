@@ -68,7 +68,7 @@ const MiniSidebarTemplate = ({ LeftSidebarRef, isLeftCollapsed }: IProps) => {
 
   return (
     <Sidebar className="w-12 border-r p-0 " collapsible="none" variant="floating">
-      <div className="flex min-h-screen flex-col text-neutral-400 rounded-l-none ">
+      <div className="flex min-h-screen flex-col text-muted-foreground rounded-l-none ">
         <SidebarHeader className="hidden p-0">
           <SidebarMenu>
             <SidebarMenuItem>

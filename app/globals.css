@@ -268,10 +268,6 @@ body {
     caret-color: transparent !important;
   }
 
-  .editor-scrollbar::-webkit-scrollbar-track {
-    margin-top: 56px; /* Offset scrollbar handle by header height (h-14) */
-  }
-
   .custom-resize-handle {
     background-color: transparent;
     transition: background-color 0.2s ease;

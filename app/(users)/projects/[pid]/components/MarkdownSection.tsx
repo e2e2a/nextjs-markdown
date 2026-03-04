@@ -126,6 +126,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
 
   return (
     <>
+      <div className="absolute top-12 left-0 right-0 h-1 z-51 w-full bg-background" />
       <div className="absolute top-13 left-0 right-0 h-14 z-50 flex items-center px-10 border-b border-white/5 bg-sidebar/20 backdrop-blur-xs pointer-events-auto cursor-default drop-shadow-xs shadow-xs">
         <div className="flex justify-between items-center w-full">
           <h1 className="text-5xl font-bold tracking-tighter text-foreground truncate select-text w-fit! cursor-text">
@@ -134,7 +135,10 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
           <EditorOptions editorViewRef={editorViewRef} />
         </div>
       </div>
-      <div tabIndex={-1} className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative editor-scrollbar">
+      <div
+        tabIndex={-1}
+        className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative [&::-webkit-scrollbar-track]:mt-[56px]"
+      >
         <div
           className="w-full h-auto pb-4 flex flex-col"
           onMouseDown={e => {

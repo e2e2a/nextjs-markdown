@@ -1,7 +1,7 @@
 'use client';
 import { NavMain } from './nav-main';
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
-import { CopyMinus, FilePlus2, FolderPlus } from 'lucide-react';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
+import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, GalleryVertical, ArrowUpNarrowWide } from 'lucide-react';
 import { SidebarContextMenu } from './sidebar-context-menu';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
@@ -9,6 +9,8 @@ import { useEffect } from 'react';
 import { makeToastError } from '@/lib/toast';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { IProject } from '@/types';
+import { SidebarFooterVault } from './sidebar-footer-vault';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function AppSidebar({ projectData }: { projectData: IProject }) {
   const { setCollapseAll, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
@@ -80,57 +82,111 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
       id="sidebar-tree-nodes"
       data-sidebar-node="true"
       tabIndex={-1}
-      className="group left-12 w-full border-r bg-none p-0 text-neutral-400"
+      className="group left-12 w-full border-r bg-none p-0 text-muted-foreground"
       collapsible="none"
       variant="inset"
     >
-      <SidebarContextMenu node={null}>
-        <div className="h-screen overflow-hidden flex flex-col">
-          <SidebarHeader className="h-6 p-0">
-            <SidebarMenu className="h-6 flex w-full flex-row items-center justify-center px-1 border-b border-border">
-              <div className="font-bold truncate uppercase text-sm w-full text-accent-foreground ">{projectData?.title}</div>
-              <div className="hidden w-full bg-transparent flex-row items-center justify-end h-full gap-x-2 group-hover:flex">
-                <Button
-                  className="p-0! h-auto cursor-pointer bg-transparent text-inherit hover:text-accent-foreground hover:bg-transparent"
-                  onClick={() => {
-                    setIsCreating({ type: 'file', parentId });
-                    setTimeout(() => {
-                      const input = document.querySelector<HTMLInputElement>('#sidebar-creating-file-item input');
-                      input?.focus();
-                    }, 0);
-                  }}
-                >
-                  <FilePlus2 className="h-4! w-4!" />
-                </Button>
-                <Button
-                  className="p-0! h-auto cursor-pointer bg-transparent text-inherit hover:text-accent-foreground hover:bg-transparent"
-                  onClick={() => {
-                    setIsCreating({ type: 'folder', parentId });
-                    setTimeout(() => {
-                      const input = document.querySelector<HTMLInputElement>('#sidebar-creating-folder-item input');
-                      input?.focus();
-                    }, 0);
-                  }}
-                >
-                  <FolderPlus className="h-4 w-4" />
-                </Button>
-                <Button
-                  className="p-0! h-auto cursor-pointer bg-transparent text-inherit hover:text-accent-foreground hover:bg-transparent"
-                  onClick={() => setCollapseAll(true)}
-                >
-                  <CopyMinus className="h-4 w-4" />
-                </Button>
-              </div>
-            </SidebarMenu>
-          </SidebarHeader>
+      <div className="h-screen flex flex-col">
+        <SidebarContextMenu node={null}>
+          <div className="h-full overflow-hidden flex flex-col">
+            <Tabs defaultValue="nodes" className="w-full flex flex-col flex-1 min-h-0 gap-y-0">
+              <SidebarHeader className="h-12 p-0">
+                <SidebarMenu className="h-12 flex w-full flex-row items-center justify-center px-2 relative">
+                  <TabsList className="bg-transparent w-full flex items-start gap-x-3 justify-start">
+                    <TabsTrigger className="grow-0" value="nodes">
+                      <FolderOpen className="w-6! h-6!" />
+                    </TabsTrigger>
+                    <TabsTrigger className="grow-0" value="search">
+                      <Search className="w-6! h-6!" />
+                    </TabsTrigger>
+                    <TabsTrigger className="grow-0" value="bookmarks">
+                      <Bookmark className="w-6! h-6!" />
+                    </TabsTrigger>
+                  </TabsList>
 
-          <div className="h-full flex-1 overflow-y-hidden">
-            <SidebarContent className="ml-0 p-0! space-y-0! h-full">
-              <NavMain />
-            </SidebarContent>
+                  <div className="absolute top-12 left-0 right-0 h-1 z-51 w-full bg-background" />
+                  <div className="absolute top-13 left-0 right-0 h-14 z-50 flex px-3 items-center border-b border-white/5 bg-sidebar/80 backdrop-blur-lg pointer-events-auto cursor-default">
+                    <div className="flex w-full">
+                      <TabsContent className="h-full min-h-0 w-full" value="nodes">
+                        <div className="bg-transparent w-full flex items-start gap-x-1 justify-start">
+                          <Button
+                            className="px-2! py-1! border border-transparent"
+                            variant={'ghost'}
+                            title="New Note"
+                            onClick={() => {
+                              setIsCreating({ type: 'file', parentId });
+                              setTimeout(() => {
+                                const input = document.querySelector<HTMLInputElement>('#sidebar-creating-file-item input');
+                                input?.focus();
+                              }, 0);
+                            }}
+                          >
+                            <SquarePen className="h-6! w-6!" />
+                          </Button>
+                          <Button
+                            className="px-2! py-1! w-fit h-fit border border-transparent"
+                            variant={'ghost'}
+                            title="New Folder"
+                            onClick={() => {
+                              setIsCreating({ type: 'folder', parentId });
+                              setTimeout(() => {
+                                const input = document.querySelector<HTMLInputElement>('#sidebar-creating-folder-item input');
+                                input?.focus();
+                              }, 0);
+                            }}
+                          >
+                            <FolderPlus className="h-6! w-6!" />
+                          </Button>
+                          <Button
+                            className="px-2! py-1! border border-transparent"
+                            variant={'ghost'}
+                            title="New Note"
+                            onClick={() => setCollapseAll(true)}
+                          >
+                            <ArrowUpNarrowWide className="h-6! w-6!" />
+                          </Button>
+                          <Button
+                            className="px-2! py-1! border border-transparent"
+                            variant={'ghost'}
+                            title="Auto-reveal Current File"
+                            onClick={() => setCollapseAll(true)}
+                          >
+                            <GalleryVertical className="h-6! w-6!" />
+                          </Button>
+                          <Button
+                            className="px-2! py-1! border border-transparent"
+                            variant={'ghost'}
+                            title="Collapse All"
+                            onClick={() => setCollapseAll(true)}
+                          >
+                            <ChevronsDownUp className="h-6! w-6!" />
+                          </Button>
+                        </div>
+                      </TabsContent>
+                    </div>
+                  </div>
+                </SidebarMenu>
+              </SidebarHeader>
+              <div className="min-h-0 flex-1 overflow-hidden!">
+                <SidebarContent className="ml-0 p-0! space-y-0! h-full flex">
+                  <TabsContent className="h-full min-h-0 p-0! gap-0! space-x-0 space-y-0! m-0!" value="nodes">
+                    <NavMain />
+                  </TabsContent>
+                  <TabsContent value="search" className="text-white pt-16">
+                    Search
+                  </TabsContent>
+                  <TabsContent value="bookmarks" className="text-white pt-16">
+                    Bookmarks
+                  </TabsContent>
+                </SidebarContent>
+              </div>
+            </Tabs>
           </div>
-        </div>
-      </SidebarContextMenu>
+        </SidebarContextMenu>
+        <SidebarFooter className="h-auto mt-1 bg-background/70 py-2">
+          <SidebarFooterVault projectData={projectData} />
+        </SidebarFooter>
+      </div>
     </Sidebar>
   );
 }

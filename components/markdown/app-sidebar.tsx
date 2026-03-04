@@ -1,7 +1,7 @@
 'use client';
 import { NavMain } from './nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
-import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, GalleryVertical, ArrowUpNarrowWide } from 'lucide-react';
+import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, ArrowUpNarrowWide } from 'lucide-react';
 import { SidebarContextMenu } from './sidebar-context-menu';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
@@ -144,14 +144,6 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
                             onClick={() => setCollapseAll(true)}
                           >
                             <ArrowUpNarrowWide className="h-6! w-6!" />
-                          </Button>
-                          <Button
-                            className="px-2! py-1! border border-transparent"
-                            variant={'ghost'}
-                            title="Auto-reveal Current File"
-                            onClick={() => setCollapseAll(true)}
-                          >
-                            <GalleryVertical className="h-6! w-6!" />
                           </Button>
                           <Button
                             className="px-2! py-1! border border-transparent"

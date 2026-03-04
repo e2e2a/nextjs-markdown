@@ -50,10 +50,14 @@ export const TabItem = ({ tab, isActive, draggedTabId, isDropBefore, pid, onDrag
 
         <span className={cn('text-sm truncate flex-1 select-none', tab.isPreview && 'italic opacity-80')}>{tab.title}</span>
 
-        <div className={cn('ml-2 flex items-center justify-center w-4 h-4', draggedTabId ? 'pointer-events-none' : 'pointer-events-auto')}>
+        <div
+          onMouseDown={e => e.stopPropagation()}
+          className={cn('ml-2 flex items-center justify-center w-4 h-4', draggedTabId ? 'pointer-events-none' : 'pointer-events-auto')}
+        >
           <X
             className={cn('w-3 h-3 opacity-0 group-hover:opacity-100 hover:bg-accent rounded-sm transition-opacity ')}
             onClick={e => {
+              e.preventDefault();
               e.stopPropagation();
               tabActions.closeTab(pid, tab.nodeId);
             }}

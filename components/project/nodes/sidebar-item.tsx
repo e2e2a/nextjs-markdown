@@ -71,11 +71,38 @@ export default function SidebarItem({ item, depth, nodesById, activeDrag, target
   const isDirectTarget = activeDrag?._id === item._id;
   const isInForbiddenZone = isDirectTarget || isParentDragging;
 
+  const userToggledRef = useRef(false);
+  const handleToggle = (value: boolean) => {
+    userToggledRef.current = true;
+    setIsOpen(value);
+  };
+  // Compute all folders that need to be open for the activeNode
   useEffect(() => {
-    if (isCreatingHere)
-      requestAnimationFrame(() => {
-        setIsOpen(true);
-      });
+    if (item.type !== 'folder') return;
+    if (!activeNode) return;
+    let current = activeNode;
+    let shouldOpen = false;
+
+    while (current?.parentId) {
+      if (current.parentId === item._id) {
+        shouldOpen = true;
+        break;
+      }
+      current = nodesById[current.parentId];
+    }
+
+    if (activeNode._id === item._id) shouldOpen = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (shouldOpen && !isOpen && !userToggledRef.current) setIsOpen(true);
+  }, [activeNode, isOpen, item._id, item.type, nodesById]);
+
+  useEffect(() => {
+    userToggledRef.current = false;
+  }, [activeNode?._id]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (isCreatingHere) setIsOpen(true);
   }, [isCreatingHere]);
 
   const clearOpenFolderTimeout = () => {
@@ -184,7 +211,7 @@ export default function SidebarItem({ item, depth, nodesById, activeDrag, target
           key={item.title}
           open={isOpen}
           data-id={item._id ?? 'root'}
-          onOpenChange={isUpdatingNode?._id === item._id ? undefined : setIsOpen}
+          onOpenChange={isUpdatingNode?._id === item._id ? undefined : handleToggle}
           className={cn(
             'transition-none leading-none z-0',
             activeDrag && '*:hover:bg-transparent!',

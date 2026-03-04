@@ -1,7 +1,7 @@
 'use client';
 import { NavMain } from './nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
-import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, ArrowUpNarrowWide } from 'lucide-react';
+import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, ArrowUpNarrowWide, GalleryVertical } from 'lucide-react';
 import { SidebarContextMenu } from './sidebar-context-menu';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
@@ -11,11 +11,14 @@ import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { IProject } from '@/types';
 import { SidebarFooterVault } from './sidebar-footer-vault';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTabStore } from '@/features/editor/stores/tabs';
 
 export function AppSidebar({ projectData }: { projectData: IProject }) {
-  const { setCollapseAll, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
+  const { setCollapseAll, setActiveNode, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
+  const { activeTabs } = useTabStore();
+  const activeTabId = activeTabs[projectData._id];
   const mutation = useNodeMutations();
-
+  console.log('activeNode', activeNode);
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isMac = navigator.platform.toUpperCase().includes('MAC');
@@ -149,7 +152,26 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
                             className="px-2! py-1! border border-transparent"
                             variant={'ghost'}
                             title="Collapse All"
-                            onClick={() => setCollapseAll(true)}
+                            onClick={() => {
+                              setActiveNode(null); // first clear
+                              setTimeout(() => {
+                                setActiveNode(activeTabId);
+                              }, 0);
+                            }}
+                          >
+                            <GalleryVertical className="h-6! w-6!" />
+                          </Button>
+                          <Button
+                            className="px-2! py-1! border border-transparent"
+                            variant={'ghost'}
+                            title="Collapse All"
+                            tabIndex={0}
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setActiveNode(null);
+                              setCollapseAll(true);
+                            }}
                           >
                             <ChevronsDownUp className="h-6! w-6!" />
                           </Button>

@@ -182,6 +182,7 @@ export const useNodeStore = create<NodesState>(set => ({
       const key = localStorage.key(i);
       if (key?.startsWith('sidebar-folder-open')) {
         localStorage.removeItem(key);
+        // localStorage.setItem(key, 'false');
       }
     }
 

@@ -430,6 +430,21 @@ export function getMermaidDecos(state: EditorState, activeLineNum: number): Stat
   return decos;
 }
 
+export function getTagDecos(text: string, lineFrom: number): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const tagRegex = /(^|\s)#([a-zA-Z][\w-]+)/g;
+  let match;
+
+  while ((match = tagRegex.exec(text)) !== null) {
+    const start = lineFrom + match.index + match[1].length;
+    const end = start + match[0].length - match[1].length;
+
+    decos.push(Decoration.mark({ class: 'cm-hashtag' }).range(start, end));
+  }
+
+  return decos;
+}
+
 export function buildDecorations(state: EditorState): RangeSet<Decoration> {
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
@@ -461,6 +476,7 @@ export function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getTaskDecos(line.text, line.from));
     decos.push(...getLinkDecos(state, line.text, line.from, isActive));
     decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));
+    decos.push(...getTagDecos(line.text, line.from));
 
     const calloutResult = getCalloutDecos(state, lineNum, activeLineNum);
 

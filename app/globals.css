@@ -945,7 +945,12 @@ body {
     border-left: 4px solid #45b145;
     background: rgba(69, 177, 69, 0.05);
   }
+
   .cm-callout-success .cm-callout-header {
     color: #45b145;
+  }
+
+  .cm-hashtag {
+    @apply rounded-full bg-primary/30 cursor-pointer border border-primary text-primary-foreground/90 px-1.5;
   }
 }

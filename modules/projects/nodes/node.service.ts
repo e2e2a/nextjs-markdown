@@ -6,6 +6,8 @@ import { ensureProjectMember } from '../project.context';
 import { HttpError } from '@/utils/server/errors';
 import { UnitOfWork } from '@/common/UnitOfWork';
 
+const ALLOWED = ['createdAt', 'updatedAt'] as const;
+export type ExcludeField = (typeof ALLOWED)[number];
 interface FlatNode {
   _id: ObjectId;
   parentId: ObjectId | null;
@@ -101,8 +103,17 @@ async function checkNodeExistence(params: { projectId: string; parentId: string 
 }
 
 export const nodeService = {
-  getProjectNodeTree: async (projectId: string): Promise<{ nodes: TreeNode[] }> => {
-    const flatNodes = await nodeRepository.findMany({ projectId });
+  getProjectNodeTree: async (projectId: string, exclude?: string): Promise<{ nodes: TreeNode[] }> => {
+    const fields = (exclude
+      ?.split(',')
+      .map(f => f.trim())
+      .filter(Boolean) ?? []) as ExcludeField[];
+
+    // 2. Validate & Throw
+    if (!fields.every(f => ALLOWED.includes(f))) {
+      throw new HttpError('BAD_INPUT', `Only ${ALLOWED.join(', ')} can be excluded.`);
+    }
+    const flatNodes = await nodeRepository.findMany({ projectId }, fields);
     const nodes = buildTree(flatNodes);
     const sortedTree = sortNodeTree(nodes);
     return { nodes: sortedTree };

@@ -5,15 +5,15 @@ import { ensureAuthenticated } from '@/lib/server/auth-utils';
 import { INode } from '@/types';
 
 export const nodeController = {
-  getProjectTree: async (pid: string) => {
+  getProjectTree: async (pid: string, exclude?: string | null) => {
     // const session = await ensureAuthenticated();
     if (!pid) throw new HttpError('BAD_INPUT');
-    const nodes = await nodeService.getProjectNodeTree(pid);
+    const nodes = await nodeService.getProjectNodeTree(pid, exclude || undefined);
     return nodes;
   },
 
   update: async (nid: string, rawBody: { title?: string; content?: string }) => {
-    const session = await ensureAuthenticated();
+    await ensureAuthenticated();
     if (!nid) throw new HttpError('BAD_INPUT');
     const validatedBody = NodeDTO.update.safeParse({ ...rawBody, _id: nid });
 

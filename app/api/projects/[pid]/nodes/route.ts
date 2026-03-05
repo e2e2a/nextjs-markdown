@@ -7,7 +7,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ pid: st
   try {
     await connectDb();
     const { pid } = await context.params;
-    const res = await nodeController.getProjectTree(pid);
+
+    // Simple extraction of the exclude param (e.g., ?exclude=content,metadata)
+    const { searchParams } = new URL(req.url);
+    const exclude = searchParams.get('exclude');
+
+    const res = await nodeController.getProjectTree(pid, exclude);
 
     return NextResponse.json(res);
   } catch (err) {

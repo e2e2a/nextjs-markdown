@@ -1,6 +1,7 @@
 import Node from '@/modules/projects/nodes/node.model';
 import { INode } from '@/types';
 import { FilterQuery, ObjectId } from 'mongoose';
+import { ExcludeField } from './node.service';
 const updateOptions = { new: true, runValidators: true };
 
 interface FlatNode {
@@ -79,5 +80,14 @@ export const nodeRepository = {
 
   deleteMany: (userId: string, nodeIds: string[]) => Node.deleteMany({ _id: { $in: nodeIds }, userId: userId }),
 
-  findMany: (data: { projectId: string }) => Node.find(data).lean<FlatNode[]>().exec(),
+  findMany: (data: { projectId: string }, exclude: ExcludeField[] = []) => {
+    let query = Node.find(data);
+
+    if (exclude && exclude.length > 0) {
+      const projection = exclude.map(f => `-${f.trim()}`).join(' ');
+      query = query.select(projection);
+    }
+
+    return query.lean<FlatNode[]>().exec();
+  },
 };

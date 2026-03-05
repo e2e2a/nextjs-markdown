@@ -538,3 +538,117 @@ export class ImageWidget extends WidgetType {
     return true;
   }
 }
+
+export class BlockquoteContainerWidget extends WidgetType {
+  constructor(readonly level: number) {
+    super();
+  }
+
+  toDOM() {
+    const container = document.createElement('div');
+    container.className = `cm-blockquote-container cm-bq-level-${this.level}`;
+    return container;
+  }
+
+  ignoreEvent() {
+    return false;
+  }
+
+  eq(other: BlockquoteContainerWidget) {
+    return other.level === this.level;
+  }
+}
+
+export class CalloutWidget extends WidgetType {
+  constructor(
+    readonly type: string,
+    readonly rawText: string
+  ) {
+    super();
+  }
+
+  getIcon(type: string) {
+    const icons: Record<string, string> = {
+      note: '📝',
+      info: 'ℹ️',
+      todo: '✅',
+      warning: '⚠️',
+      error: '🛑',
+      success: '✔️',
+      bug: '🐛',
+      example: '🧪',
+    };
+    return icons[type] || '📝';
+  }
+
+  toDOM(view: EditorView) {
+    const container = document.createElement('div');
+    container.className = `cm-callout cm-callout-${this.type}`;
+    container.tabIndex = -1;
+
+    const btn = document.createElement('button');
+    btn.className = 'cm-callout-toggle';
+    btn.innerHTML = `<span>&lt;/&gt;</span>`;
+    container.onclick = e => {
+      e.preventDefault();
+      const currentPos = view.posAtDOM(container);
+      view.dispatch({
+        selection: { anchor: currentPos },
+        scrollIntoView: true,
+      });
+      view.focus();
+    };
+    btn.onclick = e => {
+      e.preventDefault();
+      const currentPos = view.posAtDOM(container);
+      view.dispatch({
+        selection: { anchor: currentPos },
+        scrollIntoView: true,
+      });
+      view.focus();
+    };
+
+    const content = document.createElement('div');
+    content.className = 'cm-callout-content';
+
+    const lines = this.rawText.split('\n');
+
+    const firstLineClean = lines[0].replace(/^(\s{0,3})>\s?\[!\w+\]\s?/, '').trim();
+    const titleText = firstLineClean || this.type.toUpperCase();
+
+    const bodyText = lines
+      .slice(1)
+      .map(line => line.replace(/^(\s{0,3})>\s?/, ''))
+      .join('\n');
+
+    // Header Construction
+    const header = document.createElement('div');
+    header.className = 'cm-callout-header';
+
+    const icon = document.createElement('span');
+    icon.innerText = this.getIcon(this.type);
+
+    const title = document.createElement('span');
+    title.className = 'cm-callout-title';
+    title.innerText = titleText;
+
+    header.appendChild(icon);
+    header.appendChild(title);
+
+    const body = document.createElement('div');
+    body.className = 'cm-callout-body';
+    body.innerHTML = marked.parse(bodyText) as string;
+
+    content.appendChild(header);
+    content.appendChild(body);
+
+    container.appendChild(btn);
+    container.appendChild(content);
+
+    return container;
+  }
+
+  eq(other: CalloutWidget) {
+    return other.rawText === this.rawText && other.type === this.type;
+  }
+}

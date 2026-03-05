@@ -1,6 +1,6 @@
 import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
-import { BulletWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
+import { BulletWidget, CalloutWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 import { MermaidWidget } from '../widgets/mermaid-widget';
 import { sourceModeField } from '../plugins';
@@ -247,6 +247,48 @@ export function getBlockquoteDecos(state: EditorState, text: string, lineFrom: n
   return decos;
 }
 
+export function getCalloutDecos(state: EditorState, startLine: number, activeLineNum: number) {
+  const doc = state.doc;
+  const firstLine = doc.line(startLine);
+
+  const match = firstLine.text.match(/^(\s{0,3})>\s?\[!(\w+)\]/);
+  if (!match) return null;
+
+  let endLine = startLine;
+  for (let i = startLine + 1; i <= doc.lines; i++) {
+    const line = doc.line(i);
+    if (!line.text.trim().startsWith('>')) break;
+    endLine = i;
+  }
+  const blockFrom = doc.line(startLine).from;
+  const blockTo = doc.line(endLine).to;
+
+  const sourceMode = state.field(sourceModeField, false);
+  const viewMode = state.facet(EditorState.readOnly);
+  const isBlockActive = activeLineNum >= startLine && activeLineNum <= endLine;
+  const isSelected = isRangeSelected(state, blockFrom, blockTo);
+
+  if (!viewMode && (isBlockActive || isSelected || sourceMode)) {
+    return null;
+  }
+
+  const lines: string[] = [];
+  for (let i = startLine; i <= endLine; i++) {
+    lines.push(doc.line(i).text);
+  }
+
+  return {
+    decos: [
+      Decoration.replace({
+        widget: new CalloutWidget(match[2].toLowerCase(), lines.join('\n')),
+        block: false, // Keeping it false for smooth cursor/backspace
+        side: -1,
+      }).range(blockFrom, blockTo),
+    ],
+    skipToLine: endLine,
+  };
+}
+
 export function getHRDecos(state: EditorState, text: string, lineFrom: number, lineTo: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const sourceMode = state.field(sourceModeField, false);
@@ -412,13 +454,21 @@ export function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getHeadingDecos(state, line.text, line.from, isActive));
     decos.push(...getBoldDecos(state, line.text, line.from, isActive));
     decos.push(...getInlineCodeDecos(state, line.text, line.from, isActive));
-    decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));
     decos.push(...getHRDecos(state, line.text, line.from, line.to, isActive));
     decos.push(...getItalicDecos(state, line.text, line.from, isActive));
     decos.push(...getNumberedListDecos(line.text, line.from));
     decos.push(...getBulletListDecos(state, line.text, line.from, isActive));
     decos.push(...getTaskDecos(line.text, line.from));
     decos.push(...getLinkDecos(state, line.text, line.from, isActive));
+    decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));
+
+    const calloutResult = getCalloutDecos(state, lineNum, activeLineNum);
+
+    if (calloutResult) {
+      decos.push(...calloutResult.decos);
+      lineNum = calloutResult.skipToLine;
+      continue;
+    }
     decos.push(...getImageDecos(state, line.text, line.from, line.to, isActive));
   }
 

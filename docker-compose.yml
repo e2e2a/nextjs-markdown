@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.next
+      # - /app/.next
       - /dev/null:/app/nextjs_mongo.log # Added to prevent cache thrashing
     environment:
       - MONGO_URI=${MONGO_URI}
@@ -46,8 +46,8 @@ services:
     image: mongo:latest
     container_name: nextjs_mongo
     hostname: ${MONGO_HOST}
-    ports:
-      - '27018:27017' # 27018 for Compass (Windows) | 27017 for App (Internal)
+    # ports:
+    # - '27018:27017' # 27018 for Compass (Windows) | 27017 for App (Internal)
     volumes:
       - nextjs_mongo_data:/data/db
     networks:

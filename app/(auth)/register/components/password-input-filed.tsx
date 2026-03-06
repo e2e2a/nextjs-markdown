@@ -24,6 +24,7 @@ export function PasswordInputField({ value, onChange, disabled }: IProps) {
       />
       <button
         type="button"
+        tabIndex={-1}
         onClick={() => setShowPassword(prev => !prev)}
         className="absolute inset-y-0 cursor-pointer right-0 flex items-center pr-3 text-primary"
       >

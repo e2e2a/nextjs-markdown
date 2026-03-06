@@ -18,6 +18,7 @@ import * as Y from 'yjs';
 import { useTabStore } from '@/features/editor/stores/tabs';
 import { useParams } from 'next/navigation';
 import { EditorOptions } from './editor-options';
+import { useNodeStore } from '@/features/editor/stores/nodes';
 
 const myOwnDarkTheme = createTheme({
   theme: 'dark',
@@ -50,6 +51,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
   const markDirty = useTabStore(state => state.markDirty);
+  const { setActiveNode } = useNodeStore();
   const pid = useParams().pid as string;
 
   useEffect(() => {
@@ -102,6 +104,15 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     if (!instance || !ytext || !undoManager) return [];
 
     return [
+      // The new handler
+      EditorView.domEventHandlers({
+        mousedown: () => {
+          setActiveNode(node._id);
+        },
+        focus: () => {
+          setActiveNode(node._id);
+        },
+      }),
       editableCompartment.of(EditorState.readOnly.of(false)),
       onDocChange,
       tableBackspace,
@@ -122,7 +133,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
       columnSelectionField,
       markdownLivePreviewField,
     ];
-  }, [instance, ytext, onDocChange, undoManager]);
+  }, [instance, ytext, onDocChange, setActiveNode, node, undoManager]);
 
   return (
     <>
@@ -146,7 +157,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
 
             if (target.classList.contains('cm-scroller')) {
               e.preventDefault();
-
+              setActiveNode(node._id);
               const view = editorViewRef.current;
               if (!view) return;
               const isEditable = view.state.facet(EditorView.editable);
@@ -180,6 +191,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
           <div
             onMouseDown={() => {
               // e.preventDefault();
+              setActiveNode(node._id);
               const view = editorViewRef.current;
               if (!view) return;
               setTimeout(() => {

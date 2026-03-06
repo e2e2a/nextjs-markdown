@@ -15,41 +15,65 @@ export interface SearchResult {
   matches: SearchMatch[];
 }
 
-export function performSearch(
-  query: string,
-  nodes: INode[] | null,
-  contextLen = 80 // <--- 1. EDIT THIS for text length (characters)
-): SearchResult[] {
+export function performSearch(query: string, nodes: INode[] | null): SearchResult[] {
   if (!query || query.length < 2) return [];
-  if (!nodes || nodes.length <= 0) return [];
-  const results: SearchResult[] = [];
-  const regex = new RegExp(`(${query})`, 'gi');
+  if (!nodes) return [];
 
-  nodes.forEach(node => {
-    const content = node.content || ''; // Ensure you have a plain-text field
+  const operatorMatch = query.match(/^(tag|file|line):(.*)/i);
+  const operator = operatorMatch ? operatorMatch[1].toLowerCase() : null;
+  const searchTerm = (operatorMatch ? operatorMatch[2] : query).trim();
+
+  if (!searchTerm && operator !== 'file') return [];
+
+  return nodes.reduce((results: SearchResult[], node) => {
+    const content = node.content || '';
     const matches: SearchMatch[] = [];
-    let match;
 
-    // Find all occurrences in the content
+    if (operator === 'file') {
+      if (node.title.toLowerCase().includes(searchTerm.toLowerCase())) {
+        results.push({ nodeId: node._id, title: node.title, matches: [] });
+      }
+      return results;
+    }
+
+    let regex: RegExp;
+    if (operator === 'tag') {
+      const cleanTerm = searchTerm.replace(/^#/, '');
+      regex = new RegExp(`#(?!\\s)(${cleanTerm})(\\s|$)`, 'gi');
+    } else if (operator === 'line') {
+      const keywords = searchTerm.split(/\s+/).filter(k => k.length > 0);
+      if (keywords.length === 0) return results;
+      const lookaheads = keywords.map(k => `(?=.*${k})`).join('');
+      regex = new RegExp(`^${lookaheads}.*$`, 'gim');
+    } else {
+      regex = new RegExp(`(${searchTerm})`, 'gi');
+    }
+
+    let match;
     while ((match = regex.exec(content)) !== null) {
-      const start = Math.max(0, match.index - contextLen);
-      const end = Math.min(content.length, match.index + match[0].length + contextLen);
+      const lineStart = content.lastIndexOf('\n', match.index) + 1;
+      const lineEnd = content.indexOf('\n', match.index);
+      const end = lineEnd === -1 ? content.length : lineEnd;
+
+      const matchedText = operator === 'line' ? content.substring(match.index, end) : match[1];
+      const matchLen = operator === 'line' ? matchedText.length : match[1].length;
+      const offset = operator === 'tag' ? 1 : 0;
 
       matches.push({
-        text: match[0],
-        before: content.substring(start, match.index),
-        after: content.substring(match.index + match[0].length, end),
+        text: operator === 'tag' ? `#${match[1]}` : matchedText,
+        before: operator === 'line' ? '' : content.substring(lineStart, match.index),
+        after: operator === 'line' ? '' : content.substring(match.index + matchLen + offset, end),
         index: match.index,
       });
-
-      // Limit matches per file to keep it clean (Obsidian style)
-      // if (matches.length >= 10) break;
     }
 
-    if (matches.length > 0 || node.title.toLowerCase().includes(query.toLowerCase())) {
+    const hasMatches = matches.length > 0;
+    const isTextSearchMatch = !operator && node.title.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (hasMatches || isTextSearchMatch) {
       results.push({ nodeId: node._id, title: node.title, matches });
     }
-  });
 
-  return results;
+    return results;
+  }, []);
 }

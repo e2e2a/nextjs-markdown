@@ -436,10 +436,11 @@ export function getTagDecos(text: string, lineFrom: number): StateRange<Decorati
   let match;
 
   while ((match = tagRegex.exec(text)) !== null) {
+    const tagName = match[2];
     const start = lineFrom + match.index + match[1].length;
     const end = start + match[0].length - match[1].length;
 
-    decos.push(Decoration.mark({ class: 'cm-hashtag' }).range(start, end));
+    decos.push(Decoration.mark({ class: 'cm-hashtag', attributes: { 'data-tag': `#${tagName}` } }).range(start, end));
   }
 
   return decos;

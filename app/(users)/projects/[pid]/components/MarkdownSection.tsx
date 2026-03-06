@@ -19,6 +19,7 @@ import { useTabStore } from '@/features/editor/stores/tabs';
 import { useParams } from 'next/navigation';
 import { EditorOptions } from './editor-options';
 import { useNodeStore } from '@/features/editor/stores/nodes';
+import { useProjectUIStore } from '@/features/editor/stores/project-ui';
 
 const myOwnDarkTheme = createTheme({
   theme: 'dark',
@@ -146,10 +147,18 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     if (!instance || !ytext || !undoManager) return [];
 
     return [
-      // The new handler
       EditorView.domEventHandlers({
-        mousedown: () => {
+        mousedown: event => {
           setActiveNode(node._id);
+          const target = event.target as HTMLElement;
+
+          if (target.classList.contains('cm-hashtag')) {
+            const tag = target.getAttribute('data-tag');
+            if (tag) {
+              useProjectUIStore.getState().setSearchQuery(`tag:${tag}`);
+              useProjectUIStore.getState().setLeftSidebarTab('search');
+            }
+          }
         },
         focus: () => {
           setActiveNode(node._id);

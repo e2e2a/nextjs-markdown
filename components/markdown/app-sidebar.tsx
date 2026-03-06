@@ -14,11 +14,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTabStore } from '@/features/editor/stores/tabs';
 import { performSearch } from '@/utils/client/search-nodes-utils';
 import { flattenNodeTree } from '@/utils/client/node-utils';
+import { useProjectUIStore } from '@/features/editor/stores/project-ui';
+import { SearchOverlay } from './left-sidebar-search-button-overlay';
 
 export function AppSidebar({ projectData }: { projectData: IProject }) {
   const { nodes, setCollapseAll, setActiveNode, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
   const { activeTabs, openTab } = useTabStore();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { searchQuery, leftSidebarTab, setSearchQuery, setLeftSidebarTab } = useProjectUIStore();
+  const [history, setHistory] = useState<string[]>([]);
+  const STORAGE_KEY = 'left_sidebar_search_history';
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setHistory(JSON.parse(saved));
+      } catch {
+        console.error('Failed to parse search history');
+      }
+    }
+  }, []);
   const activeTabId = activeTabs[projectData._id];
   const mutation = useNodeMutations();
 
@@ -91,6 +108,13 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
     const node = flatNodes.find(n => n._id === nodeId);
     if (!node) return;
 
+    if (searchQuery.trim().length >= 2) {
+      const updatedHistory = [searchQuery.trim(), ...history.filter(item => item !== searchQuery.trim())].slice(0, 10); // Limit to top 10
+
+      setHistory(updatedHistory);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+    }
+
     openTab(projectData._id, node, true);
     setActiveNode(node._id);
   };
@@ -107,7 +131,12 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
       <div className="h-screen flex flex-col">
         <SidebarContextMenu node={null}>
           <div className="h-full overflow-hidden flex flex-col">
-            <Tabs defaultValue="nodes" className="w-full flex flex-col flex-1 min-h-0 gap-y-0">
+            <Tabs
+              defaultValue="nodes"
+              value={leftSidebarTab}
+              onValueChange={e => setLeftSidebarTab(e as 'search' | 'nodes' | 'bookmarks')}
+              className="w-full flex flex-col flex-1 min-h-0 gap-y-0"
+            >
               <SidebarHeader className="h-12 p-0">
                 <SidebarMenu className="h-12 flex w-full flex-row items-center justify-center px-2 relative">
                   <TabsList className="bg-transparent w-full flex items-start gap-x-3 justify-start">
@@ -197,7 +226,27 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <input
                             value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
+                            onChange={e => {
+                              setSearchQuery(e.target.value);
+                              if (!e.target.value)
+                                setIsDropdownOpen(true); // Re-open if cleared
+                              else setIsDropdownOpen(false); // Close when typing
+                            }}
+                            onFocus={() => {
+                              if (!searchQuery) setIsDropdownOpen(true);
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && searchQuery.trim().length >= 2) {
+                                const updatedHistory = [searchQuery.trim(), ...history.filter(item => item !== searchQuery.trim())].slice(0, 10);
+                                setHistory(updatedHistory);
+                                localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+                                setIsDropdownOpen(false);
+                              }
+                            }}
+                            onBlur={() => {
+                              console.log('running');
+                              setIsDropdownOpen(false);
+                            }}
                             placeholder="Search content..."
                             className="w-full bg-background/50 border border-white/10 rounded-md py-1.5 pl-9 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
                           />
@@ -207,6 +256,18 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
                             </button>
                           )}
                         </div>
+                        {isDropdownOpen && (
+                          <SearchOverlay
+                            query={searchQuery}
+                            history={history}
+                            setHistory={setHistory}
+                            STORAGE_KEY={STORAGE_KEY}
+                            onSelect={val => {
+                              setSearchQuery(val);
+                              setIsDropdownOpen(false);
+                            }}
+                          />
+                        )}
                       </TabsContent>
                     </div>
                   </div>
@@ -253,9 +314,9 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
                                   }}
                                   className="text-xs text-muted-foreground h-fit bg-white/5 rounded border border-white/5 cursor-default"
                                 >
-                                  ...{m.before}
+                                  {m.before}
                                   <span className="text-yellow-500 font-bold">{m.text}</span>
-                                  {m.after}...
+                                  {m.after}
                                 </div>
                               ))}
                             </div>

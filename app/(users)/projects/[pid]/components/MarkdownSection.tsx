@@ -6,7 +6,7 @@ import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { createTheme } from '@uiw/codemirror-themes';
 // import { getSyncProvider } from '@/lib/client/sync-provider';
-import { INode } from '@/types';
+import { EditorJumpDetail, INode } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
@@ -53,6 +53,48 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
   const markDirty = useTabStore(state => state.markDirty);
   const { setActiveNode } = useNodeStore();
   const pid = useParams().pid as string;
+
+  // Inside your component
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    const performJump = () => {
+      const view = editorViewRef.current;
+      const pending = window.__PENDING_JUMP__ as EditorJumpDetail | undefined;
+
+      if (!pending || pending.nodeId !== node._id) return;
+
+      if (!view || view.state.doc.length === 0) {
+        timer = setTimeout(performJump, 50);
+        return;
+      }
+
+      const docLength = view.state.doc.length;
+      const offset = Math.min(pending.offset, docLength);
+
+      requestAnimationFrame(() => {
+        view.dispatch({
+          selection: { anchor: offset, head: Math.min(offset + pending.length, docLength) },
+          scrollIntoView: true,
+          userEvent: 'select',
+        });
+        view.focus();
+
+        // Clear it
+        window.__PENDING_JUMP__ = null;
+      });
+    };
+
+    if (synced) performJump();
+
+    const handleJumpEvent = () => performJump();
+    window.addEventListener('editor-jump-to', handleJumpEvent);
+
+    return () => {
+      window.removeEventListener('editor-jump-to', handleJumpEvent);
+      clearTimeout(timer);
+    };
+  }, [node._id, synced]);
 
   useEffect(() => {
     if (!node?._id) return;
@@ -134,6 +176,27 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
       markdownLivePreviewField,
     ];
   }, [instance, ytext, onDocChange, setActiveNode, node, undoManager]);
+
+  useEffect(() => {
+    if (!ytext) return;
+
+    let timer: NodeJS.Timeout;
+
+    const observer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const currentContent = ytext.toString();
+
+        useNodeStore.getState().updateNode(node._id, { content: currentContent });
+      }, 1000);
+    };
+
+    ytext.observe(observer);
+    return () => {
+      ytext.unobserve(observer);
+      clearTimeout(timer);
+    };
+  }, [ytext, node._id]);
 
   return (
     <>

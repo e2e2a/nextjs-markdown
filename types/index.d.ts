@@ -229,3 +229,9 @@ export type TableMeta = {
   editingMemberId: string | null;
   setEditingMemberId: React.Dispatch<React.SetStateAction<string | null>>;
 };
+
+export type EditorJumpDetail = {
+  nodeId: string;
+  offset: number;
+  length: number;
+};

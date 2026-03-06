@@ -1,24 +1,27 @@
 'use client';
 import { NavMain } from './nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
-import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, ArrowUpNarrowWide, GalleryVertical } from 'lucide-react';
+import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, ArrowUpNarrowWide, GalleryVertical, X } from 'lucide-react';
 import { SidebarContextMenu } from './sidebar-context-menu';
 import { Button } from '../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { useEffect } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { makeToastError } from '@/lib/toast';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { IProject } from '@/types';
 import { SidebarFooterVault } from './sidebar-footer-vault';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTabStore } from '@/features/editor/stores/tabs';
+import { performSearch } from '@/utils/client/search-nodes-utils';
+import { flattenNodeTree } from '@/utils/client/node-utils';
 
 export function AppSidebar({ projectData }: { projectData: IProject }) {
-  const { setCollapseAll, setActiveNode, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
-  const { activeTabs } = useTabStore();
+  const { nodes, setCollapseAll, setActiveNode, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
+  const { activeTabs, openTab } = useTabStore();
+  const [searchQuery, setSearchQuery] = useState('');
   const activeTabId = activeTabs[projectData._id];
   const mutation = useNodeMutations();
-  console.log('activeNode', activeNode);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isMac = navigator.platform.toUpperCase().includes('MAC');
@@ -79,6 +82,18 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
   let parentId: string | null = null;
   if (activeNode) parentId = activeNode.type === 'folder' ? activeNode._id : activeNode.parentId;
   if (selectedNode) parentId = selectedNode.type === 'folder' ? selectedNode._id : selectedNode.parentId;
+  const deferredNodes = useDeferredValue(nodes);
+  const flatNodes = useMemo(() => flattenNodeTree(deferredNodes), [deferredNodes]);
+
+  const searchResults = useMemo(() => performSearch(searchQuery, flatNodes), [searchQuery, flatNodes]);
+
+  const handleSearchResultClick = (nodeId: string) => {
+    const node = flatNodes.find(n => n._id === nodeId);
+    if (!node) return;
+
+    openTab(projectData._id, node, true);
+    setActiveNode(node._id);
+  };
 
   return (
     <Sidebar
@@ -177,6 +192,22 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
                           </Button>
                         </div>
                       </TabsContent>
+                      <TabsContent className="h-full min-h-0 w-full flex items-center" value="search">
+                        <div className="relative w-full px-1">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <input
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            placeholder="Search content..."
+                            className="w-full bg-background/50 border border-white/10 rounded-md py-1.5 pl-9 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                          />
+                          {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground">
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </TabsContent>
                     </div>
                   </div>
                 </SidebarMenu>
@@ -186,8 +217,52 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
                   <TabsContent className="h-full min-h-0 p-0! gap-0! space-x-0 space-y-0! m-0!" value="nodes">
                     <NavMain />
                   </TabsContent>
-                  <TabsContent value="search" className="text-white pt-16">
-                    Search
+                  {/* 4. SEARCH RESULTS CONTENT */}
+                  <TabsContent value="search" className="h-full min-h-0 p-0! gap-0! space-x-0 space-y-0! m-0! flex">
+                    <div className="flex-1 flex px-0 pb-0 flex-col overflow-hidden">
+                      {searchQuery.length < 2 ? (
+                        <div className="p-4 text-muted-foreground text-center text-sm">Type at least 2 characters to search...</div>
+                      ) : (
+                        <div className="flex flex-col gap-y-4 px-4 overflow-y-auto pt-16 [&::-webkit-scrollbar-track]:mt-[56px]">
+                          <div className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
+                            <span>{searchResults.length} Files Found</span>
+                          </div>
+                          {searchResults.map(res => (
+                            <div key={res.nodeId} className="space-y-1">
+                              <div
+                                className="text-sm font-semibold text-foreground truncate cursor-pointer hover:underline"
+                                onClick={() => handleSearchResultClick(res.nodeId)}
+                              >
+                                {res.title}
+                              </div>
+                              {res.matches.map((m, i) => (
+                                <div
+                                  key={i}
+                                  onClick={() => {
+                                    const jumpData = {
+                                      nodeId: res.nodeId,
+                                      offset: m.index,
+                                      length: m.text.length,
+                                    };
+
+                                    window.__PENDING_JUMP__ = jumpData;
+
+                                    handleSearchResultClick(res.nodeId);
+
+                                    window.dispatchEvent(new CustomEvent('editor-jump-to', { detail: jumpData }));
+                                  }}
+                                  className="text-xs text-muted-foreground h-fit bg-white/5 rounded border border-white/5 cursor-default"
+                                >
+                                  ...{m.before}
+                                  <span className="text-yellow-500 font-bold">{m.text}</span>
+                                  {m.after}...
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
                   <TabsContent value="bookmarks" className="text-white pt-16">
                     Bookmarks

@@ -34,7 +34,7 @@ To avoid "it works on my machine" issues with MongoDB Replica Sets and WebSocket
 ### 1. Clone & Prep
 
 ```bash
-git clone [https://github.com/e2e2a/nextjs-markdown](https://github.com/e2e2a/nextjs-markdown)
+git clone https://github.com/e2e2a/nextjs-markdown.git
 cd nextjs-markdown
 # Create your .env file based on the section below
 ```

@@ -20,6 +20,7 @@ import { useParams } from 'next/navigation';
 import { EditorOptions } from './editor-options';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { useProjectUIStore } from '@/features/editor/stores/project-ui';
+import ContextMenuClient from './context-menu/context-menu-client';
 
 const myOwnDarkTheme = createTheme({
   theme: 'dark',
@@ -55,7 +56,9 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
   const { setActiveNode } = useNodeStore();
   const pid = useParams().pid as string;
 
-  // Inside your component
+  // for context menu
+  const [contextType, setContextType] = useState<'general' | 'callout' | 'blockquote' | 'mermaid'>('general');
+
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
 
@@ -163,6 +166,14 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
         focus: () => {
           setActiveNode(node._id);
         },
+        contextmenu: (event, view) => {
+          const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+          if (pos !== null) {
+            const line = view.state.doc.lineAt(pos);
+            setContextType(line.text.trim().startsWith('[!') ? 'callout' : 'general');
+          }
+          return false;
+        },
       }),
       editableCompartment.of(EditorState.readOnly.of(false)),
       onDocChange,
@@ -222,51 +233,20 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
         tabIndex={-1}
         className="h-full! grid grid-cols-1 max-h-full w-full px-10 overflow-y-auto overflow-hidden relative [&::-webkit-scrollbar-track]:mt-[56px]"
       >
-        <div
-          className="w-full h-auto pb-4 flex flex-col"
-          onMouseDown={e => {
-            const target = e.target as HTMLElement;
-
-            if (target.classList.contains('cm-scroller')) {
-              e.preventDefault();
-              setActiveNode(node._id);
-              const view = editorViewRef.current;
-              if (!view) return;
-              const isEditable = view.state.facet(EditorView.editable);
-              if (!isEditable) return;
-
-              view.focus();
-              const endPos = view.state.doc.length;
-
-              view.dispatch({
-                selection: { anchor: endPos, head: endPos },
-                scrollIntoView: true,
-                userEvent: 'select',
-              });
-            }
-          }}
-        >
-          {synced && instance && ytext && (
-            <CodeMirror
-              key={node._id}
-              value={instance?.ydoc.getText('codemirror').toString() ?? ''}
-              onCreateEditor={view => {
-                editorViewRef.current = view;
-              }}
-              theme={myOwnDarkTheme}
-              basicSetup={false}
-              extensions={editorExtensions}
-              className="h-auto!"
-            />
-          )}
-          {!synced && <div className="min-h-full flex items-center justify-center text-5xl leading-1 w-full">Syncing Document...</div>}
+        <ContextMenuClient editorViewRef={editorViewRef} contextType={contextType} setContextType={setContextType} synced={synced}>
           <div
-            onMouseDown={() => {
-              // e.preventDefault();
-              setActiveNode(node._id);
-              const view = editorViewRef.current;
-              if (!view) return;
-              setTimeout(() => {
+            className="w-full h-auto pb-4 flex flex-col"
+            onMouseDown={e => {
+              const target = e.target as HTMLElement;
+
+              if (target.classList.contains('cm-scroller')) {
+                e.preventDefault();
+                setActiveNode(node._id);
+                const view = editorViewRef.current;
+                if (!view) return;
+                const isEditable = view.state.facet(EditorView.editable);
+                if (!isEditable) return;
+
                 view.focus();
                 const endPos = view.state.doc.length;
 
@@ -275,12 +255,44 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
                   scrollIntoView: true,
                   userEvent: 'select',
                 });
-              }, 0);
+              }
             }}
-            className="cursor-text flex-1  h-full"
-          />
-        </div>
+          >
+            {synced && instance && ytext && (
+              <CodeMirror
+                key={node._id}
+                value={instance?.ydoc.getText('codemirror').toString() ?? ''}
+                onCreateEditor={view => {
+                  editorViewRef.current = view;
+                }}
+                theme={myOwnDarkTheme}
+                basicSetup={false}
+                extensions={editorExtensions}
+                className="h-auto!"
+              />
+            )}
+            {!synced && <div className="min-h-full flex items-center justify-center text-5xl leading-1 w-full">Syncing Document...</div>}
+            <div
+              onMouseDown={() => {
+                // e.preventDefault();
+                setActiveNode(node._id);
+                const view = editorViewRef.current;
+                if (!view) return;
+                setTimeout(() => {
+                  view.focus();
+                  const endPos = view.state.doc.length;
 
+                  view.dispatch({
+                    selection: { anchor: endPos, head: endPos },
+                    scrollIntoView: true,
+                    userEvent: 'select',
+                  });
+                }, 0);
+              }}
+              className="cursor-text flex-1  h-full"
+            />
+          </div>
+        </ContextMenuClient>
         <div className="pb-12 ">
           <Separator className="w-full border-border" />
           <div className="flex items-center justify-end py-5 gap-x-2">

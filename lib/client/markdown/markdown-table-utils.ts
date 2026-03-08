@@ -131,11 +131,12 @@ export function handleTableTabNavigation(widget: TablePreviewWidget, view: Edito
 
   if (isLastRow && isLastCell) {
     const next = addTableRow(tableData);
+    view.focus();
     view.dispatch({
       changes: { from: widget.from, to: widget.to, insert: serializeTable(next) },
       userEvent: 'input.table',
     });
-    focusTableCell(view, widget.from, next.length - 1, 0);
+    focusTableCell(view, widget.from, tableData.length, 0);
   } else {
     let r = rowIndex,
       c = cellIndex;
@@ -212,19 +213,35 @@ function getTablePosition(editor: HTMLElement) {
 }
 
 export function focusTableCell(view: EditorView, widgetFrom: number, rowIndex: number, colIndex: number) {
-  requestAnimationFrame(() => {
+  // Use a tiny timeout to ensure we are outside the CM update cycle
+  setTimeout(() => {
     const tableContainer = view.dom.querySelector(`.cm-table-widget-container[data-from="${widgetFrom}"]`) as HTMLElement | null;
 
     if (!tableContainer) return;
 
-    const cssRowIndex = rowIndex > 1 ? rowIndex : rowIndex + 1;
-    const cellSelector =
-      rowIndex === 0 ? `tr:nth-child(${cssRowIndex}) th:nth-child(${colIndex + 1})` : `tr:nth-child(${cssRowIndex}) td:nth-child(${colIndex + 1})`;
+    // Row 0 is the 1st tr (headers), Row 2 is the 2nd tr (first data row)
+    const cssRowIndex = rowIndex === 0 ? 1 : rowIndex;
+    const selector = `tr:nth-child(${cssRowIndex}) :is(td, th):nth-child(${colIndex + 1}) .cm-table-cell-editor`;
+    const targetEditor = tableContainer.querySelector(selector) as HTMLElement | null;
 
-    const targetEditor = tableContainer.querySelector(`${cellSelector} .cm-table-cell-editor`) as HTMLElement | null;
+    if (targetEditor) {
+      targetEditor.focus();
 
-    targetEditor?.focus();
-  });
+      const selection = window.getSelection();
+      const range = document.createRange();
+
+      if (targetEditor.childNodes.length > 0) {
+        range.selectNodeContents(targetEditor);
+        range.collapse(false);
+      } else {
+        range.setStart(targetEditor, 0);
+        range.collapse(true);
+      }
+
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }, 10); // 10ms is usually enough to let the DOM settle
 }
 
 export function updateTable(view: EditorView, from: number, to: number, data: string[][]) {

@@ -117,17 +117,18 @@ export const tableKeyboardHandler = EditorView.domEventHandlers({
         //   return true;
         // }
         if (isUp && atBottomBoundary) {
-          event.preventDefault();
-
           const container = view.dom.querySelector(`.cm-table-widget-container[data-from="${from}"][data-to="${to}"]`) as HTMLElement | null;
-
+          if (!container) continue;
+          event.preventDefault();
           const rows = container?.querySelectorAll('tr');
           const lastRow = rows?.[rows.length - 1];
 
           const firstCell = lastRow?.querySelector(':is(td, th):nth-child(1) .cm-table-cell-editor') as HTMLElement | null;
 
-          firstCell?.focus();
-          return true;
+          if (firstCell) {
+            firstCell.focus();
+            return true;
+          }
         }
       }
     }

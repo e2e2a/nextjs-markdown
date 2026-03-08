@@ -331,6 +331,7 @@ body {
   .cm-content {
     height: auto !important;
     line-height: 1rem;
+    counter-reset: md-numbered-list;
   }
 
   .cm-editor {
@@ -400,12 +401,40 @@ body {
   }
 
   .cm-list-number {
-    padding-left: 10px;
-    counter-increment: list-item;
-    @apply text-muted-foreground;
+    display: inline-block;
+    font-size: 0; /* Hides the typed "2." */
+  }
+
+  .cm-list-number::before {
+    font-size: 1rem; /* Brings back the visual number */
+    content: counter(md-numbered-list) '. ';
+    counter-increment: md-numbered-list;
+    @apply text-muted-foreground pl-2;
   }
 
   /** Start Table preview **/
+  /* 1. Target the line and kill the 'Ghost' cursor rendering area */
+  .cm-line:has(.cm-table-widget-container) {
+    height: 0 !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* Hide the native browser caret on the raw markdown line */
+    caret-color: transparent !important;
+    /* Make the text 'behind' the table invisible instantly */
+    color: transparent !important;
+    overflow: visible !important;
+    user-select: none !important;
+  }
+  /* 2. Nuclear Strike: Completely hide CM6 synthetic layers for this line */
+  .cm-line:has(.cm-table-widget-container) .cm-cursorLayer,
+  .cm-line:has(.cm-table-widget-container) .cm-selectionLayer {
+    display: none !important;
+    user-select: none !important;
+  }
+
+  /* 3. Your original design - UNCHANGED */
   .cm-table-widget-container {
     display: block !important;
     width: 100% !important;
@@ -414,6 +443,10 @@ body {
     box-sizing: border-box;
     z-index: 11;
     user-select: none;
+    /* Restore the visibility and layout for the widget only */
+    line-height: normal !important;
+    font-size: 1rem !important;
+    height: auto !important;
   }
 
   .cm-table-widget-container:focus,

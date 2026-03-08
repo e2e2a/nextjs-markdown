@@ -6,6 +6,10 @@ declare global {
 
 declare global {
   interface Window {
-    __PENDING_JUMP__: { nodeId: string; offset: number } | null;
+    __PENDING_JUMP__: { nodeId: string; offset: number; length: number } | null;
+  }
+
+  interface WindowEventMap {
+    'set-editor-context': CustomEvent<'general' | 'callout' | 'blockquote' | 'mermaid'>;
   }
 }

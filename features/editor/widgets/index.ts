@@ -327,18 +327,37 @@ export class TablePreviewWidget extends WidgetType {
       table.appendChild(tr);
     });
 
-    // if (this.isFreshInsert) {
-    //   this.isFreshInsert = false;
-    //   focusTableCell(view, this.from, 0, 0);
-    //   const container = document.createElement('div');
-    //   container.className = 'cm-table-widget-container';
+    if (!this.isViewMode && view.hasFocus) {
+      const head = view.state.selection.main.head;
+      const isNewlyCreated = head >= this.from && head <= this.to;
 
-    //   if (!container.dataset.focused) {
-    //     container.dataset.focused = 'true';
-    //     focusTableCell(view, this.from, 0, 0);
-    //   }
-    // }
+      if (isNewlyCreated) {
+        const performSetup = () => {
+          if (!container.isConnected) return;
 
+          const doc = view.state.doc;
+          const changes: ChangeSpec[] = [];
+
+          if (this.from === 0) changes.push({ from: 0, insert: '\n' });
+          if (this.to === doc.length) changes.push({ from: doc.length, insert: '\n' });
+
+          if (changes.length > 0) {
+            view.dispatch({
+              changes,
+              annotations: [Transaction.userEvent.of('input.type')],
+            });
+          }
+
+          const firstCell = container.querySelector('.cm-table-cell-editor') as HTMLElement;
+          if (firstCell && document.activeElement !== firstCell) {
+            firstCell.focus({ preventScroll: true });
+            window.getSelection()?.collapse(firstCell.firstChild || firstCell, 0);
+          }
+        };
+
+        queueMicrotask(performSetup);
+      }
+    }
     requestAnimationFrame(() => {
       if (!view.dom.isConnected || !view.hasFocus) return;
 
@@ -363,9 +382,10 @@ export class TablePreviewWidget extends WidgetType {
         view.dispatch({
           changes,
           annotations: [Transaction.userEvent.of('input.type'), Transaction.addToHistory.of(true)],
-          selection: view.state.selection,
+          // selection: view.state.selection,
         });
     });
+
     if (!this.isViewMode) {
       inner.appendChild(
         createTableActionButton('col', () => {

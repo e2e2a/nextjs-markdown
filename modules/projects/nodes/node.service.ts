@@ -5,6 +5,7 @@ import { ensureWorkspaceMember } from '@/modules/workspaces/workspace.context';
 import { ensureProjectMember } from '../project.context';
 import { HttpError } from '@/utils/server/errors';
 import { UnitOfWork } from '@/common/UnitOfWork';
+import { User } from 'next-auth';
 
 const ALLOWED = ['createdAt', 'updatedAt'] as const;
 export type ExcludeField = (typeof ALLOWED)[number];
@@ -103,16 +104,21 @@ async function checkNodeExistence(params: { projectId: string; parentId: string 
 }
 
 export const nodeService = {
-  getProjectNodeTree: async (projectId: string, exclude?: string): Promise<{ nodes: TreeNode[] }> => {
+  getProjectNodeTree: async (user: User, projectId: string, exclude?: string): Promise<{ nodes: TreeNode[] }> => {
+    const project = await projectService.findById(projectId);
+    if (!project) throw new HttpError('NOT_FOUND', `Project not found`);
+    if (user.role !== 'admin')
+      await Promise.all([
+        ensureWorkspaceMember(project.workspaceId, user.email), // wCtx
+        ensureProjectMember(project._id, user.email), // pCtx
+      ]);
+
     const fields = (exclude
       ?.split(',')
       .map(f => f.trim())
       .filter(Boolean) ?? []) as ExcludeField[];
 
-    // 2. Validate & Throw
-    if (!fields.every(f => ALLOWED.includes(f))) {
-      throw new HttpError('BAD_INPUT', `Only ${ALLOWED.join(', ')} can be excluded.`);
-    }
+    if (!fields.every(f => ALLOWED.includes(f))) throw new HttpError('BAD_INPUT', `Only ${ALLOWED.join(', ')} can be excluded.`);
     const flatNodes = await nodeRepository.findMany({ projectId }, fields);
     const nodes = buildTree(flatNodes);
     const sortedTree = sortNodeTree(nodes);

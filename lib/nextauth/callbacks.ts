@@ -48,12 +48,7 @@ export const authCallbacks = {
     return session;
   },
 
-  async jwt(params: {
-    token: NullableJWT;
-    user?: User | AdapterUser;
-    account?: Account | null;
-    profile?: Profile;
-  }) {
+  async jwt(params: { token: NullableJWT; user?: User | AdapterUser; account?: Account | null; profile?: Profile }) {
     const { token, user } = params;
     if (user) {
       /**

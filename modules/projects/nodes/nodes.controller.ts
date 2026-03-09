@@ -6,9 +6,9 @@ import { INode } from '@/types';
 
 export const nodeController = {
   getProjectTree: async (pid: string, exclude?: string | null) => {
-    // const session = await ensureAuthenticated();
+    const session = await ensureAuthenticated();
     if (!pid) throw new HttpError('BAD_INPUT');
-    const nodes = await nodeService.getProjectNodeTree(pid, exclude || undefined);
+    const nodes = await nodeService.getProjectNodeTree(session.user, pid, exclude || undefined);
     return nodes;
   },
 

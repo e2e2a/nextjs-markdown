@@ -96,7 +96,7 @@ export function buildTree(nodes: FlatNode[]): TreeNode[] {
 async function checkNodeExistence(params: { projectId: string; path: string; type: 'file' | 'folder' }) {
   const { projectId, path, type } = params;
 
-  const existingNode = await nodeRepository.findConflict({
+  const existingNode = await nodeRepository.findOneCollated({
     projectId,
     path: { $regex: new RegExp(`^${path}$`, 'i') },
     type,

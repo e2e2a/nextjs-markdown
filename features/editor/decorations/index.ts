@@ -1,6 +1,6 @@
 import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
-import { BulletWidget, CalloutWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
+import { BulletWidget, CalloutWidget, CheckboxWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 import { MermaidWidget } from '../widgets/mermaid-widget';
 import { sourceModeField } from '../plugins';
@@ -96,7 +96,8 @@ export function getBulletListDecos(state: EditorState, text: string, lineFrom: n
   const sourceMode = state.field(sourceModeField, false);
   const viewMode = state.facet(EditorState.readOnly);
   const match = text.match(/^(\s*)([-*+])(\s+)/);
-
+  // if its - [ ] or - [x] return this decoration
+  if (/^\s*- \[( |x|X)\]\s/.test(text)) return decos;
   if (match) {
     const indent = match[1].length;
     const markerStart = lineFrom + indent;
@@ -304,24 +305,59 @@ export function getHRDecos(state: EditorState, text: string, lineFrom: number, l
   return decos;
 }
 
-export function getTaskDecos(text: string, lineFrom: number): StateRange<Decoration>[] {
+// export function getTaskDecos(text: string, lineFrom: number): StateRange<Decoration>[] {
+//   const decos: StateRange<Decoration>[] = [];
+//   const match = text.match(/\[([ xX])\]/);
+
+//   if (match && match.index !== undefined) {
+//     const innerStart = lineFrom + match.index + 1;
+//     const innerEnd = innerStart + 1;
+
+//     decos.push(
+//       Decoration.mark({
+//         class: 'cm-task-inner',
+//       }).range(innerStart, innerEnd)
+//     );
+//   }
+
+//   return decos;
+// }
+export function getTaskDecos(state: EditorState, text: string, lineFrom: number): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
-  const match = text.match(/\[([ xX])\]/);
 
-  if (match && match.index !== undefined) {
-    const innerStart = lineFrom + match.index + 1;
-    const innerEnd = innerStart + 1;
+  const sourceMode = state.field(sourceModeField, false);
+  const viewMode = state.facet(EditorState.readOnly);
 
+  const match = text.match(/^(\s*)-\s\[([ xX])\](\s)/);
+  if (!match) return decos;
+
+  const indent = match[1].length;
+  const isChecked = match[2].toLowerCase() === 'x';
+
+  const start = lineFrom + indent;
+  const end = start + match[0].trimStart().length - 1;
+
+  const isSelected = isRangeSelected(state, start, end);
+  if (isChecked) {
     decos.push(
-      Decoration.mark({
-        class: 'cm-task-inner',
-      }).range(innerStart, innerEnd)
+      Decoration.line({
+        attributes: { class: 'cm-task-completed' },
+      }).range(lineFrom)
+    );
+  }
+  if (viewMode || (!isSelected && !sourceMode)) {
+    decos.push(
+      Decoration.replace({
+        widget: new CheckboxWidget(isChecked, start, end),
+        inclusive: false,
+        block: false,
+        side: 1,
+      }).range(start, end)
     );
   }
 
   return decos;
 }
-
 export function getLinkDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -472,9 +508,10 @@ export function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getInlineCodeDecos(state, line.text, line.from, isActive));
     decos.push(...getHRDecos(state, line.text, line.from, line.to, isActive));
     decos.push(...getItalicDecos(state, line.text, line.from, isActive));
+    decos.push(...getTaskDecos(state, line.text, line.from));
     decos.push(...getNumberedListDecos(line.text, line.from));
     decos.push(...getBulletListDecos(state, line.text, line.from, isActive));
-    decos.push(...getTaskDecos(line.text, line.from));
+    // decos.push(...getTaskDecos(line.text, line.from));
     decos.push(...getLinkDecos(state, line.text, line.from, isActive));
     decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));
     decos.push(...getTagDecos(line.text, line.from));

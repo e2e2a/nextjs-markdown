@@ -10,7 +10,7 @@ import { EditorJumpDetail, INode } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
-import { columnSelectionField, markdownLivePreviewField, sourceModeField, tableSelectionHighlighter } from '@/features/editor/plugins';
+import { columnSelectionField, markdownLivePreviewField, setupDragTracking, sourceModeField, tableSelectionHighlighter } from '@/features/editor/plugins';
 import { languages } from '@codemirror/language-data';
 import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { HocuspocusProvider } from '@hocuspocus/provider';
@@ -264,6 +264,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
                 value={instance?.ydoc.getText('codemirror').toString() ?? ''}
                 onCreateEditor={view => {
                   editorViewRef.current = view;
+                  setupDragTracking(editorViewRef.current);
                 }}
                 theme={myOwnDarkTheme}
                 basicSetup={false}

@@ -30,6 +30,26 @@ export const sourceModeField = StateField.define<boolean>({
   },
 });
 
+export const rebuildDecorationsEffect = StateEffect.define<null>();
+let isDragging = false;
+export function setupDragTracking(view: EditorView) {
+  view.dom.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    isDragging = !isDragging;
+  });
+
+  const onMouseUp = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    view.dispatch({ effects: rebuildDecorationsEffect.of(null) });
+  };
+  window.addEventListener('mouseup', onMouseUp);
+
+  return () => {
+    window.removeEventListener('mouseup', onMouseUp);
+  };
+}
+
 // ------------------------------
 // Main StateField
 // ------------------------------
@@ -41,10 +61,14 @@ export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>(
     return buildDecorations(state);
   },
   update(decos, tr) {
-    console.log('run');
-    if (tr.docChanged || tr.selection || tr.reconfigured || tr.effects.some(e => e.is(toggleSourceMode))) {
+    const rebuildEffect = tr.effects.some(e => e.is(rebuildDecorationsEffect));
+    const docChanged = tr.docChanged || tr.reconfigured;
+    const selectionChanged = !tr.startState.selection.eq(tr.state.selection);
+
+    if (docChanged || rebuildEffect || (selectionChanged && !isDragging)) {
       return buildDecorations(tr.state);
     }
+
     return decos.map(tr.changes);
   },
   provide: f => EditorView.decorations.from(f),

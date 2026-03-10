@@ -672,3 +672,50 @@ export class CalloutWidget extends WidgetType {
     return other.rawText === this.rawText && other.type === this.type;
   }
 }
+
+export class CheckboxWidget extends WidgetType {
+  constructor(
+    readonly checked: boolean,
+    readonly from: number,
+    readonly to: number
+  ) {
+    super();
+  }
+
+  eq(other: CheckboxWidget) {
+    return other.checked === this.checked && other.from === this.from;
+  }
+
+  toDOM(view: EditorView) {
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.className = 'cm-task-checkbox';
+    input.checked = this.checked;
+    input.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    input.onclick = e => {
+      // Prevent the click from moving the cursor
+      e.preventDefault();
+
+      // Calculate exactly where the 'x' or ' ' is inside [ ]
+      const text = view.state.doc.lineAt(this.from).text;
+      const bracketIndex = text.indexOf('[');
+      if (bracketIndex !== -1) {
+        const pos = this.from + bracketIndex + 1;
+        const newValue = this.checked ? ' ' : 'x';
+
+        view.dispatch({
+          changes: { from: pos, to: pos + 1, insert: newValue },
+        });
+      }
+    };
+
+    return input;
+  }
+
+  ignoreEvent() {
+    return false;
+  }
+}

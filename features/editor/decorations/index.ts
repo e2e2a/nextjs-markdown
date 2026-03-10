@@ -1,6 +1,15 @@
 import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
-import { BulletWidget, CalloutWidget, CheckboxWidget, FenchCodeWidget, ImageWidget, MathWidget, TablePreviewWidget } from '@/features/editor/widgets';
+import {
+  BulletWidget,
+  CalloutWidget,
+  CheckboxWidget,
+  FenchCodeWidget,
+  ImageWidget,
+  InlineMathWidget,
+  MathWidget,
+  TablePreviewWidget,
+} from '@/features/editor/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 import { MermaidWidget } from '../widgets/mermaid-widget';
 import { sourceModeField } from '../plugins';
@@ -531,7 +540,12 @@ export function getHighlightDecos(state: EditorState, text: string, lineFrom: nu
 
 export function getInlineMathDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
-  const mathRegex = /\$([^$]+)\$/g;
+
+  // Updated Regex:
+  // Group 1: $`...` format
+  // Group 2: $...$ format
+  const mathRegex = /\$(?:`([^`]+)`|([^$]+))\$/g;
+
   const sourceMode = state.field(sourceModeField, false);
   const viewMode = state.facet(EditorState.readOnly);
   let match;
@@ -539,21 +553,32 @@ export function getInlineMathDecos(state: EditorState, text: string, lineFrom: n
   while ((match = mathRegex.exec(text)) !== null) {
     const start = lineFrom + match.index;
     const end = start + match[0].length;
-    const content = match[1];
+
+    // Extract content based on which group matched
+    const isBacktick = !!match[1];
+    const content = (match[1] || match[2] || '').trim();
 
     const isSelected = isRangeSelected(state, start, end);
 
     if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(
         Decoration.replace({
-          widget: new MathWidget(content, start, false),
+          // Using the specialized Inline Widget now
+          widget: new InlineMathWidget(content, start),
           side: 0,
         }).range(start, end)
       );
     } else {
-      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(start, start + 1));
-      decos.push(...getMathSyntaxHighlighting(content, start + 1));
-      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(end - 1, end));
+      // 1. Mark the opening $ (and optional `)
+      const openMarkerEnd = isBacktick ? start + 2 : start + 1;
+      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(start, openMarkerEnd));
+
+      // 2. Add syntax highlighting to the LaTeX content
+      decos.push(...getMathSyntaxHighlighting(content, openMarkerEnd));
+
+      // 3. Mark the closing $ (and optional `)
+      const closeMarkerStart = isBacktick ? end - 2 : end - 1;
+      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(closeMarkerStart, end));
     }
   }
   return decos;
@@ -607,7 +632,7 @@ export function getMathBlockDecos(state: EditorState, activeLineNum: number): St
           }
           decos.push(
             Decoration.widget({
-              widget: new MathWidget(content, blockFrom, true),
+              widget: new MathWidget(content, blockFrom),
               side: 1,
               block: true,
             }).range(blockTo)

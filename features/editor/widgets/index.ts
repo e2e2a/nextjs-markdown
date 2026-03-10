@@ -723,23 +723,24 @@ export class CheckboxWidget extends WidgetType {
 export class MathWidget extends WidgetType {
   constructor(
     readonly code: string,
-    readonly pos: number,
-    readonly displayMode: boolean = true // true for $$ blocks, false for $ inline
+    readonly pos: number
   ) {
     super();
   }
 
   toDOM(view: EditorView) {
-    const isBlock = this.displayMode;
-    const mainContainer = document.createElement(isBlock ? 'div' : 'span');
-    const container = document.createElement(isBlock ? 'div' : 'span');
-    mainContainer.className = 'z-100 relative group';
+    const mainContainer = document.createElement('div');
+    mainContainer.className = 'z-[100] relative group w-full my-2';
 
-    container.className = isBlock
-      ? ' border border-transparent hover:border-border transition-colors relative block w-full max-w-full box-border z-10 select-none leading-[0] overflow-x-auto! overflow-y-hidden!'
-      : ' border border-transparent relative block w-full max-w-full z-10 select-none leading-[0] overflow-x-auto! overflow-y-hidden!';
+    const container = document.createElement('div');
+    container.className =
+      'border border-transparent hover:border-border transition-colors relative block w-full max-w-full box-border z-10 select-none leading-[0] cursor-pointer';
+
     const scrollWrapper = document.createElement('div');
-    scrollWrapper.className = 'block! w-full! max-w-full! relative contain-[inline-size]';
+    scrollWrapper.className = 'block! w-full! max-w-full! relative contain-[inline-size] overflow-x-auto! overflow-y-hidden!';
+
+    const renderArea = document.createElement('div');
+    renderArea.className = 'relative inline-block pr-[5px] pb-[5px] w-auto! min-w-full text-center';
 
     container.onclick = e => {
       e.preventDefault();
@@ -748,45 +749,27 @@ export class MathWidget extends WidgetType {
       view.focus();
     };
 
-    if (isBlock) {
-      const btn = document.createElement('button');
-      btn.className =
-        'bg-background hover:bg-accent/60 flex text-accent-foreground cursor-pointer text-[11px] border hover:border-border items-center z-20 rounded-md absolute top-[6px] right-[8px] opacity-0 group-hover:opacity-100 transition-opacity py-[6px]! px-[2px]';
-      btn.innerHTML = `<span>&lt;/&gt;</span>`;
-      btn.onclick = e => {
-        e.preventDefault();
-        e.stopPropagation();
-        view.dispatch({ selection: { anchor: this.pos }, scrollIntoView: true });
-        view.focus();
-      };
-      mainContainer.appendChild(btn);
-    }
+    const btn = document.createElement('button');
+    btn.className =
+      'bg-background hover:bg-accent/60 flex text-accent-foreground cursor-pointer text-[11px] border hover:border-border items-center z-20 rounded-md absolute top-[6px] right-[8px] opacity-0 group-hover:opacity-100 transition-opacity py-[4px] px-[8px]';
+    btn.innerHTML = `<span>&lt;/&gt;</span>`;
 
-    const renderArea = document.createElement('span');
-    renderArea.className = 'relative inline-block pr-[5px] pb-[5px] w-auto! min-w-full';
     scrollWrapper.appendChild(renderArea);
     container.appendChild(scrollWrapper);
+    mainContainer.appendChild(btn);
     mainContainer.appendChild(container);
+
     requestAnimationFrame(() => {
       try {
         katex.render(this.code, renderArea, {
-          displayMode: isBlock,
+          displayMode: true,
           throwOnError: true,
           output: 'htmlAndMathml',
         });
       } catch {
-        renderArea.style.padding = '0';
-        renderArea.style.margin = '0';
-        renderArea.innerHTML = `
-        <div class="flex flex-col items-center justify-center bg-red-500/5 gap-2 w-full cursor-pointer h-auto min-h-[100px]">
-          <div class="text-red-500 text-[13px] font-semibold flex items-center gap-x-0">
-            <span class="text-3xl">⚠️</span> 
-            <span class="">Math Syntax Error</span> 
-          </div>
-          <div class="text-muted-foreground text-[11px] font-mono opacity-80 text-center break-all">
-            Click to fix: "${this.code.substring(0, 40)}${this.code.length > 40 ? '...' : ''}"
-          </div>
-        </div>`;
+        renderArea.className = 'w-full py-4 text-center font-mono text-muted-foreground text-sm';
+        renderArea.innerHTML = `<span>$$${this.code}$$</span>`;
+        btn.style.display = 'none';
       }
     });
 
@@ -794,6 +777,46 @@ export class MathWidget extends WidgetType {
   }
 
   eq(other: MathWidget) {
-    return other.code === this.code && other.displayMode === this.displayMode;
+    return other.code === this.code;
+  }
+}
+
+export class InlineMathWidget extends WidgetType {
+  constructor(
+    readonly code: string,
+    readonly pos: number
+  ) {
+    super();
+  }
+
+  toDOM(view: EditorView) {
+    const span = document.createElement('span');
+    span.className = 'cm-math-inline cursor-pointer px-1 rounded hover:bg-muted/50 transition-colors';
+
+    span.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      view.dispatch({ selection: { anchor: this.pos }, scrollIntoView: true });
+      view.focus();
+    };
+
+    requestAnimationFrame(() => {
+      try {
+        katex.render(this.code, span, {
+          displayMode: false,
+          throwOnError: true,
+          output: 'htmlAndMathml',
+        });
+      } catch {
+        span.textContent = `$${this.code}$`;
+        span.classList.add('font-mono', 'text-muted-foreground');
+      }
+    });
+
+    return span;
+  }
+
+  eq(other: InlineMathWidget) {
+    return other.code === this.code;
   }
 }

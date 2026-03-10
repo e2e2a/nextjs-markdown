@@ -132,6 +132,7 @@ export function getBulletListDecos(state: EditorState, text: string, lineFrom: n
     const markerStart = lineFrom + indent;
     const markerEnd = markerStart + match[2].length;
     const isSelected = isRangeSelected(state, markerStart, markerEnd);
+    decos.push(Decoration.line({ class: 'cm-bullet-line' }).range(lineFrom));
     if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
 

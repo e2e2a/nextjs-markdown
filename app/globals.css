@@ -633,7 +633,7 @@ body {
   } */
 
   .cm-paragraph {
-    font-size: 1rem;
+    font-size: 3rem;
     line-height: 1.65rem !important;
   }
 
@@ -1000,5 +1000,11 @@ body {
   }
   .cm-math-marker {
     @apply text-primary/40 font-bold;
+  }
+
+  .cm-bullet-line {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    display: block; /* Ensures padding behaves correctly */
   }
 }

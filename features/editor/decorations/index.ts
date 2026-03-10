@@ -449,7 +449,7 @@ export function getMermaidDecos(state: EditorState, activeLineNum: number): Stat
         for (let k = startLine; k <= endLine; k++) {
           decos.push(
             Decoration.line({
-              attributes: { class: 'cm-mermaid-hidden-line' },
+              attributes: { class: 'cm-syntax-hide' },
             }).range(doc.line(k).from)
           );
         }
@@ -543,19 +543,17 @@ export function getInlineMathDecos(state: EditorState, text: string, lineFrom: n
 
     const isSelected = isRangeSelected(state, start, end);
 
-    // Only show the diagram if the line isn't being edited
     if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(
         Decoration.replace({
-          widget: new MathWidget(content, start, false), // false = inline mode
+          widget: new MathWidget(content, start, false),
           side: 0,
         }).range(start, end)
       );
     } else {
-      // While editing: Apply syntax highlighting to the raw code
-      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(start, start + 1)); // Opening $
+      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(start, start + 1));
       decos.push(...getMathSyntaxHighlighting(content, start + 1));
-      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(end - 1, end)); // Closing $
+      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(end - 1, end));
     }
   }
   return decos;
@@ -604,9 +602,8 @@ export function getMathBlockDecos(state: EditorState, activeLineNum: number): St
         const isSelected = isRangeSelected(state, blockFrom, blockTo);
 
         if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) {
-          // MODE: Render Widget
           for (let k = startLine; k <= endLine; k++) {
-            decos.push(Decoration.line({ attributes: { class: 'cm-syntax-hide' } }).range(doc.line(k).from));
+            decos.push(Decoration.line({ attributes: { class: 'cm-hidden-line' } }).range(doc.line(k).from));
           }
           decos.push(
             Decoration.widget({
@@ -616,14 +613,11 @@ export function getMathBlockDecos(state: EditorState, activeLineNum: number): St
             }).range(blockTo)
           );
         } else {
-          // MODE: Syntax Highlighting (Active Editing)
           for (let k = startLine; k <= endLine; k++) {
             const l = doc.line(k);
-            // Highlight the $$ markers
             if (l.text.includes('$$')) {
               const idx = l.text.indexOf('$$');
               decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(l.from + idx, l.from + idx + 2));
-              // If it's single line $$ math $$, highlight the middle
               if (k === startLine && endLine === startLine) {
                 const innerText = l.text.slice(idx + 2, l.text.lastIndexOf('$$'));
                 decos.push(...getMathSyntaxHighlighting(innerText, l.from + idx + 2));
@@ -631,7 +625,6 @@ export function getMathBlockDecos(state: EditorState, activeLineNum: number): St
                 decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(l.from + lastIdx, l.from + lastIdx + 2));
               }
             } else {
-              // Highlight full content lines
               decos.push(...getMathSyntaxHighlighting(l.text, l.from));
             }
           }

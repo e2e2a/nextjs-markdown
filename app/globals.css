@@ -782,68 +782,19 @@ body {
     display: inline-block;
     user-select: none;
   }
-  .cm-mermaid-hidden-line {
+
+  .cm-hidden-line {
     display: none !important;
   }
 
-  .mermaid-widget-container {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    position: relative;
-    box-sizing: border-box;
-    z-index: 11;
-    user-select: none;
-    line-height: 0 !important;
-  }
-
-  .mermaid-scroll-wrapper {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    position: relative;
-    contain: inline-size;
-  }
-
-  .mermaid-render-area {
-    position: relative;
-    display: inline-block; /* Crucial: allows width to expand beyond 100% */
-    padding-right: 5px; /* Give the diagram some breathing room */
-    padding-bottom: 5px;
-    width: auto !important;
-    min-width: 100%;
-  }
-
-  .mermaid-render-area svg {
-    max-width: none !important; /* Stop Mermaid from shrinking the SVG */
+  /* incase if mermaid snatching the area */
+  /* .mermaid-render-area svg {
+    max-width: none !important;
     width: auto !important;
     height: auto !important;
     display: block;
-  }
+  } */
   /* The floating toggle button */
-  .mermaid-toggle-btn {
-    position: absolute;
-    top: 6px;
-    right: 8px;
-    background: #21262d;
-    border: 1px solid #30363d;
-    color: #8b949e;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    @apply hover:bg-accent/60 pointer-events-auto;
-  }
-
-  .mermaid-toggle-btn:hover {
-    background: #30363d;
-    color: #c9d1d9;
-    @apply hover:bg-accent/60;
-  }
 
   /* Callouts */
   .cm-blockquote {

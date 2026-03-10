@@ -24,7 +24,10 @@ export class MermaidWidget extends WidgetType {
   }
 
   toDOM(view: EditorView) {
+    const mainContainer = document.createElement('div');
     const container = document.createElement('div');
+    mainContainer.className = 'z-100 relative group';
+
     container.className =
       'group border border-transparent hover:border-border transition-colors relative block w-full max-w-full box-border z-10 select-none leading-[0] overflow-x-auto! overflow-y-hidden!';
     container.tabIndex = -1;
@@ -32,8 +35,16 @@ export class MermaidWidget extends WidgetType {
       // CustomEvent for context-menu to showup
       window.dispatchEvent(new CustomEvent('set-editor-context', { detail: 'mermaid' }));
     };
+    container.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      view.dispatch({ selection: { anchor: this.pos }, scrollIntoView: true });
+      view.focus();
+    };
     const btn = document.createElement('button');
-    btn.className = 'mermaid-toggle-btn';
+    btn.className =
+      'bg-background hover:bg-accent/60 flex text-accent-foreground cursor-pointer text-[11px] border hover:border-border items-center z-20 rounded-md absolute top-[6px] right-[8px] opacity-0 group-hover:opacity-100 transition-opacity py-[6px]! px-[2px]';
+
     btn.innerHTML = `<span>&lt;/&gt;</span>`;
     btn.tabIndex = -1;
     btn.onclick = e => {
@@ -48,17 +59,18 @@ export class MermaidWidget extends WidgetType {
     };
 
     const scrollWrapper = document.createElement('div');
-    scrollWrapper.className = 'mermaid-scroll-wrapper';
+    scrollWrapper.className = 'block! w-full! max-w-full! relative contain-[inline-size]';
 
     const renderArea = document.createElement('div');
-    renderArea.className = 'mermaid-render-area';
+    renderArea.className = 'mermaid-render-area relative inline-block pr-[5px] pb-[5px] w-auto! min-w-full';
     const id = `mermaid-${Math.random().toString(36).slice(2, 9)}`;
     renderArea.id = id;
 
-    container.appendChild(btn);
+    // container.appendChild(btn);
     scrollWrapper.appendChild(renderArea);
     container.appendChild(scrollWrapper);
-
+    mainContainer.appendChild(btn);
+    mainContainer.appendChild(container);
     requestAnimationFrame(async () => {
       try {
         const isValid = await mermaid.parse(this.code, { suppressErrors: true });
@@ -78,7 +90,7 @@ export class MermaidWidget extends WidgetType {
       }
     });
 
-    return container;
+    return mainContainer;
   }
   eq(other: MermaidWidget) {
     return other.code === this.code;

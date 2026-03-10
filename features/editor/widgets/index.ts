@@ -751,7 +751,7 @@ export class MathWidget extends WidgetType {
     if (isBlock) {
       const btn = document.createElement('button');
       btn.className =
-        'bg-accent hover:bg-accent/60 flex text-accent-foreground cursor-pointer text-[11px] border hover:border-border items-center z-20 rounded-md absolute top-[6px] right-[8px] opacity-0 group-hover:opacity-100 transition-opacity py-[6px]! px-[2px]';
+        'bg-background hover:bg-accent/60 flex text-accent-foreground cursor-pointer text-[11px] border hover:border-border items-center z-20 rounded-md absolute top-[6px] right-[8px] opacity-0 group-hover:opacity-100 transition-opacity py-[6px]! px-[2px]';
       btn.innerHTML = `<span>&lt;/&gt;</span>`;
       btn.onclick = e => {
         e.preventDefault();

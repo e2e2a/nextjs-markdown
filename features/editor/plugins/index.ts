@@ -62,7 +62,7 @@ export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>(
   },
   update(decos, tr) {
     const rebuildEffect = tr.effects.some(e => e.is(rebuildDecorationsEffect));
-    const docChanged = tr.docChanged || tr.reconfigured;
+    const docChanged = tr.docChanged || tr.reconfigured || tr.effects.some(e => e.is(toggleSourceMode));
     const selectionChanged = !tr.startState.selection.eq(tr.state.selection);
 
     if (docChanged || rebuildEffect || (selectionChanged && !isDragging)) {

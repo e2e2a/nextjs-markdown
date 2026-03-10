@@ -305,23 +305,6 @@ export function getHRDecos(state: EditorState, text: string, lineFrom: number, l
   return decos;
 }
 
-// export function getTaskDecos(text: string, lineFrom: number): StateRange<Decoration>[] {
-//   const decos: StateRange<Decoration>[] = [];
-//   const match = text.match(/\[([ xX])\]/);
-
-//   if (match && match.index !== undefined) {
-//     const innerStart = lineFrom + match.index + 1;
-//     const innerEnd = innerStart + 1;
-
-//     decos.push(
-//       Decoration.mark({
-//         class: 'cm-task-inner',
-//       }).range(innerStart, innerEnd)
-//     );
-//   }
-
-//   return decos;
-// }
 export function getTaskDecos(state: EditorState, text: string, lineFrom: number): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
 
@@ -336,7 +319,7 @@ export function getTaskDecos(state: EditorState, text: string, lineFrom: number)
 
   const start = lineFrom + indent;
   const end = start + match[0].trimStart().length - 1;
-
+  if (sourceMode) return decos;
   const isSelected = isRangeSelected(state, start, end);
   if (isChecked) {
     decos.push(
@@ -345,7 +328,7 @@ export function getTaskDecos(state: EditorState, text: string, lineFrom: number)
       }).range(lineFrom)
     );
   }
-  if (viewMode || (!isSelected && !sourceMode)) {
+  if (viewMode || !isSelected) {
     decos.push(
       Decoration.replace({
         widget: new CheckboxWidget(isChecked, start, end),
@@ -482,6 +465,50 @@ export function getTagDecos(text: string, lineFrom: number): StateRange<Decorati
   return decos;
 }
 
+export function getStrikethroughDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const strikeRegex = /~~(.*?)~~/g;
+  const sourceMode = state.field(sourceModeField, false);
+  const viewMode = state.facet(EditorState.readOnly);
+  let match;
+
+  while ((match = strikeRegex.exec(text)) !== null) {
+    const start = lineFrom + match.index;
+    const end = start + match[0].length;
+
+    decos.push(Decoration.mark({ class: 'cm-strikethrough-text' }).range(start, end));
+
+    const isSelected = isRangeSelected(state, start, end);
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 2));
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));
+    }
+  }
+  return decos;
+}
+
+export function getHighlightDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const highRegex = /==(.*?)==/g;
+  const sourceMode = state.field(sourceModeField, false);
+  const viewMode = state.facet(EditorState.readOnly);
+  let match;
+
+  while ((match = highRegex.exec(text)) !== null) {
+    const start = lineFrom + match.index;
+    const end = start + match[0].length;
+
+    decos.push(Decoration.mark({ class: 'cm-highlight-text' }).range(start, end));
+
+    const isSelected = isRangeSelected(state, start, end);
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 2));
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));
+    }
+  }
+  return decos;
+}
+
 export function buildDecorations(state: EditorState): RangeSet<Decoration> {
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
@@ -511,7 +538,10 @@ export function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getTaskDecos(state, line.text, line.from));
     decos.push(...getNumberedListDecos(line.text, line.from));
     decos.push(...getBulletListDecos(state, line.text, line.from, isActive));
-    // decos.push(...getTaskDecos(line.text, line.from));
+
+    decos.push(...getStrikethroughDecos(state, line.text, line.from, isActive)); // New
+    decos.push(...getHighlightDecos(state, line.text, line.from, isActive)); // New
+
     decos.push(...getLinkDecos(state, line.text, line.from, isActive));
     decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));
     decos.push(...getTagDecos(line.text, line.from));

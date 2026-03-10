@@ -987,18 +987,14 @@ body {
     @apply rounded-full bg-primary/30 cursor-pointer border border-primary text-primary-foreground/90 px-1.5;
   }
 
-  /* The entire line styling when checked */
   .cm-task-completed {
-    @apply line-through text-muted-foreground; /* Using Tailwind's opacity to make it look 'done' */
-    /* Or standard CSS: text-decoration: line-through; color: var(--primary-muted); */
+    @apply line-through text-muted-foreground;
   }
 
-  /* The Checkbox: Checked State */
   .cm-task-checkbox:checked {
-    @apply bg-primary border-primary; /* Uses your project's primary color */
+    @apply bg-primary border-primary;
   }
 
-  /* The Checkbox: Unchecked State */
   .cm-task-checkbox {
     appearance: none;
     -webkit-appearance: none;
@@ -1007,7 +1003,7 @@ body {
     cursor: pointer;
     border: 1.5px solid #5c5c5c;
     border-radius: 3px;
-    background-color: transparent; /* Keep transparent when not checked */
+    background-color: transparent;
     display: inline-grid;
     place-content: center;
     margin-right: 0.5em;
@@ -1017,12 +1013,25 @@ body {
     @apply my-1;
   }
 
-  /* Custom Checkmark (CSS only) */
   .cm-task-checkbox:checked::before {
     content: '';
     width: 0.65em;
     height: 0.65em;
-    background-color: white; /* Contrast against the primary background */
+    background-color: white;
     clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+
+  .cm-strikethrough-text {
+    text-decoration: line-through;
+  }
+
+  .cm-highlight-text {
+    background-color: color-mix(in srgb, var(--primary) 50%, transparent);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+
+  .cm-syntax-hide {
+    display: none;
   }
 }

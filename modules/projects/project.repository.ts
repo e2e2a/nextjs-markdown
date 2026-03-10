@@ -50,7 +50,7 @@ export const projectRepository = {
 
   create: async (data: { workspaceId: string; title: string; createdBy: string }) => {
     const session = UnitOfWork.getSession();
-    const [project] = await Project.create(data, { session });
+    const [project] = await Project.create([data], { session });
     return project;
   },
 

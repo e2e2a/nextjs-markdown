@@ -9,6 +9,7 @@ import { ensureWorkspaceMember } from '../workspaces/workspace.context';
 import { workspaceMemberService } from '../workspaces/members/member.service';
 import { UnitOfWork } from '@/common/UnitOfWork';
 import { ensureProjectMember } from './project.context';
+import { nodeService } from './nodes/node.service';
 
 export const projectService = {
   create: async (
@@ -21,7 +22,8 @@ export const projectService = {
   ) => {
     return await UnitOfWork.run(async () => {
       const { workspaceId, title, members } = data;
-      await ensureWorkspaceMember(data.workspaceId, user.email);
+      const context = await ensureWorkspaceMember(data.workspaceId, user.email);
+      if (!context.permissions.canCreateProject) throw new HttpError('FORBIDDEN', 'You do not have permission to import a project');
 
       await projectService.checkTitleExist(workspaceId, title);
       const newProject = await projectRepository.create({
@@ -51,6 +53,44 @@ export const projectService = {
         await projectMemberService.store(projectMembersDataToCreate);
       }
 
+      return { project: newProject };
+    });
+  },
+
+  import: async (
+    user: User,
+    data: {
+      title: string;
+      workspaceId: string;
+      nodes: { name: string; path: string; content: string; type: 'file' | 'folder' }[];
+    }
+  ) => {
+    return await UnitOfWork.run(async () => {
+      const { workspaceId, title, nodes } = data;
+      await ensureWorkspaceMember(data.workspaceId, user.email);
+
+      const context = await ensureWorkspaceMember(data.workspaceId, user.email);
+      if (!context.permissions.canImportProject) throw new HttpError('FORBIDDEN', 'You do not have permission to import a project');
+
+      await projectService.checkTitleExist(workspaceId, title);
+      const newProject = await projectRepository.create({
+        workspaceId,
+        title,
+        createdBy: user._id!.toString(),
+      });
+
+      await projectMemberService.addOwner({
+        workspaceId,
+        projectId: newProject._id as string,
+        email: user.email,
+      });
+
+      const nodesToInsert = nodeService._prepareNodeBatch(nodes, {
+        workspaceId,
+        projectId: newProject._id.toString(),
+      });
+
+      await nodeService.bulkCreate(nodesToInsert);
       return { project: newProject };
     });
   },

@@ -21,6 +21,18 @@ export const projectClient = {
     return json;
   },
 
+  async importProject(data: { title: string; workspaceId: string; nodes: { name: string; path: string; content?: string; type: 'file' | 'folder' }[] }) {
+    const res = await fetch(`${BASE_URL_PROJECTS}/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || '');
+
+    return json;
+  },
+
   async update(data: { pid: string; title: string }) {
     const res = await fetch(`${BASE_URL_PROJECTS}/${data.pid}`, {
       method: 'PATCH',

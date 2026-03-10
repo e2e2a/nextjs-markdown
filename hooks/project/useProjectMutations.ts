@@ -20,6 +20,16 @@ export function useProjectMutations() {
     },
   });
 
+  const importProject = useMutation({
+    mutationFn: (data: { title: string; workspaceId: string; nodes: { name: string; path: string; content?: string; type: 'file' | 'folder' }[] }) =>
+      projectClient.importProject(data),
+    onSuccess: (_data, variables) => {
+      if (!variables) return;
+      queryClient.invalidateQueries({ queryKey: ['projectsByWorkspaceId', variables.workspaceId] });
+      return;
+    },
+  });
+
   const update = useMutation({
     mutationFn: (data: { wid: string; pid: string; title: string }) => projectClient.update(data),
     onSuccess: (_data, variables) => {
@@ -47,5 +57,5 @@ export function useProjectMutations() {
     },
   });
 
-  return { create, update, handleDelete, move };
+  return { create, importProject, update, handleDelete, move };
 }

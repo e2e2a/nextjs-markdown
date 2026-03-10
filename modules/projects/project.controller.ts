@@ -4,14 +4,18 @@ import { NextRequest } from 'next/server';
 import { MembersSchema } from '@/lib/validators/workspaceMember';
 import { projectSchema } from '@/lib/validators/project';
 import { HttpError } from '@/utils/server/errors';
+import { ProjectDTO } from './project.dto';
 
 export const projectController = {
   create: async (req: NextRequest) => {
     const body = await req.json();
     const session = await ensureAuthenticated();
     const { workspaceId, title, members } = body;
-    const resP = projectSchema.safeParse({ title });
-    if (!resP.success) throw new HttpError('BAD_INPUT', 'Invalid fields.');
+    const resP = ProjectDTO.create.safeParse({ workspaceId, title });
+    if (!resP.success) {
+      const errorMessage = resP.error.issues[0].message;
+      throw new HttpError('BAD_INPUT', errorMessage);
+    }
 
     let resM = null;
     if (members && members.length > 0) {
@@ -21,6 +25,25 @@ export const projectController = {
 
     const { project } = await projectService.create(session.user, {
       ...(resM && resM?.data.length > 0 ? { members: resM.data } : {}),
+      workspaceId,
+      title: resP.data.title,
+    });
+
+    return { project };
+  },
+
+  import: async (req: NextRequest) => {
+    const body = await req.json();
+    const session = await ensureAuthenticated();
+    const resP = ProjectDTO.import.safeParse({ ...body });
+    if (!resP.success) {
+      const errorMessage = resP.error.issues[0].message;
+      throw new HttpError('BAD_INPUT', errorMessage);
+    }
+
+    const { workspaceId, nodes } = resP.data;
+    const { project } = await projectService.import(session.user, {
+      nodes,
       workspaceId,
       title: resP.data.title,
     });

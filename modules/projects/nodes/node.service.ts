@@ -6,6 +6,8 @@ import { ensureProjectMember } from '../project.context';
 import { HttpError } from '@/utils/server/errors';
 import { UnitOfWork } from '@/common/UnitOfWork';
 import { User } from 'next-auth';
+import Node from '@/modules/projects/nodes/node.model';
+import { Types } from 'mongoose';
 
 const ALLOWED = ['createdAt', 'updatedAt'] as const;
 export type ExcludeField = (typeof ALLOWED)[number];
@@ -91,16 +93,15 @@ export function buildTree(nodes: FlatNode[]): TreeNode[] {
   return roots;
 }
 
-async function checkNodeExistence(params: { projectId: string; parentId: string | null; title: string; type: 'file' | 'folder' }) {
-  const { projectId, parentId, title, type } = params;
+async function checkNodeExistence(params: { projectId: string; path: string; type: 'file' | 'folder' }) {
+  const { projectId, path, type } = params;
 
   const existingNode = await nodeRepository.findConflict({
     projectId,
-    parentId,
-    title: { $regex: new RegExp(`^${title}$`, 'i') },
+    path: { $regex: new RegExp(`^${path}$`, 'i') },
     type,
   });
-  if (existingNode) throw new HttpError('CONFLICT', `A ${type} named "${title}" already exists`);
+  if (existingNode) throw new HttpError('CONFLICT', `A ${type} named "${path}" already exists`);
 }
 
 export const nodeService = {
@@ -139,7 +140,18 @@ export const nodeService = {
       ensureWorkspaceMember(project.workspaceId, email), // wCtx
       ensureProjectMember(project._id, email), // pCtx
     ]);
-    await checkNodeExistence(data);
+    let path = data.title; // Default for root-level nodes
+
+    if (data.parentId) {
+      const parentNode = await nodeRepository.findOne({ _id: data.parentId });
+      if (!parentNode) throw new HttpError('NOT_FOUND', 'Parent node not found');
+      if (parentNode.type !== 'folder') throw new HttpError('BAD_INPUT', 'Parent node must be a folder');
+
+      // Combine parent path with new title
+      path = `${parentNode.path}/${data.title}`;
+    }
+
+    await checkNodeExistence({ ...data, path });
     return await UnitOfWork.run(async () => {
       return await nodeRepository.create({ ...data, workspaceId: project.workspaceId });
     });
@@ -152,6 +164,7 @@ export const nodeService = {
       projectId: string;
       workspaceId: string;
       parentId: string | null;
+      path: string;
       type: 'file' | 'folder';
       title: string;
     }[]
@@ -159,8 +172,7 @@ export const nodeService = {
     const { projectId, workspaceId } = data[0];
 
     await Promise.all([ensureWorkspaceMember(workspaceId, email), ensureProjectMember(projectId, email)]);
-    const resP = await projectService.findById(projectId);
-
+    const project = await projectService.findById(projectId);
     for (const node of data) {
       if (node.projectId !== projectId) throw new HttpError('BAD_INPUT', 'All nodes must belong to the same project');
       if (node.parentId) {
@@ -168,7 +180,7 @@ export const nodeService = {
         if (!parentNode) throw new HttpError('NOT_FOUND', `Parent node ${node.parentId} not found`);
       }
       await checkNodeExistence(node);
-      node.workspaceId = resP.project.workspaceId;
+      node.workspaceId = project.workspaceId;
     }
 
     return await nodeRepository.insertMany(data);
@@ -192,15 +204,41 @@ export const nodeService = {
       ensureWorkspaceMember(node.workspaceId, email), // wCtx
       ensureProjectMember(node.projectId, email), // pCtx
     ]);
-
-    if (data?.parentId) {
+    // 2. Calculate the New Path
+    let newPath = node.title || node.name;
+    if (data.parentId) {
       const parentNode = await nodeRepository.findOne({ _id: data.parentId });
       if (!parentNode) throw new HttpError('NOT_FOUND', 'Parent node not found');
       if (parentNode.type !== 'folder') throw new HttpError('BAD_INPUT', 'Parent node is not a folder');
+
+      newPath = `${parentNode.path}/${node.title || node.name}`;
+    }
+
+    const oldPath = node.path;
+
+    if (node.type === 'folder') {
+      const descendants = await Node.find({
+        projectId: node.projectId,
+        path: new RegExp(`^${oldPath}/`),
+      });
+
+      if (descendants.length > 0) {
+        const bulkOps = descendants.map(desc => {
+          const updatedDescPath = desc.path.replace(oldPath, newPath);
+          return {
+            updateOne: {
+              filter: { _id: desc._id },
+              update: { $set: { path: updatedDescPath } },
+            },
+          };
+        });
+
+        await Node.bulkWrite(bulkOps);
+      }
     }
 
     await checkNodeExistence({ ...node, parentId: data.parentId });
-    return await nodeRepository.updateOne({ _id: data._id }, { parentId: data?.parentId });
+    return await nodeRepository.updateOne({ _id: data._id }, { parentId: data.parentId, path: newPath });
   },
 
   delete: async (id: string, email: string) => {
@@ -213,5 +251,80 @@ export const nodeService = {
     ]);
 
     return await nodeRepository.deleteOne({ _id: id });
+  },
+
+  bulkCreate: async (
+    nodes: {
+      _id: string;
+      projectId: string;
+      parentId: string | null;
+      path: string;
+      workspaceId: string;
+      type: 'file' | 'folder';
+      title: string;
+      content?: string;
+    }[]
+  ) => {
+    const CHUNK_SIZE = 500;
+    const results = [];
+
+    for (let i = 0; i < nodes.length; i += CHUNK_SIZE) {
+      const chunk = nodes.slice(i, i + CHUNK_SIZE);
+      const inserted = await nodeRepository.insertMany(chunk);
+      results.push(...inserted);
+    }
+    return results;
+  },
+
+  /**
+   * PRIVATE HELPER: Pure logic for path/ID mapping.
+   * Separation of concerns makes this easy to unit test without DB.
+   */
+  _prepareNodeBatch: (
+    nodes: { name: string; path: string; content: string; type: 'file' | 'folder' }[],
+    ctx: { workspaceId: string; projectId: string }
+  ) => {
+    const nodeDataMap = new Map<string, (typeof nodes)[0]>();
+
+    for (const file of nodes) {
+      const parts = file.path.split('/');
+      let currentPath = '';
+
+      for (let i = 0; i < parts.length - 1; i++) {
+        currentPath += (currentPath ? '/' : '') + parts[i];
+        if (!nodeDataMap.has(currentPath)) {
+          nodeDataMap.set(currentPath, {
+            name: parts[i],
+            path: currentPath,
+            type: 'folder' as 'file' | 'folder',
+            content: '',
+          });
+        }
+      }
+      nodeDataMap.set(file.path, file);
+    }
+
+    const sortedNodes = Array.from(nodeDataMap.values()).sort((a, b) => a.path.split('/').length - b.path.split('/').length);
+
+    const pathToIdMap = new Map<string, string>();
+    return sortedNodes.map(nodeData => {
+      const tempId = new Types.ObjectId().toString();
+      const parentPath = nodeData.path.split('/').slice(0, -1).join('/');
+      const parentId = pathToIdMap.get(parentPath) || null;
+
+      if (nodeData.type === 'folder') pathToIdMap.set(nodeData.path, tempId);
+
+      return {
+        _id: tempId,
+        workspaceId: ctx.workspaceId,
+        projectId: ctx.projectId,
+        parentId,
+        type: nodeData.type,
+        path: nodeData.path,
+        title: nodeData.name,
+        content: nodeData.content || '',
+        children: [],
+      };
+    });
   },
 };

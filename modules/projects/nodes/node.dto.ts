@@ -25,6 +25,7 @@ export const NodeDTO = {
       projectId: objectIdSchema('Project id'),
       workspaceId: objectIdSchema('Workspace id'),
       parentId: objectIdSchema('Parent id').nullable(),
+      path: z.string(),
       type: z.enum(['file', 'folder']),
       title: z.string().max(50, { message: 'Title must be at most 50 characters' }),
     })

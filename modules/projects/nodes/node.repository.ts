@@ -2,6 +2,7 @@ import Node from '@/modules/projects/nodes/node.model';
 import { INode } from '@/types';
 import { FilterQuery, ObjectId } from 'mongoose';
 import { ExcludeField } from './node.service';
+import { UnitOfWork } from '@/common/UnitOfWork';
 const updateOptions = { new: true, runValidators: true };
 
 interface FlatNode {
@@ -18,9 +19,28 @@ export const nodeRepository = {
 
   findNodeByProject: (projectId: string) => Node.find({ projectId, parentId: null }).populate('children'),
 
-  create: (data: { projectId: string; parentId: string | null | undefined; workspaceId: string; type: string; title: string }) => new Node(data).save(),
-  insertMany: (data: { _id: string; projectId: string; parentId: string | null; workspaceId: string; type: 'file' | 'folder'; title: string }[]) =>
-    Node.insertMany(data),
+  create: async (data: { projectId: string; parentId: string | null | undefined; workspaceId: string; type: string; title: string }) => {
+    const session = UnitOfWork.getSession();
+    const [node] = await Node.create([data], { session });
+    return node;
+  },
+
+  insertMany: async (
+    data: {
+      _id: string;
+      projectId: string;
+      parentId: string | null;
+      path: string;
+      workspaceId: string;
+      type: 'file' | 'folder';
+      title: string;
+      content?: string;
+    }[]
+  ) => {
+    const session = UnitOfWork.getSession();
+    const nodes = await Node.insertMany(data, { session });
+    return nodes;
+  },
 
   findOne: (data: { _id?: string }) => Node.findOne(data),
 

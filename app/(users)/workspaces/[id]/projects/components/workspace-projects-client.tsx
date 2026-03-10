@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useGetProjectsByWorkspaceId } from '@/hooks/project/useProjectQuery';
 import { cn } from '@/lib/utils';
 import { useGetMyWorkspaceMembership } from '@/hooks/workspasceMember/useQueries';
+import ImportProject from './import-project';
+import { PlusIcon } from 'lucide-react';
 
 export function WorkspaceProjectsClient() {
   const params = useParams();
@@ -22,11 +24,16 @@ export function WorkspaceProjectsClient() {
       <div className="px-3 py-4 w-full! flex-1 overflow-y-auto">
         <div className={cn('flex items-center', mData?.permissions.canCreateProject ? 'justify-between' : '')}>
           <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Projects</h1>
-          {mData?.permissions.canCreateProject && (
-            <Link href={`/workspaces/${workspaceId}/projects/create`}>
-              <Button className="cursor-pointer">Create New Project</Button>
-            </Link>
-          )}
+          <div className="flex gap-x-2">
+            {mData?.permissions.canCreateProject && (
+              <Link href={`/workspaces/${workspaceId}/projects/create`}>
+                <Button className="cursor-pointer">
+                  <PlusIcon className=" h-4 w-4" /> Create New Project
+                </Button>
+              </Link>
+            )}
+            {mData?.permissions.canImportProject && <ImportProject workspaceId={workspaceId} />}
+          </div>
         </div>
         <div className="w-full">
           <DataTable columns={columns} data={(data || []) as IProject[]} isLoading={isLoading} />

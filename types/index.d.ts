@@ -38,6 +38,7 @@ export type INode = {
   projectId: string;
   parentId: string | null;
   type: string;
+  path?: string;
   children: INode[];
   title: string;
   content?: string | null;

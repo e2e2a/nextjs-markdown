@@ -1,6 +1,6 @@
 import { Decoration } from '@codemirror/view';
 import { Range as StateRange, EditorState, RangeSet } from '@codemirror/state';
-import { BulletWidget, CalloutWidget, CheckboxWidget, FenchCodeWidget, ImageWidget, TablePreviewWidget } from '@/features/editor/widgets';
+import { BulletWidget, CalloutWidget, CheckboxWidget, FenchCodeWidget, ImageWidget, MathWidget, TablePreviewWidget } from '@/features/editor/widgets';
 import { getTableRange, isValidTable } from '@/lib/client/markdown/markdown-table-utils';
 import { MermaidWidget } from '../widgets/mermaid-widget';
 import { sourceModeField } from '../plugins';
@@ -8,6 +8,26 @@ import { sourceModeField } from '../plugins';
 function isRangeSelected(state: EditorState, from: number, to: number): boolean {
   const sel = state.selection.main;
   return sel.from <= to && sel.to >= from;
+}
+
+export function getMathSyntaxHighlighting(text: string, startPos: number): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+
+  // Regex for different LaTeX parts
+  const tokens = [
+    { regex: /\\[a-zA-Z]+/g, cls: 'cm-math-command' }, // \sum, \frac
+    { regex: /[{}]/g, cls: 'cm-math-bracket' }, // { }
+    { regex: /[0-9]+/g, cls: 'cm-math-number' }, // 1, 2, n
+    { regex: /[=+-\/*^_]/g, cls: 'cm-math-operator' }, // =, +, ^, _
+  ];
+
+  for (const token of tokens) {
+    let match;
+    while ((match = token.regex.exec(text)) !== null) {
+      decos.push(Decoration.mark({ class: token.cls }).range(startPos + match.index, startPos + match.index + match[0].length));
+    }
+  }
+  return decos;
 }
 
 export function getHeadingDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
@@ -509,12 +529,127 @@ export function getHighlightDecos(state: EditorState, text: string, lineFrom: nu
   return decos;
 }
 
+export function getInlineMathDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const mathRegex = /\$([^$]+)\$/g;
+  const sourceMode = state.field(sourceModeField, false);
+  const viewMode = state.facet(EditorState.readOnly);
+  let match;
+
+  while ((match = mathRegex.exec(text)) !== null) {
+    const start = lineFrom + match.index;
+    const end = start + match[0].length;
+    const content = match[1];
+
+    const isSelected = isRangeSelected(state, start, end);
+
+    // Only show the diagram if the line isn't being edited
+    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
+      decos.push(
+        Decoration.replace({
+          widget: new MathWidget(content, start, false), // false = inline mode
+          side: 0,
+        }).range(start, end)
+      );
+    } else {
+      // While editing: Apply syntax highlighting to the raw code
+      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(start, start + 1)); // Opening $
+      decos.push(...getMathSyntaxHighlighting(content, start + 1));
+      decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(end - 1, end)); // Closing $
+    }
+  }
+  return decos;
+}
+export function getMathBlockDecos(state: EditorState, activeLineNum: number): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const doc = state.doc;
+  const sourceMode = state.field(sourceModeField, false);
+  const viewMode = state.facet(EditorState.readOnly);
+
+  for (let i = 1; i <= doc.lines; i++) {
+    const line = doc.line(i);
+    const text = line.text.trim();
+
+    if (text.startsWith('$$')) {
+      const startLine = i;
+      let endLine = -1;
+      let content = '';
+
+      const secondIndex = line.text.indexOf('$$', 2);
+      if (secondIndex !== -1) {
+        endLine = i;
+        content = line.text.slice(2, secondIndex).trim();
+      } else {
+        const linesCollected = [];
+        const firstLineTrailing = line.text.slice(2).trim();
+        if (firstLineTrailing) linesCollected.push(firstLineTrailing);
+
+        for (let j = i + 1; j <= doc.lines; j++) {
+          const nextLine = doc.line(j);
+          if (nextLine.text.trim().startsWith('$$')) {
+            endLine = j;
+            const lastLineLeading = nextLine.text.trim().replace('$$', '').trim();
+            if (lastLineLeading) linesCollected.push(lastLineLeading);
+            break;
+          }
+          linesCollected.push(nextLine.text);
+        }
+        content = linesCollected.join('\n');
+      }
+
+      if (endLine !== -1) {
+        const blockFrom = doc.line(startLine).from;
+        const blockTo = doc.line(endLine).to;
+        const isBlockActive = activeLineNum >= startLine && activeLineNum <= endLine;
+        const isSelected = isRangeSelected(state, blockFrom, blockTo);
+
+        if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) {
+          // MODE: Render Widget
+          for (let k = startLine; k <= endLine; k++) {
+            decos.push(Decoration.line({ attributes: { class: 'cm-syntax-hide' } }).range(doc.line(k).from));
+          }
+          decos.push(
+            Decoration.widget({
+              widget: new MathWidget(content, blockFrom, true),
+              side: 1,
+              block: true,
+            }).range(blockTo)
+          );
+        } else {
+          // MODE: Syntax Highlighting (Active Editing)
+          for (let k = startLine; k <= endLine; k++) {
+            const l = doc.line(k);
+            // Highlight the $$ markers
+            if (l.text.includes('$$')) {
+              const idx = l.text.indexOf('$$');
+              decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(l.from + idx, l.from + idx + 2));
+              // If it's single line $$ math $$, highlight the middle
+              if (k === startLine && endLine === startLine) {
+                const innerText = l.text.slice(idx + 2, l.text.lastIndexOf('$$'));
+                decos.push(...getMathSyntaxHighlighting(innerText, l.from + idx + 2));
+                const lastIdx = l.text.lastIndexOf('$$');
+                decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(l.from + lastIdx, l.from + lastIdx + 2));
+              }
+            } else {
+              // Highlight full content lines
+              decos.push(...getMathSyntaxHighlighting(l.text, l.from));
+            }
+          }
+        }
+        i = endLine;
+      }
+    }
+  }
+  return decos;
+}
+
 export function buildDecorations(state: EditorState): RangeSet<Decoration> {
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
 
   decos.push(...getMermaidDecos(state, activeLineNum));
   decos.push(...getFenceDecos(state, activeLineNum));
+  decos.push(...getMathBlockDecos(state, activeLineNum));
 
   for (let lineNum = 1; lineNum <= state.doc.lines; lineNum++) {
     const tableResult = getTableDecos(state, lineNum);
@@ -527,9 +662,10 @@ export function buildDecorations(state: EditorState): RangeSet<Decoration> {
 
     const line = state.doc.line(lineNum);
     const isActive = lineNum === activeLineNum;
-    if (line.text.startsWith('```')) {
+    if (line.text.startsWith('```') || line.text.trim().startsWith('$$')) {
       continue;
     }
+
     decos.push(...getHeadingDecos(state, line.text, line.from, isActive));
     decos.push(...getBoldDecos(state, line.text, line.from, isActive));
     decos.push(...getInlineCodeDecos(state, line.text, line.from, isActive));
@@ -539,8 +675,10 @@ export function buildDecorations(state: EditorState): RangeSet<Decoration> {
     decos.push(...getNumberedListDecos(line.text, line.from));
     decos.push(...getBulletListDecos(state, line.text, line.from, isActive));
 
-    decos.push(...getStrikethroughDecos(state, line.text, line.from, isActive)); // New
-    decos.push(...getHighlightDecos(state, line.text, line.from, isActive)); // New
+    decos.push(...getStrikethroughDecos(state, line.text, line.from, isActive));
+    decos.push(...getHighlightDecos(state, line.text, line.from, isActive));
+
+    decos.push(...getInlineMathDecos(state, line.text, line.from, isActive)); // New
 
     decos.push(...getLinkDecos(state, line.text, line.from, isActive));
     decos.push(...getBlockquoteDecos(state, line.text, line.from, isActive));

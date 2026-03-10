@@ -16,6 +16,8 @@ import {
   updateTable,
 } from '@/lib/client/markdown/markdown-table-utils';
 import { ChangeSpec, EditorSelection, Transaction } from '@uiw/react-codemirror';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 export class BulletWidget extends WidgetType {
   toDOM() {
@@ -696,10 +698,8 @@ export class CheckboxWidget extends WidgetType {
       e.stopPropagation();
     });
     input.onclick = e => {
-      // Prevent the click from moving the cursor
       e.preventDefault();
 
-      // Calculate exactly where the 'x' or ' ' is inside [ ]
       const text = view.state.doc.lineAt(this.from).text;
       const bracketIndex = text.indexOf('[');
       if (bracketIndex !== -1) {
@@ -717,5 +717,83 @@ export class CheckboxWidget extends WidgetType {
 
   ignoreEvent() {
     return false;
+  }
+}
+
+export class MathWidget extends WidgetType {
+  constructor(
+    readonly code: string,
+    readonly pos: number,
+    readonly displayMode: boolean = true // true for $$ blocks, false for $ inline
+  ) {
+    super();
+  }
+
+  toDOM(view: EditorView) {
+    const isBlock = this.displayMode;
+    const mainContainer = document.createElement(isBlock ? 'div' : 'span');
+    const container = document.createElement(isBlock ? 'div' : 'span');
+    mainContainer.className = 'z-100 relative group';
+
+    container.className = isBlock
+      ? ' border border-transparent hover:border-border transition-colors relative block w-full max-w-full box-border z-10 select-none leading-[0] overflow-x-auto! overflow-y-hidden!'
+      : ' border border-transparent relative block w-full max-w-full z-10 select-none leading-[0] overflow-x-auto! overflow-y-hidden!';
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.className = 'block! w-full! max-w-full! relative contain-[inline-size]';
+
+    container.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      view.dispatch({ selection: { anchor: this.pos }, scrollIntoView: true });
+      view.focus();
+    };
+
+    if (isBlock) {
+      const btn = document.createElement('button');
+      btn.className =
+        'bg-accent hover:bg-accent/60 flex text-accent-foreground cursor-pointer text-[11px] border hover:border-border items-center z-20 rounded-md absolute top-[6px] right-[8px] opacity-0 group-hover:opacity-100 transition-opacity py-[6px]! px-[2px]';
+      btn.innerHTML = `<span>&lt;/&gt;</span>`;
+      btn.onclick = e => {
+        e.preventDefault();
+        e.stopPropagation();
+        view.dispatch({ selection: { anchor: this.pos }, scrollIntoView: true });
+        view.focus();
+      };
+      mainContainer.appendChild(btn);
+    }
+
+    const renderArea = document.createElement('span');
+    renderArea.className = 'relative inline-block pr-[5px] pb-[5px] w-auto! min-w-full';
+    scrollWrapper.appendChild(renderArea);
+    container.appendChild(scrollWrapper);
+    mainContainer.appendChild(container);
+    requestAnimationFrame(() => {
+      try {
+        katex.render(this.code, renderArea, {
+          displayMode: isBlock,
+          throwOnError: true,
+          output: 'htmlAndMathml',
+        });
+      } catch {
+        renderArea.style.padding = '0';
+        renderArea.style.margin = '0';
+        renderArea.innerHTML = `
+        <div class="flex flex-col items-center justify-center bg-red-500/5 gap-2 w-full cursor-pointer h-auto min-h-[100px]">
+          <div class="text-red-500 text-[13px] font-semibold flex items-center gap-x-0">
+            <span class="text-3xl">⚠️</span> 
+            <span class="">Math Syntax Error</span> 
+          </div>
+          <div class="text-muted-foreground text-[11px] font-mono opacity-80 text-center break-all">
+            Click to fix: "${this.code.substring(0, 40)}${this.code.length > 40 ? '...' : ''}"
+          </div>
+        </div>`;
+      }
+    });
+
+    return mainContainer;
+  }
+
+  eq(other: MathWidget) {
+    return other.code === this.code && other.displayMode === this.displayMode;
   }
 }

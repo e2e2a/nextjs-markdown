@@ -1031,7 +1031,23 @@ body {
     padding: 0 2px;
   }
 
-  .cm-syntax-hide {
-    display: none;
+  /* Source Text Highlighting */
+  .cm-math-command {
+    @apply text-blue-400 font-bold;
+  }
+  .cm-math-variable {
+    @apply text-primary italic;
+  }
+  .cm-math-number {
+    @apply text-orange-400;
+  }
+  .cm-math-operator {
+    @apply text-purple-400;
+  }
+  .cm-math-bracket {
+    @apply text-gray-500;
+  }
+  .cm-math-marker {
+    @apply text-primary/40 font-bold;
   }
 }

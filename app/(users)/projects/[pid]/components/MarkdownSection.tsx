@@ -175,16 +175,8 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
           return false;
         },
       }),
-      // autocompletion(),
-      // closeBrackets(),
-      // keymap.of(completionKeymap),
       internalLinkCompletion,
       internalLinkClickHandler,
-      // autocompletion({
-      //   override: [internalLinkSource], // Use the source function here
-      //   icons: false, // Cleaner UI
-      //   defaultKeymap: true,
-      // }),
       editableCompartment.of(EditorState.readOnly.of(false)),
       onDocChange,
       tableBackspace,

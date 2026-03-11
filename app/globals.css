@@ -325,12 +325,11 @@ body {
     line-height: inherit;
     margin: 0 !important;
     padding: 0 !important;
-    /* @apply h-full!; */
   }
 
   .cm-content {
     height: auto !important;
-    line-height: 1rem;
+    line-height: 1.25rem;
     counter-reset: md-numbered-list;
   }
 
@@ -632,11 +631,6 @@ body {
     padding-left: 10px;
   } */
 
-  .cm-paragraph {
-    font-size: 3rem;
-    line-height: 1.65rem !important;
-  }
-
   .cm-code-block-start,
   .cm-code-block-end {
     @apply bg-neutral-800/60;
@@ -649,7 +643,7 @@ body {
   }
 
   .cm-code-block-start {
-    border-radius: 8px 8px 0 0;
+    border-radius: 4px 4px 0 0;
     padding: 12px 12px 0 12px;
   }
 
@@ -658,7 +652,7 @@ body {
   }
 
   .cm-code-block-end {
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 4px 4px;
     padding: 0 12px 12px 12px;
   }
 
@@ -682,6 +676,16 @@ body {
   .cm-bold-text {
     font-weight: bold !important;
     cursor: text;
+  }
+
+  .cm-fenced-inline-code {
+    background-color: rgb(52, 51, 51) !important;
+    color: #e6e6e6;
+    padding: 0 0.4em;
+    display: inline;
+    white-space: normal;
+    word-break: break-word;
+    @apply h-fit! rounded-sm;
   }
 
   .cm-syntax-hide {
@@ -723,8 +727,9 @@ body {
 
   .cm-code-block-fence.cm-line,
   .cm-code-block-line.cm-line {
-    background-color: #1e1e1e !important;
+    background-color: rgb(52, 51, 51) !important;
     position: relative;
+    @apply ml-1! pl-2!;
   }
 
   .markdown-render-inline {

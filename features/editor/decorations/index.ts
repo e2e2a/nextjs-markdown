@@ -175,17 +175,73 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
 
   for (let i = 1; i <= state.doc.lines; i++) {
     const line = state.doc.line(i);
-    const text = line.text.trim();
-    const selFrom = state.selection.main.from;
-    const selTo = state.selection.main.to;
-    if (text.startsWith('```')) {
+    const text = line.text;
+    const trimmedText = text.trim();
+
+    // Check if this line contains a fenced code block marker
+    if (trimmedText.startsWith('```')) {
       const isOpening = !isInsideBlock;
-      let isBlockActive = false;
 
       if (isOpening) {
         blockStartLine = i;
-        let closingLine = i;
+
+        // Check for multiple fenced code blocks on the same line
+        let searchIndex = 0;
+        let foundAny = false;
+
+        while (searchIndex < text.length) {
+          const openingIndex = text.indexOf('```', searchIndex);
+          if (openingIndex === -1) break;
+
+          const closingIndex = text.indexOf('```', openingIndex + 3);
+          if (closingIndex === -1) break; // No closing marker, treat as normal multi-line
+
+          foundAny = true;
+
+          // This is a complete fenced code block on the same line
+          const isBlockActive = activeLineNum === i;
+          const isSelected = isRangeSelected(state, line.from, line.to);
+          const sourceMode = state.field(sourceModeField, false);
+          const viewMode = state.facet(EditorState.readOnly);
+
+          // Calculate positions
+          const openingStart = line.from + openingIndex;
+          const openingEnd = openingStart + 3;
+          const closingStart = line.from + closingIndex;
+          const closingEnd = closingStart + 3;
+          const contentStart = openingEnd;
+          const contentEnd = closingStart;
+
+          if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) {
+            // Hide both opening and closing backticks
+            decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(openingStart, openingEnd));
+            decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(closingStart, closingEnd));
+
+            // Style the content as inline code
+            decos.push(
+              Decoration.mark({
+                class: 'cm-fenced-inline-code',
+              }).range(contentStart, contentEnd)
+            );
+          } else {
+            // In source mode, just highlight the backticks
+            decos.push(Decoration.mark({ class: 'cm-code-fence-marker' }).range(openingStart, openingEnd));
+            decos.push(Decoration.mark({ class: 'cm-code-fence-marker' }).range(closingStart, closingEnd));
+          }
+
+          // Move search index past this block
+          searchIndex = closingIndex + 3;
+        }
+
+        if (foundAny) {
+          continue; // Skip to next line since we handled all blocks on this line
+        }
+
+        // If we get here, it's a multi-line block (no closing on same line)
+        // Multi-line fenced code block - start collecting content
         const content = [];
+        let closingLine = i;
+
         for (let j = i + 1; j <= state.doc.lines; j++) {
           const nextLine = state.doc.line(j);
           if (nextLine.text.trim().startsWith('```')) {
@@ -195,31 +251,66 @@ export function getFenceDecos(state: EditorState, activeLineNum: number): StateR
           content.push(nextLine.text);
         }
 
-        isBlockActive = activeLineNum >= i && activeLineNum <= closingLine;
+        const language = trimmedText.slice(3).trim();
+        const isBlockActive = activeLineNum >= i && activeLineNum <= closingLine;
 
+        // Add fence widget at start for multi-line blocks only
         decos.push(
           Decoration.widget({
-            widget: new FenchCodeWidget(text.replace('```', '').trim(), content.join('\n')),
+            widget: new FenchCodeWidget(language, content.join('\n')),
             side: -1,
             block: false,
           }).range(line.from)
         );
+
+        // Mark start line as fence with rounded top corners
+        decos.push(
+          Decoration.line({
+            attributes: { class: 'cm-code-block-fence cm-code-block-start' },
+          }).range(line.from)
+        );
+
+        const isSelected = isRangeSelected(state, line.from, state.doc.line(closingLine).to);
+        const sourceMode = state.field(sourceModeField, false);
+        const viewMode = state.facet(EditorState.readOnly);
+
+        if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) {
+          decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
+        }
+
+        isInsideBlock = true;
+        continue;
       } else {
-        isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;
+        // This is a closing fence - mark with rounded bottom corners
+        decos.push(
+          Decoration.line({
+            attributes: { class: 'cm-code-block-fence cm-code-block-end' },
+          }).range(line.from)
+        );
+
+        const isBlockActive = activeLineNum >= blockStartLine && activeLineNum <= i;
+        const isSelected = isRangeSelected(state, state.doc.line(blockStartLine).from, line.to);
+        const sourceMode = state.field(sourceModeField, false);
+        const viewMode = state.facet(EditorState.readOnly);
+
+        if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) {
+          decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
+        }
+
+        isInsideBlock = false;
+        continue;
       }
-
-      decos.push(Decoration.line({ attributes: { class: 'cm-code-block-fence' } }).range(line.from));
-      const isSelected = selFrom <= line.to && selTo >= line.from;
-      const sourceMode = state.field(sourceModeField, false);
-      const viewMode = state.facet(EditorState.readOnly);
-      if (viewMode || (!isBlockActive && !isSelected && !sourceMode)) decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(line.from, line.to));
-
-      isInsideBlock = !isInsideBlock;
-      continue;
     }
 
-    if (isInsideBlock) decos.push(Decoration.line({ attributes: { class: 'cm-code-block-line' } }).range(line.from));
+    if (isInsideBlock) {
+      decos.push(
+        Decoration.line({
+          attributes: { class: 'cm-code-block-line' },
+        }).range(line.from)
+      );
+    }
   }
+
   return decos;
 }
 export function getTableDecos(state: EditorState, startLine: number) {

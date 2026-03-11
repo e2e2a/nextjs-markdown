@@ -1007,4 +1007,39 @@ body {
     padding-bottom: 4px !important;
     display: block; /* Ensures padding behaves correctly */
   }
+
+  .cm-internal-link {
+    color: #7d7aff;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .cm-tooltip.cm-tooltip-autocomplete {
+    @apply z-100 overflow-hidden! border border-border rounded-md flex flex-col;
+  }
+
+  .cm-tooltip-autocomplete ul li {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    height: auto !important;
+    padding: 8px 12px !important;
+  }
+
+  .cm-completionLabel {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    @apply text-foreground block!;
+  }
+
+  .cm-completionDetail {
+    font-size: 11px !important;
+    color: #a1a1aa !important;
+    opacity: 0.7;
+    font-style: normal !important;
+    @apply m-0! mt-[2px];
+  }
+  .cm-tooltip-autocomplete ul li[aria-selected] {
+    @apply bg-accent/60 text-accent;
+  }
 }

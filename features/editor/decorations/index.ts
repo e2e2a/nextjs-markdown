@@ -108,7 +108,11 @@ export function getItalicDecos(state: EditorState, text: string, lineFrom: numbe
   while ((match = italicRegex.exec(text)) !== null) {
     const start = lineFrom + match.index + match[1].length;
     const end = start + match[0].length - match[1].length;
-
+    decos.push(
+      Decoration.line({
+        gutterAttributes: { class: 'cm-hide-fold' }, // <--- THIS kills the click/visibility
+      }).range(start)
+    );
     decos.push(Decoration.mark({ class: 'cm-italic-text' }).range(start, end));
     const isSelected = isRangeSelected(state, start, end);
     if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
@@ -132,7 +136,7 @@ export function getBulletListDecos(state: EditorState, text: string, lineFrom: n
     const markerStart = lineFrom + indent;
     const markerEnd = markerStart + match[2].length;
     const isSelected = isRangeSelected(state, markerStart, markerEnd);
-    decos.push(Decoration.line({ class: 'cm-bullet-line' }).range(lineFrom));
+
     if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(markerStart, markerEnd));
 
@@ -541,10 +545,6 @@ export function getHighlightDecos(state: EditorState, text: string, lineFrom: nu
 
 export function getInlineMathDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
-
-  // Updated Regex:
-  // Group 1: $`...` format
-  // Group 2: $...$ format
   const mathRegex = /\$(?:`([^`]+)`|([^$]+))\$/g;
 
   const sourceMode = state.field(sourceModeField, false);
@@ -555,7 +555,6 @@ export function getInlineMathDecos(state: EditorState, text: string, lineFrom: n
     const start = lineFrom + match.index;
     const end = start + match[0].length;
 
-    // Extract content based on which group matched
     const isBacktick = !!match[1];
     const content = (match[1] || match[2] || '').trim();
 
@@ -564,20 +563,16 @@ export function getInlineMathDecos(state: EditorState, text: string, lineFrom: n
     if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(
         Decoration.replace({
-          // Using the specialized Inline Widget now
           widget: new InlineMathWidget(content, start),
           side: 0,
         }).range(start, end)
       );
     } else {
-      // 1. Mark the opening $ (and optional `)
       const openMarkerEnd = isBacktick ? start + 2 : start + 1;
       decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(start, openMarkerEnd));
 
-      // 2. Add syntax highlighting to the LaTeX content
       decos.push(...getMathSyntaxHighlighting(content, openMarkerEnd));
 
-      // 3. Mark the closing $ (and optional `)
       const closeMarkerStart = isBacktick ? end - 2 : end - 1;
       decos.push(Decoration.mark({ class: 'cm-math-marker' }).range(closeMarkerStart, end));
     }
@@ -662,6 +657,32 @@ export function getMathBlockDecos(state: EditorState, activeLineNum: number): St
   return decos;
 }
 
+export function getInternalLinkDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
+  const decos: StateRange<Decoration>[] = [];
+  const wikiRegex = /\[\[([^\]]+)\]\]/g;
+  const sourceMode = state.field(sourceModeField, false);
+  const viewMode = state.facet(EditorState.readOnly);
+
+  const selection = state.selection.main;
+
+  let match;
+  while ((match = wikiRegex.exec(text)) !== null) {
+    const start = lineFrom + match.index;
+    const end = start + match[0].length;
+    const contentStart = start + 2;
+    const contentEnd = end - 2;
+
+    decos.push(Decoration.mark({ class: 'cm-internal-link', attributes: { 'data-internal-link': match[1] } }).range(start, end));
+    const isCursorInside = selection.from >= start && selection.to <= end;
+
+    if (viewMode || (!isLineActive && !isCursorInside && !sourceMode)) {
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, contentStart));
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(contentEnd, end));
+    }
+  }
+  return decos;
+}
+
 export function buildDecorations(state: EditorState): RangeSet<Decoration> {
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;
@@ -686,6 +707,7 @@ export function buildDecorations(state: EditorState): RangeSet<Decoration> {
     }
 
     decos.push(...getHeadingDecos(state, line.text, line.from, isActive));
+    decos.push(...getInternalLinkDecos(state, line.text, line.from, isActive));
     decos.push(...getBoldDecos(state, line.text, line.from, isActive));
     decos.push(...getInlineCodeDecos(state, line.text, line.from, isActive));
     decos.push(...getHRDecos(state, line.text, line.from, line.to, isActive));

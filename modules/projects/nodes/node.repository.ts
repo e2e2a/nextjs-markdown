@@ -19,7 +19,7 @@ export const nodeRepository = {
 
   findNodeByProject: (projectId: string) => Node.find({ projectId, parentId: null }).populate('children'),
 
-  create: async (data: { projectId: string; parentId: string | null | undefined; workspaceId: string; type: string; title: string }) => {
+  create: async (data: { projectId: string; parentId: string | null | undefined; path: string; workspaceId: string; type: string; title: string }) => {
     const session = UnitOfWork.getSession();
     const [node] = await Node.create([data], { session });
     return node;

@@ -3,6 +3,86 @@ import { EditorSelection } from '@codemirror/state';
 import { TablePreviewWidget } from '@/features/editor/widgets';
 import { markdownLivePreviewField } from '@/features/editor/plugins';
 import { getAllTableRanges } from '@/lib/client/markdown/markdown-table-utils';
+import { autocompletion, Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { useNodeStore } from '../stores/nodes';
+import { flattenNodeTree } from '@/utils/client/node-utils';
+import { useTabStore } from '../stores/tabs';
+import { INode } from '@/types';
+
+/** Start Internal Link helper */
+let cachedFlatNodes: INode[] = [];
+const cachedSearchIndex: Map<string, string> = new Map();
+export function rebuildNodeCache(nodes: INode[]) {
+  const flat = flattenNodeTree(nodes);
+
+  cachedFlatNodes = flat;
+
+  cachedSearchIndex.clear();
+
+  for (const n of flat) {
+    cachedSearchIndex.set(n._id, `${n.title} ${n.path ?? ''}`.toLowerCase());
+  }
+}
+
+/**
+ * Subscribe to Zustand changes
+ */
+// rebuild initially
+rebuildNodeCache(useNodeStore.getState().nodes ?? []);
+
+// subscribe to changes
+useNodeStore.subscribe(() => {
+  const nodes = useNodeStore.getState().nodes;
+  if (!nodes) return;
+
+  rebuildNodeCache(nodes);
+});
+
+interface LinkCompletion extends Completion {
+  type: 'file' | 'folder';
+  parentId?: string | null;
+  title: string;
+}
+
+function getRelativePath(from: string, to: string) {
+  if (!from) return to;
+
+  const fromParts = from.split('/');
+  const toParts = to.split('/');
+
+  // remove filename from current file
+  fromParts.pop();
+
+  while (fromParts.length && toParts.length && fromParts[0] === toParts[0]) {
+    fromParts.shift();
+    toParts.shift();
+  }
+
+  const up = fromParts.map(() => '..');
+  const result = [...up, ...toParts].join('/');
+
+  return result || './';
+}
+
+function resolveRelativePath(currentPath: string, relativePath: string) {
+  const currentParts = currentPath.split('/');
+  currentParts.pop();
+
+  const parts = relativePath.split('/');
+
+  for (const part of parts) {
+    if (part === '..') {
+      currentParts.pop();
+    } else if (part === '.' || part === '') {
+      continue;
+    } else {
+      currentParts.push(part);
+    }
+  }
+
+  return currentParts.join('/');
+}
+/** End Internal Link helper */
 
 export const selectAllToTop: Command = view => {
   view.dispatch({
@@ -133,5 +213,160 @@ export const tableKeyboardHandler = EditorView.domEventHandlers({
       }
     }
     return false;
+  },
+});
+
+// export const internalLinkCompletion = autocompletion({
+//   activateOnTyping: true,
+//   override: [
+//     (context: CompletionContext): CompletionResult | null => {
+//       const word = context.matchBefore(/\[\[[^\]]*/);
+//       if (!word) return null;
+
+//       const typed = word.text.slice(2).toLowerCase();
+
+//       const state = useNodeStore.getState();
+//       const nodes = state.nodes;
+//       const currentNode = state.activeNode;
+
+//       const flatNodes = flattenNodeTree(nodes);
+
+//       const options = flatNodes
+//         .filter(n => n._id !== currentNode?._id)
+//         .map((n): LinkCompletion | null => {
+//           const isFolder = n.type === 'folder';
+
+//           const relativePath = getRelativePath(currentNode?.path ?? '', n.path!);
+
+//           if (typed && !relativePath.toLowerCase().includes(typed) && !n.title.toLowerCase().includes(typed)) {
+//             return null;
+//           }
+
+//           return {
+//             label: n.title,
+//             title: n.title,
+//             type: isFolder ? 'folder' : 'file',
+//             parentId: n.parentId,
+
+//             detail: relativePath,
+
+//             apply: (view, completion, from, to) => {
+//               const doc = view.state.doc;
+
+//               const nextChars = doc.sliceString(to, to + 2);
+//               const shouldClose = nextChars !== ']]';
+
+//               const insertText = relativePath + (isFolder ? '/' : shouldClose ? ']]' : '');
+
+//               view.dispatch({
+//                 changes: { from, to, insert: insertText },
+//                 selection: {
+//                   anchor: from + relativePath.length + (isFolder ? 1 : shouldClose ? 2 : 0),
+//                 },
+//               });
+//             },
+//           };
+//         })
+//         .filter(Boolean) as LinkCompletion[];
+
+//       return {
+//         from: word.from + 2,
+//         options,
+//         filter: false,
+//       };
+//     },
+//   ],
+// });
+export const internalLinkCompletion = autocompletion({
+  activateOnTyping: true,
+  activateOnTypingDelay: 60,
+
+  override: [
+    (context: CompletionContext): CompletionResult | null => {
+      const word = context.matchBefore(/\[\[[^\]]*/);
+      if (!word) return null;
+
+      const typed = word.text.slice(2).toLowerCase();
+
+      const state = useNodeStore.getState();
+      const currentNode = state.activeNode;
+
+      const options: LinkCompletion[] = [];
+
+      for (const n of cachedFlatNodes) {
+        if (n._id === currentNode?._id) continue;
+
+        const searchText = cachedSearchIndex.get(n._id);
+        if (!searchText) continue;
+
+        if (typed && !searchText.includes(typed)) continue;
+
+        const isFolder = n.type === 'folder';
+
+        const relativePath = getRelativePath(currentNode?.path ?? '', n.path!);
+
+        options.push({
+          label: n.title,
+          title: n.title,
+          type: isFolder ? 'folder' : 'file',
+          parentId: n.parentId,
+
+          detail: relativePath,
+
+          apply: (view, completion, from, to) => {
+            const doc = view.state.doc;
+
+            const nextChars = doc.sliceString(to, to + 2);
+            const shouldClose = nextChars !== ']]';
+
+            const insertText = relativePath + (isFolder ? '/' : shouldClose ? ']]' : '');
+
+            view.dispatch({
+              changes: { from, to, insert: insertText },
+              selection: {
+                anchor: from + relativePath.length + (isFolder ? 1 : shouldClose ? 2 : 0),
+              },
+            });
+          },
+        });
+
+        if (options.length >= 50) break; // limit results
+      }
+
+      return {
+        from: word.from + 2,
+        options,
+        filter: false,
+      };
+    },
+  ],
+});
+
+export const internalLinkClickHandler = EditorView.domEventHandlers({
+  click(event) {
+    const el = (event.target as HTMLElement).closest('.cm-internal-link') as HTMLElement | null;
+    if (!el) return false;
+
+    const link = el.dataset.internalLink;
+    if (!link) return false;
+
+    const state = useNodeStore.getState();
+    const nodes = state.nodes;
+    const currentNode = state.activeNode;
+
+    const flatNodes = flattenNodeTree(nodes);
+
+    const absolutePath = resolveRelativePath(currentNode?.path ?? '', link);
+
+    const node = flatNodes.find(n => n.path === absolutePath);
+    if (!node) return false;
+
+    const { openTab } = useTabStore.getState();
+
+    openTab(node.projectId, node, true);
+    state.setActiveNode(node._id);
+
+    event.preventDefault();
+    return true;
   },
 });

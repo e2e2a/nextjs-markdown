@@ -153,7 +153,7 @@ export const nodeService = {
 
     await checkNodeExistence({ ...data, path });
     return await UnitOfWork.run(async () => {
-      return await nodeRepository.create({ ...data, workspaceId: project.workspaceId });
+      return await nodeRepository.create({ ...data, path, workspaceId: project.workspaceId });
     });
   },
 

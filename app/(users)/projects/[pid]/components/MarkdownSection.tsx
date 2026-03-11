@@ -12,7 +12,7 @@ import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
 import { columnSelectionField, markdownLivePreviewField, setupDragTracking, sourceModeField, tableSelectionHighlighter } from '@/features/editor/plugins';
 import { languages } from '@codemirror/language-data';
-import { selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
+import { internalLinkClickHandler, internalLinkCompletion, selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
 import { useTabStore } from '@/features/editor/stores/tabs';
@@ -175,6 +175,16 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
           return false;
         },
       }),
+      // autocompletion(),
+      // closeBrackets(),
+      // keymap.of(completionKeymap),
+      internalLinkCompletion,
+      internalLinkClickHandler,
+      // autocompletion({
+      //   override: [internalLinkSource], // Use the source function here
+      //   icons: false, // Cleaner UI
+      //   defaultKeymap: true,
+      // }),
       editableCompartment.of(EditorState.readOnly.of(false)),
       onDocChange,
       tableBackspace,

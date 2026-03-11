@@ -25,20 +25,24 @@ async function start() {
      * Cold Start: Triggered when the first user joins a room that isn't in RAM.
      * This is where we load the "original content".
      */
-    async onLoadDocument(data) {
-      const doc = new Y.Doc();
-      const ytext = doc.getText('codemirror');
+    async onLoadDocument({ documentName, document }) {
+      const ytext = document.getText('codemirror');
+
+      // Check if we already have content in the Yjs Doc (in-memory)
+      if (ytext.length > 0) return document;
 
       try {
-        // If room is new to RAM, fetch from DB
-        const node = await Node.findById(data.documentName);
-        if (node?.content && ytext.length === 0) {
-          ytext.insert(0, node?.content);
+        const node = await Node.findById(documentName);
+        if (node?.content) {
+          // Use a transaction to mark this as the "initial" state
+          document.transact(() => {
+            ytext.insert(0, node.content);
+          }, 'initial-load');
         }
       } catch (e) {
-        console.error('Load error', e);
+        console.error(e);
       }
-      return doc;
+      return document;
     },
 
     /**

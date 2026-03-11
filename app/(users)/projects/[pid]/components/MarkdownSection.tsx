@@ -260,10 +260,10 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
               }
             }}
           >
-            {synced && instance && ytext && (
+            {instance && ytext && (
               <CodeMirror
                 key={node._id}
-                value={instance?.ydoc.getText('codemirror').toString() ?? ''}
+                // value={instance?.ydoc.getText('codemirror').toString() ?? ''}
                 onCreateEditor={view => {
                   editorViewRef.current = view;
                   setupDragTracking(editorViewRef.current);

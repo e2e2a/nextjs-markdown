@@ -7,7 +7,7 @@ import { markdownLivePreviewField } from '@/features/editor/plugins';
 
 export default function SimpleEditorPage() {
   const [value, setValue] = useState('# Debug Mode\nClick around to test latency.');
-  console.log('rerendering');
+  console.log('rerenderinasd');
   const onChange = useCallback((val: string) => {
     setValue(val);
   }, []);

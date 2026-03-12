@@ -29,7 +29,9 @@ async function start() {
       const ytext = document.getText('codemirror');
 
       // Check if we already have content in the Yjs Doc (in-memory)
+      console.log('asd1');
       if (ytext.length > 0) return document;
+      console.log('asd2');
 
       try {
         const node = await Node.findById(documentName);
@@ -49,6 +51,8 @@ async function start() {
      * Persistence: Automatically debounced by Hocuspocus.
      */
     async onStoreDocument({ documentName, document }) {
+      // if document is starting name at project-presence then ignore this
+      if (documentName.startsWith('project-presence-')) return;
       const currentContent = document.getText('codemirror').toString();
 
       try {

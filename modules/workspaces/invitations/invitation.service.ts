@@ -44,7 +44,7 @@ export const invitationServices = {
 
       const workspaceMembers = initialMembersData.map(m => ({
         ...m,
-        invitedBy: user.email,
+        invitedBy: user._id!,
         // @Note: reason as 'viewer' because it is invited due to project member creation not invitation in the workspace
         ...(projectId ? { role: 'viewer' as const } : {}),
         status: 'pending' as const,

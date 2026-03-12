@@ -21,6 +21,7 @@ import { EditorOptions } from './editor-options';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { useProjectUIStore } from '@/features/editor/stores/project-ui';
 import ContextMenuClient from './context-menu/context-menu-client';
+import { useSession } from 'next-auth/react';
 
 const myOwnDarkTheme = createTheme({
   theme: 'dark',
@@ -49,12 +50,14 @@ const myOwnDarkTheme = createTheme({
 });
 export const editableCompartment = new Compartment();
 function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
+  const { data } = useSession();
   const [synced, setSynced] = useState(false);
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
   const markDirty = useTabStore(state => state.markDirty);
   const setActiveNode = useNodeStore(state => state.setActiveNode);
   const pid = useParams().pid as string;
+  const [editorReady, setEditorReady] = useState(false);
   // for context menu
   const [contextType, setContextType] = useState<'general' | 'callout' | 'blockquote' | 'mermaid'>('general');
 
@@ -100,7 +103,9 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
   }, [node._id, synced]);
 
   useEffect(() => {
-    if (!node?._id) return;
+    if (!node?._id || !data?.user?._id) return;
+
+    let isMounted = true;
     const ydoc = new Y.Doc();
     const provider = new HocuspocusProvider({
       url: 'ws://localhost:1234',
@@ -109,25 +114,25 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
     });
 
     provider.on('synced', () => {
+      if (!isMounted || !provider.awareness) return;
+      provider.awareness.setLocalState({
+        user: {
+          id: data.user._id,
+          name: data.user.email || 'Anonymous',
+          color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+        },
+      });
       setSynced(true);
     });
 
-    // provider.on('status', ({ status }: { status: string }) => {
-    //   console.log('🔌 Connection Status:', status);
-    // });
-
     provider.connect();
-    requestAnimationFrame(() => {
-      setInstance({ ydoc, provider });
-    });
+    requestAnimationFrame(() => setInstance({ ydoc, provider }));
 
     return () => {
-      provider.destroy();
-      ydoc.destroy();
-      setSynced(false);
-      setInstance(null);
+      isMounted = false;
+      if (provider.awareness) provider.awareness.setLocalState(null);
     };
-  }, [node?._id]);
+  }, [node?._id, data]);
 
   const ytext = useMemo(() => instance?.ydoc.getText('codemirror'), [instance]);
   const undoManager = useMemo(() => {
@@ -219,6 +224,13 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
     };
   }, [ytext, node._id]);
 
+  useEffect(() => {
+    if (instance && ytext) {
+      const timer = setTimeout(() => setEditorReady(true), 0);
+      return () => clearTimeout(timer);
+    }
+  }, [instance, ytext]);
+
   return (
     <>
       <div className="absolute top-12 left-0 right-0 h-1 z-51 w-full bg-background" />
@@ -259,7 +271,7 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
               }
             }}
           >
-            {instance && ytext && (
+            {editorReady ? (
               <CodeMirror
                 key={node._id}
                 // value={instance?.ydoc.getText('codemirror').toString() ?? ''}
@@ -272,8 +284,9 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
                 extensions={editorExtensions}
                 className="h-auto!"
               />
+            ) : (
+              <div className="min-h-[30vh] flex items-center justify-center text-5xl leading-1 w-full">Syncing Document...</div>
             )}
-            {!synced && <div className="min-h-full flex items-center justify-center text-5xl leading-1 w-full">Syncing Document...</div>}
             <div
               onMouseDown={() => {
                 // e.preventDefault();

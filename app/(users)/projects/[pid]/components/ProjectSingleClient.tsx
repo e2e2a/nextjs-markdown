@@ -1,9 +1,10 @@
 'use client';
 import AppSidebarLayout from '@/components/markdown/app-sidebar-layout';
 import { useParams } from 'next/navigation';
-import MarkdownSection from './MarkdownSection'; // Import the finished section
+import MarkdownSection from './MarkdownSection';
 import { INode } from '@/types';
 import { useTabStore } from '@/features/editor/stores/tabs';
+import { ProjectPresence } from './project-presence';
 
 export function ProjectSingleClient() {
   const params = useParams();
@@ -14,24 +15,26 @@ export function ProjectSingleClient() {
 
   return (
     <AppSidebarLayout>
-      <div className="h-full">
-        {tabs.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 select-none">
-            <div className="border-2 border-dashed border-muted rounded-xl p-8 flex flex-col items-center">
-              <p className="text-sm font-medium">No file selected</p>
-              <p className="text-xs">Open a file to start editing</p>
+      <ProjectPresence projectId={pid}>
+        <div className="h-full">
+          {tabs.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 select-none">
+              <div className="border-2 border-dashed border-muted rounded-xl p-8 flex flex-col items-center">
+                <p className="text-sm font-medium">No file selected</p>
+                <p className="text-xs">Open a file to start editing</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {tabs.map(tab => {
-          return (
-            <div key={tab.nodeId} className={tab.nodeId === activeTabId ? 'h-full w-full block' : 'hidden'}>
-              <MarkdownSection node={tab.node as INode} isDirty={tab.isDirty} />
-            </div>
-          );
-        })}
-      </div>
+          {tabs.map(tab => {
+            return (
+              <div key={tab.nodeId} className={tab.nodeId === activeTabId ? 'h-full w-full block' : 'hidden'}>
+                <MarkdownSection node={tab.node as INode} isDirty={tab.isDirty} />
+              </div>
+            );
+          })}
+        </div>
+      </ProjectPresence>
     </AppSidebarLayout>
   );
 }

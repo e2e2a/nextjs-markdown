@@ -65,7 +65,7 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
   const pid = params.pid as string;
   const { data: pData, isLoading: pLoading, error: pError } = useProjectByIdQuery(pid);
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
-  const { activeNode, selectedNode, setIsUpdatingNode, setSelectedNode, clearHistory } = useNodeStore();
+  const { activeNode, selectedNode, setIsUpdatingNode, clearHistory } = useNodeStore();
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const { setNodes } = useNodeStore();
@@ -95,13 +95,6 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
     setNodes(nData?.nodes);
   }, [nData, setNodes]);
 
-  // const handlePanelMouseDown = (e: React.MouseEvent) => {
-  //   const target = e.target as HTMLElement;
-  //   if (target.closest('[data-sidebar-node]')) return;
-  //   if (e.button !== 2) {
-  //     setSelectedNode(activeNode ? activeNode : null);
-  //   }
-  // };
   const containerRef = useRef<HTMLDivElement>(null);
   const [leftMinPercent, setLeftMinPercent] = useState(14);
   const [rightMinPercent, setRightMinPercent] = useState(16);
@@ -160,13 +153,13 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
           direction="horizontal"
           autoSaveId="sidebar-layout"
           className="overflow-y-hidden rounded-none bg-white font-(family-name:--font-IBM)"
-          onMouseDownCapture={e => {
-            const target = e.target as HTMLElement;
-            if (target.closest('[data-sidebar-node]')) return;
-            if (e.button !== 2) {
-              setSelectedNode(null);
-            }
-          }}
+          // onMouseDownCapture={e => {
+          //   const target = e.target as HTMLElement;
+          //   if (target.closest('[data-sidebar-node]')) return;
+          //   if (e.button !== 2) {
+          //     setSelectedNode(null);
+          //   }
+          // }}
         >
           <MiniSidebarTemplate LeftSidebarRef={LeftSidebarRef} isLeftCollapsed={isLeftCollapsed} />
 

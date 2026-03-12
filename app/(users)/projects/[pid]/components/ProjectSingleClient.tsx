@@ -1,7 +1,7 @@
 'use client';
 import AppSidebarLayout from '@/components/markdown/app-sidebar-layout';
 import { useParams } from 'next/navigation';
-import { MarkdownSection } from './MarkdownSection'; // Import the finished section
+import MarkdownSection from './MarkdownSection'; // Import the finished section
 import { INode } from '@/types';
 import { useTabStore } from '@/features/editor/stores/tabs';
 

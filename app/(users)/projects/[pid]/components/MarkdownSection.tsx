@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { drawSelection, dropCursor, EditorView, keymap } from '@codemirror/view';
 import CodeMirror, { Compartment, EditorState } from '@uiw/react-codemirror';
 import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
@@ -48,14 +48,13 @@ const myOwnDarkTheme = createTheme({
   ],
 });
 export const editableCompartment = new Compartment();
-export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
+function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
   const [synced, setSynced] = useState(false);
   const [instance, setInstance] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(null);
   const editorViewRef = useRef<EditorView | null>(null);
   const markDirty = useTabStore(state => state.markDirty);
-  const { setActiveNode } = useNodeStore();
+  const setActiveNode = useNodeStore(state => state.setActiveNode);
   const pid = useParams().pid as string;
-
   // for context menu
   const [contextType, setContextType] = useState<'general' | 'callout' | 'blockquote' | 'mermaid'>('general');
 
@@ -197,7 +196,7 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
       columnSelectionField,
       markdownLivePreviewField,
     ];
-  }, [instance, ytext, onDocChange, setActiveNode, node, undoManager]);
+  }, [instance, ytext, onDocChange, setActiveNode, node._id, undoManager]);
 
   useEffect(() => {
     if (!ytext) return;
@@ -325,3 +324,6 @@ export function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boole
     </>
   );
 }
+export default React.memo(MarkdownSection, (prevProps, nextProps) => {
+  return prevProps.node._id === nextProps.node._id && prevProps.isDirty === nextProps.isDirty;
+});

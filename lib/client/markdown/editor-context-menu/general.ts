@@ -95,21 +95,48 @@ export const insertCallout = ({ editorViewRef }: IProps) => {
   const view = editorViewRef.current;
   if (!view) return;
 
-  const line = view.state.doc.lineAt(view.state.selection.main.head);
-  const trimmed = line.text.trim();
+  const { from, to } = view.state.selection.main;
+  const selectedText = view.state.sliceDoc(from, to);
 
-  const newText = trimmed.length > 0 ? `> [!NOTE]\n> ${line.text}\n` : `> [!NOTE] Title\n> Contents\n`;
+  if (selectedText && from !== to) {
+    const lines = selectedText.split('\n');
 
-  const cursorOffset = newText.indexOf(trimmed || 'Contents');
+    const calloutLines = lines.map(line => {
+      const trimmed = line.trim();
+      return trimmed ? `> ${line}` : '>';
+    });
 
-  view.dispatch({
-    changes: { from: line.from, to: line.to, insert: newText },
-    selection: {
-      anchor: line.from + cursorOffset,
-      head: line.from + cursorOffset + (trimmed ? 0 : 8),
-    },
-    userEvent: 'input.callout',
-  });
+    const newText = `> [!NOTE]\n${calloutLines.join('\n')}\n`;
+
+    view.dispatch({
+      changes: { from, to, insert: newText },
+      selection: { anchor: from + 3 },
+      userEvent: 'input.callout',
+      scrollIntoView: true,
+    });
+  } else {
+    const line = view.state.doc.lineAt(view.state.selection.main.head);
+    const trimmed = line.text.trim();
+
+    const template = trimmed.length > 0 ? `> [!NOTE]\n> ${line.text}\n` : `> [!NOTE] Title\n> Contents\n`;
+
+    const { insertPos, fullInsert, widgetFrom } = getSmartInsert(view, template);
+
+    const cursorOffset = template.indexOf(trimmed || 'Contents');
+    const cursorAnchor = widgetFrom + cursorOffset;
+    const cursorHead = cursorAnchor + (trimmed ? 0 : 8);
+
+    view.dispatch({
+      changes: { from: insertPos, to: insertPos, insert: fullInsert },
+      selection: {
+        anchor: cursorAnchor,
+        head: cursorHead,
+      },
+      userEvent: 'input.callout',
+      scrollIntoView: true,
+    });
+  }
+
   view.focus();
 };
 

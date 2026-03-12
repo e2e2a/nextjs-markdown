@@ -607,12 +607,16 @@ export class CalloutWidget extends WidgetType {
     const container = document.createElement('div');
     container.className = `cm-callout cm-callout-${this.type}`;
     container.tabIndex = -1;
-
+    container.oncontextmenu = () => {
+      const pos = view.posAtDOM(container);
+      window.dispatchEvent(new CustomEvent('set-editor-context', { detail: { type: 'callout', pos } }));
+    };
     const btn = document.createElement('button');
     btn.className = 'cm-callout-toggle';
     btn.innerHTML = `<span>&lt;/&gt;</span>`;
     container.onclick = e => {
       e.preventDefault();
+      e.stopPropagation();
       const currentPos = view.posAtDOM(container);
       view.dispatch({
         selection: { anchor: currentPos },
@@ -622,6 +626,7 @@ export class CalloutWidget extends WidgetType {
     };
     btn.onclick = e => {
       e.preventDefault();
+      e.stopPropagation();
       const currentPos = view.posAtDOM(container);
       view.dispatch({
         selection: { anchor: currentPos },
@@ -659,7 +664,29 @@ export class CalloutWidget extends WidgetType {
 
     const body = document.createElement('div');
     body.className = 'cm-callout-body';
-    body.innerHTML = marked.parse(bodyText) as string;
+    const parsedContent = marked.parse(bodyText) as string;
+    const temp = document.createElement('div');
+    temp.innerHTML = parsedContent;
+    const cleanContent = Array.from(temp.childNodes)
+      .map(node => {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim() === '') {
+          return null;
+        }
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const element = node as HTMLElement;
+          Array.from(element.childNodes).forEach(child => {
+            if (child.nodeType === Node.TEXT_NODE && child.textContent?.trim() === '') {
+              child.remove();
+            }
+          });
+          return element.outerHTML;
+        }
+        return node.textContent;
+      })
+      .filter(Boolean)
+      .join('');
+
+    body.innerHTML = cleanContent as string;
 
     content.appendChild(header);
     content.appendChild(body);
@@ -753,7 +780,16 @@ export class MathWidget extends WidgetType {
     btn.className =
       'bg-background hover:bg-accent/60 flex text-accent-foreground cursor-pointer text-[11px] border hover:border-border items-center z-20 rounded-md absolute top-[6px] right-[8px] opacity-0 group-hover:opacity-100 transition-opacity py-[4px] px-[8px]';
     btn.innerHTML = `<span>&lt;/&gt;</span>`;
-
+    btn.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      view.requestMeasure();
+      view.dispatch({
+        selection: { anchor: this.pos + 4 },
+        scrollIntoView: true,
+      });
+      view.focus();
+    };
     scrollWrapper.appendChild(renderArea);
     container.appendChild(scrollWrapper);
     mainContainer.appendChild(btn);

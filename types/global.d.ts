@@ -10,6 +10,6 @@ declare global {
   }
 
   interface WindowEventMap {
-    'set-editor-context': CustomEvent<'general' | 'callout' | 'blockquote' | 'mermaid'>;
+    'set-editor-context': CustomEvent<{ type: 'general' | 'callout' | 'blockquote' | 'mermaid'; pos?: number }>;
   }
 }

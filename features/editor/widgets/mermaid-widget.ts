@@ -33,7 +33,7 @@ export class MermaidWidget extends WidgetType {
     container.tabIndex = -1;
     container.oncontextmenu = () => {
       // CustomEvent for context-menu to showup
-      window.dispatchEvent(new CustomEvent('set-editor-context', { detail: 'mermaid' }));
+      window.dispatchEvent(new CustomEvent('set-editor-context', { detail: { type: 'mermaid' } }));
     };
     container.onclick = e => {
       e.preventDefault();

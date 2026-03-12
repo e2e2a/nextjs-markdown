@@ -1,14 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuGroup,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
+import React, { useEffect, useRef, useState } from 'react';
+import { ContextMenu, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { EditorView } from '@uiw/react-codemirror';
 import GeneralContextMenu from './general';
+import CalloutContextMenu from './callout';
 interface IProps {
   children: React.ReactNode;
   editorViewRef: React.RefObject<EditorView | null>;
@@ -19,42 +13,49 @@ interface IProps {
 const ContextMenuClient = ({ editorViewRef, synced, contextType, setContextType, children }: IProps) => {
   const [currentLineText, setCurrentLineText] = useState('');
   const [cursorPos, setCursorPos] = useState(0);
-
+  const eventPosRef = useRef<number | null>(null);
   useEffect(() => {
-    const handleContext = (e: CustomEvent<'general' | 'callout' | 'blockquote' | 'mermaid'>) => setContextType(e.detail);
-    window.addEventListener('set-editor-context', handleContext);
-    return () => window.removeEventListener('set-editor-context', handleContext);
+    const handleContext = (e: CustomEvent<{ type: 'general' | 'callout' | 'blockquote' | 'mermaid'; pos?: number }>) => {
+      setContextType(e.detail.type);
+      if (e.detail.pos !== undefined) {
+        eventPosRef.current = e.detail.pos;
+      }
+    };
+    window.addEventListener('set-editor-context', handleContext as EventListener);
+    return () => window.removeEventListener('set-editor-context', handleContext as EventListener);
   }, [setContextType]);
 
   const handleMenuOpen = (open: boolean) => {
     if (open && editorViewRef.current) {
       const view = editorViewRef.current;
-      const { head } = view.state.selection.main;
-      const line = view.state.doc.lineAt(view.state.selection.main.head);
-
-      setCurrentLineText(line.text); // Capture the "Snapshot"
-      setCursorPos(head - line.from); // Capture relative cursor position
+      let pos: number;
+      if (eventPosRef.current !== null) {
+        pos = eventPosRef.current;
+        eventPosRef.current = null; // clear after use
+      } else {
+        pos = view.state.selection.main.head;
+      }
+      const line = view.state.doc.lineAt(pos);
+      setCurrentLineText(line.text);
+      setCursorPos(pos);
     }
   };
   return (
-    <ContextMenu onOpenChange={handleMenuOpen}>
+    <ContextMenu onOpenChange={handleMenuOpen} modal={false}>
       <ContextMenuTrigger disabled={!synced} className="block h-full w-full">
         {children}
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-56 bg-background border-white/10 shadow-2xl">
-        <ContextMenuGroup>
-          {contextType === 'mermaid' && (
-            <>
-              <ContextMenuItem onClick={() => console.log('Export SVG')}>Export Diagram as SVG</ContextMenuItem>
-              <ContextMenuItem onClick={() => console.log('Copy Mermaid Code')}>Copy Mermaid Code</ContextMenuItem>
-              <ContextMenuSeparator />
-            </>
-          )}
+      {/* {contextType === 'mermaid' && (
+        <>
+          <ContextMenuItem onClick={() => console.log('Export SVG')}>Export Diagram as SVG</ContextMenuItem>
+          <ContextMenuItem onClick={() => console.log('Copy Mermaid Code')}>Copy Mermaid Code</ContextMenuItem>
+          <ContextMenuSeparator />
+        </>
+      )} */}
 
-          {contextType === 'blockquote' && <ContextMenuItem>Convert to Callout</ContextMenuItem>}
-          {contextType === 'general' && <GeneralContextMenu editorViewRef={editorViewRef} currentLineText={currentLineText} cursorPos={cursorPos} />}
-        </ContextMenuGroup>
-      </ContextMenuContent>
+      {contextType === 'blockquote' && <ContextMenuItem>Convert to Callout</ContextMenuItem>}
+      {contextType === 'callout' && <CalloutContextMenu editorViewRef={editorViewRef} cursorPos={cursorPos} />}
+      {contextType === 'general' && <GeneralContextMenu editorViewRef={editorViewRef} currentLineText={currentLineText} cursorPos={cursorPos} />}
     </ContextMenu>
   );
 };

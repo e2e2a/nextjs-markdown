@@ -37,9 +37,7 @@ const userAdminData = {
   company: null,
   country: null,
   phoneNumber: null,
-  last_login: {
-    $date: '2026-03-06T01:19:41.600Z',
-  },
+  last_login: '2025-12-27T06:53:06.347Z',
 };
 
 const workspaceData = {
@@ -72,7 +70,7 @@ async function seed() {
     await ApiToken.deleteMany();
     const token = 'sk_078c8c1aa18940566a7d9283ad0fd479583eb8aaad6722fdfc01d7dc7fdc426f';
     const tokenHash = createHash('sha256').update(token).digest('hex');
-    await ApiToken.create({ userId: userAdmin._id, token: tokenHash });
+    await ApiToken.create({ userId: userAdmin._id, tokenHash });
 
     await Workspace.deleteOne({ title: workspaceData.title }, { new: true });
     const workspace = await Workspace.create({ ...workspaceData, ownerUserId: user._id });

@@ -21,7 +21,10 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
   const { nodes, setCollapseAll, setActiveNode, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
   const { activeTabs, openTab } = useTabStore();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { searchQuery, leftSidebarTab, setSearchQuery, setLeftSidebarTab } = useProjectUIStore();
+  const searchQuery = useProjectUIStore(state => state.searchQuery);
+  const leftSidebarTab = useProjectUIStore(state => state.leftSidebarTab);
+  const setSearchQuery = useProjectUIStore(state => state.setSearchQuery);
+  const setLeftSidebarTab = useProjectUIStore(state => state.setLeftSidebarTab);
   const [history, setHistory] = useState<string[]>([]);
   const STORAGE_KEY = 'left_sidebar_search_history';
 

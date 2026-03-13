@@ -25,9 +25,9 @@ export const WorkspaceClient = () => {
       <main className="px-3 py-4 w-full flex-1 overflow-y-auto">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Workspaces</h1>
-          <Link href={'/preferences/workspaces/create'}>
-            <Button className="cursor-pointer">Create New Workspace</Button>
-          </Link>
+          <Button className="cursor-pointer" asChild>
+            <Link href={'/preferences/workspaces/create'}>Create New Workspace</Link>
+          </Button>
         </div>
         <div className="">
           <DataTable columns={columns} data={(data?.workspaces || []) as IUserWorkspaces[]} isLoading={isLoading} />

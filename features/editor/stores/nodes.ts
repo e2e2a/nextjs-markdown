@@ -146,10 +146,14 @@ export const useNodeStore = create<NodesState>(set => ({
 
       const prev = { ...node };
       Object.assign(node, changes);
-
+      // to update left sidebar content
+      const activeNode = state.activeNode?._id === nodeId ? { ...state.activeNode, ...changes } : state.activeNode;
+      const selectedNode = state.selectedNode?._id === nodeId ? { ...state.selectedNode, ...changes } : state.selectedNode;
       return {
         nodes,
+        selectedNode,
         previousOperations: [...state.previousOperations, { type: 'update', nodeId, prev, next: changes }],
+        activeNode,
       };
     });
   },

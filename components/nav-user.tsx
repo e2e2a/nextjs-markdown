@@ -20,22 +20,17 @@ export function NavUser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="h-8 w-8 grayscale">
-          <AvatarFallback className="rounded-full bg-primary text-accent-foreground uppercase">
+        <Avatar className="h-8 w-8">
+          <AvatarFallback className="rounded-full bg-linear-to-br from-blue-500 to-primary text-accent-foreground uppercase">
             {user?.username.trim()[0]}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-        side={'bottom'}
-        align="end"
-        sideOffset={4}
-      >
+      <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" side={'bottom'} align="end" sideOffset={4}>
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <Avatar className="h-8 w-8 rounded-lg grayscale">
-              <AvatarFallback className="rounded-full bg-primary text-accent-foreground uppercase">
+            <Avatar className="h-8 w-8 rounded-lg ">
+              <AvatarFallback className="rounded-full bg-linear-to-br from-blue-500 to-primary text-accent-foreground uppercase">
                 {user?.username.trim()[0]}
               </AvatarFallback>
             </Avatar>

@@ -26,11 +26,11 @@ export function WorkspaceProjectsClient() {
           <h1 className="text-2xl md:text-3xl font-bold drop-shadow-xs mb-2">Projects</h1>
           <div className="flex gap-x-2">
             {mData?.permissions.canCreateProject && (
-              <Link href={`/workspaces/${workspaceId}/projects/create`}>
-                <Button className="cursor-pointer">
+              <Button className="cursor-pointer" asChild>
+                <Link href={`/workspaces/${workspaceId}/projects/create`}>
                   <PlusIcon className=" h-4 w-4" /> Create New Project
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             )}
             {mData?.permissions.canImportProject && <ImportProject workspaceId={workspaceId} />}
           </div>

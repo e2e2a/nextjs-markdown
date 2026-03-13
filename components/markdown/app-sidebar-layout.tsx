@@ -5,7 +5,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { AppContent } from './app-content';
 import { AppShell } from './app-shell';
 import { AppSidebar } from './app-sidebar';
-import RightSidebarTemplate from './right-sidebar';
+import RightSidebarTemplate from '../project/right-sidebar';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { notFound, useParams } from 'next/navigation';

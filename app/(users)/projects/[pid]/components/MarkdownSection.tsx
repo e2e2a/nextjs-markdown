@@ -231,6 +231,46 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
     }
   }, [instance, ytext]);
 
+  useEffect(() => {
+    const onScrollRequest = (e: Event) => {
+      const { text, level } = (e as CustomEvent).detail;
+      const view = editorViewRef.current;
+
+      if (!view) return;
+
+      const docString = view.state.doc.toString();
+
+      const escapedText = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const headingRegex = new RegExp(`^#{${level}}\\s+${escapedText}`, 'm');
+
+      const match = headingRegex.exec(docString);
+
+      if (match) {
+        const offset = match.index;
+        const line = view.state.doc.lineAt(offset);
+
+        requestAnimationFrame(() => {
+          view.focus();
+          view.dispatch({
+            selection: {
+              anchor: line.from,
+              head: line.to,
+            },
+            effects: [
+              EditorView.scrollIntoView(line.from, {
+                y: 'center',
+              }),
+            ],
+            userEvent: 'select',
+          });
+        });
+      }
+    };
+
+    window.addEventListener('editor:scroll-to-heading', onScrollRequest);
+    return () => window.removeEventListener('editor:scroll-to-heading', onScrollRequest);
+  }, [node._id]);
+
   return (
     <>
       <div className="absolute top-12 left-0 right-0 h-1 z-51 w-full bg-background" />
@@ -337,6 +377,7 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
     </>
   );
 }
+
 export default React.memo(MarkdownSection, (prevProps, nextProps) => {
   return prevProps.node._id === nextProps.node._id && prevProps.isDirty === nextProps.isDirty;
 });

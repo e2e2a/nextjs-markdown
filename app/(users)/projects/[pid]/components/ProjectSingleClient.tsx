@@ -27,9 +27,20 @@ export function ProjectSingleClient() {
             </div>
           )}
 
-          {tabs.map(tab => {
+          {/* {tabs.map(tab => {
+            const isActive = String(tab.nodeId) === String(activeTabId);
             return (
               <div key={tab.nodeId} className={tab.nodeId === activeTabId ? 'h-full w-full block' : 'hidden'}>
+                <MarkdownSection node={tab.node as INode} isDirty={tab.isDirty} isActive={isActive} />
+              </div>
+            );
+          })} */}
+          {tabs.map(tab => {
+            const isActive = tab.nodeId === activeTabId;
+            if (!isActive) return null; // Don't even keep the hidden DOM for 7k file projects
+
+            return (
+              <div key={tab.nodeId} className="h-full w-full block">
                 <MarkdownSection node={tab.node as INode} isDirty={tab.isDirty} />
               </div>
             );

@@ -164,7 +164,10 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
     return [
       EditorView.domEventHandlers({
         mousedown: event => {
-          setActiveNode(node._id);
+          // setActiveNode(node._id);
+          React.startTransition(() => {
+            setActiveNode(node._id);
+          });
           const target = event.target as HTMLElement;
 
           if (target.classList.contains('cm-hashtag')) {
@@ -176,7 +179,10 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
           }
         },
         focus: () => {
-          setActiveNode(node._id);
+          React.startTransition(() => {
+            setActiveNode(node._id);
+          });
+          // setActiveNode(node._id);
         },
         contextmenu: (event, view) => {
           const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
@@ -325,7 +331,7 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
                 // value={instance?.ydoc.getText('codemirror').toString() ?? ''}
                 onCreateEditor={view => {
                   editorViewRef.current = view;
-                  setupDragTracking(editorViewRef.current);
+                  setupDragTracking(view);
                 }}
                 theme={myOwnDarkTheme}
                 basicSetup={false}

@@ -48,8 +48,11 @@ export function getHeadingDecos(state: EditorState, text: string, lineFrom: numb
   if (match) {
     const level = match[1].length;
     decos.push(Decoration.line({ attributes: { class: `cm-h${level}` } }).range(lineFrom));
-    const isSelected = isRangeSelected(state, lineFrom, lineFrom + match[0].length);
-    if (viewMode || (!isLineActive && !isSelected && !sourceMode)) decos.push(Decoration.replace({}).range(lineFrom, lineFrom + match[0].length));
+    const lineTo = lineFrom + text.length;
+    const isSelected = isRangeSelected(state, lineFrom, lineTo);
+    const shouldShowSyntax = isLineActive || isSelected || sourceMode;
+
+    if (viewMode || !shouldShowSyntax) decos.push(Decoration.replace({}).range(lineFrom, lineFrom + match[0].length));
   }
   return decos;
 }

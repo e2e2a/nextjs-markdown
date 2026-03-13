@@ -71,6 +71,13 @@ export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>(
 
     return decos.map(tr.changes);
   },
+  // update(decos, tr) {
+  //   console.log('run');
+  //   if (tr.docChanged || tr.selection || tr.reconfigured || tr.effects.some(e => e.is(toggleSourceMode))) {
+  //     return buildDecorations(tr.state);
+  //   }
+  //   return decos.map(tr.changes);
+  // },
   provide: f => EditorView.decorations.from(f),
 });
 

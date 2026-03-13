@@ -17,8 +17,7 @@ export async function POST() {
     const tokenHash = createHash('sha256').update(rawToken).digest('hex');
 
     await ApiToken.create({
-      // userId: session.user._id,
-      userId: '69aa2b94eb414f07412b66b2',
+      userId: session.user._id,
       tokenHash,
       revoked: false,
     });

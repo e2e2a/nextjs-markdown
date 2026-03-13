@@ -7,6 +7,8 @@ import Project from '@/modules/projects/project.model';
 import WorkspaceMember from '@/modules/workspaces/members/member.model';
 import ProjectMember from '@/modules/projects/member/member.model';
 import { hashText } from '@/lib/server/bcrypt';
+import ApiToken from '@/modules/apitokens/apitoken.model';
+import { createHash } from 'crypto';
 
 dotenv.config();
 
@@ -26,6 +28,20 @@ const userData = {
   last_login: '2025-12-27T06:53:06.347Z',
 };
 
+const userAdminData = {
+  email: 'admin@gmail.com',
+  isOnboard: false,
+  role: 'admin',
+  email_verified: true,
+  image: null,
+  company: null,
+  country: null,
+  phoneNumber: null,
+  last_login: {
+    $date: '2026-03-06T01:19:41.600Z',
+  },
+};
+
 const workspaceData = {
   title: 'workspace 1',
 };
@@ -41,15 +57,22 @@ const workspaceMemberData = {
 const projectMemberData = {
   role: 'owner',
 };
+
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
     console.log('🚀 Connected to MongoDB');
 
     const userInitialPassword = 'password';
-    await User.deleteOne({ email: userData.email }, { new: true });
+    await User.deleteMany();
     const hashedPassword = await hashText(userInitialPassword);
     const user = await User.create({ ...userData, password: hashedPassword });
+    const userAdmin = await User.create({ ...userAdminData, password: hashedPassword });
+
+    await ApiToken.deleteMany();
+    const token = 'sk_078c8c1aa18940566a7d9283ad0fd479583eb8aaad6722fdfc01d7dc7fdc426f';
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    await ApiToken.create({ userId: userAdmin._id, token: tokenHash });
 
     await Workspace.deleteOne({ title: workspaceData.title }, { new: true });
     const workspace = await Workspace.create({ ...workspaceData, ownerUserId: user._id });

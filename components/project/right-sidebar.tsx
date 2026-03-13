@@ -122,7 +122,9 @@ const OutlineItem = ({ node, depth = 0, searchQuery, defaultOpen }: { node: Outl
 
 const RightSidebarTemplate = () => {
   const { data } = useSession();
-  const { rightSidebarTab, setRightSidebarTab } = useProjectUIStore();
+  const rightSidebarTab = useProjectUIStore(state => state.rightSidebarTab);
+  const setRightSidebarTab = useProjectUIStore(state => state.setRightSidebarTab);
+
   const content = useNodeStore(state => state.activeNode?.content);
   const activeUsers = useProjectPresence(state => state.activeUsers);
 

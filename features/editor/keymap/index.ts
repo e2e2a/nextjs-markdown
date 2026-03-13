@@ -216,67 +216,6 @@ export const tableKeyboardHandler = EditorView.domEventHandlers({
   },
 });
 
-// export const internalLinkCompletion = autocompletion({
-//   activateOnTyping: true,
-//   override: [
-//     (context: CompletionContext): CompletionResult | null => {
-//       const word = context.matchBefore(/\[\[[^\]]*/);
-//       if (!word) return null;
-
-//       const typed = word.text.slice(2).toLowerCase();
-
-//       const state = useNodeStore.getState();
-//       const nodes = state.nodes;
-//       const currentNode = state.activeNode;
-
-//       const flatNodes = flattenNodeTree(nodes);
-
-//       const options = flatNodes
-//         .filter(n => n._id !== currentNode?._id)
-//         .map((n): LinkCompletion | null => {
-//           const isFolder = n.type === 'folder';
-
-//           const relativePath = getRelativePath(currentNode?.path ?? '', n.path!);
-
-//           if (typed && !relativePath.toLowerCase().includes(typed) && !n.title.toLowerCase().includes(typed)) {
-//             return null;
-//           }
-
-//           return {
-//             label: n.title,
-//             title: n.title,
-//             type: isFolder ? 'folder' : 'file',
-//             parentId: n.parentId,
-
-//             detail: relativePath,
-
-//             apply: (view, completion, from, to) => {
-//               const doc = view.state.doc;
-
-//               const nextChars = doc.sliceString(to, to + 2);
-//               const shouldClose = nextChars !== ']]';
-
-//               const insertText = relativePath + (isFolder ? '/' : shouldClose ? ']]' : '');
-
-//               view.dispatch({
-//                 changes: { from, to, insert: insertText },
-//                 selection: {
-//                   anchor: from + relativePath.length + (isFolder ? 1 : shouldClose ? 2 : 0),
-//                 },
-//               });
-//             },
-//           };
-//         })
-//         .filter(Boolean) as LinkCompletion[];
-
-//       return {
-//         from: word.from + 2,
-//         options,
-//         filter: false,
-//       };
-//     },
-//   ],
-// });
 export const internalLinkCompletion = autocompletion({
   activateOnTyping: true,
   activateOnTypingDelay: 60,

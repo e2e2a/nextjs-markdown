@@ -15,8 +15,13 @@ interface IProps {
 }
 
 const SidebarFileItemComponent = ({ item, depth }: IProps) => {
-  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, selectedNode } = useNodeStore();
-  const { openTab } = useTabStore();
+  const activeNode = useNodeStore(state => state.activeNode);
+  const isUpdatingNode = useNodeStore(state => state.isUpdatingNode);
+  const selectedNode = useNodeStore(state => state.selectedNode);
+  const setActiveNode = useNodeStore(state => state.setActiveNode);
+  const setIsCreating = useNodeStore(state => state.setIsCreating);
+  const setIsUpdatingNode = useNodeStore(state => state.setIsUpdatingNode);
+  const openTab = useTabStore(state => state.openTab);
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
 

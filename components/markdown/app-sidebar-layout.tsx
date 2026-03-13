@@ -65,10 +65,13 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
   const pid = params.pid as string;
   const { data: pData, isLoading: pLoading, error: pError } = useProjectByIdQuery(pid);
   const { data: nData, isLoading: nLoading } = useNodesProjectIdQuery(pid);
-  const { activeNode, selectedNode, setIsUpdatingNode, clearHistory } = useNodeStore();
+  const activeNode = useNodeStore(state => state.activeNode);
+  const selectedNode = useNodeStore(state => state.selectedNode);
+  const setIsUpdatingNode = useNodeStore(state => state.setIsUpdatingNode);
+  const clearHistory = useNodeStore(state => state.clearHistory);
+  const setNodes = useNodeStore(state => state.setNodes);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
-  const { setNodes } = useNodeStore();
 
   const LeftSidebarRef = useRef<ImperativePanelHandle>(null);
   const RightSidebarRef = useRef<ImperativePanelHandle>(null);

@@ -12,7 +12,8 @@ interface IProps {
 }
 
 const SidebarCreateFileItem = ({ depth }: IProps) => {
-  const { isCreating, setIsCreating } = useNodeStore();
+  const isCreating = useNodeStore(state => state.isCreating);
+  const setIsCreating = useNodeStore(state => state.setIsCreating);
   const params = useParams();
   const pid = params.pid as string;
   const [title, setTitle] = useState('');

@@ -48,7 +48,10 @@ export default function SidebarItem({ item, depth, nodesById, activeDrag, target
   const localStorageKey = `sidebar-folder-open-${item._id}`;
   const hoverTimeoutRef = useRef<number | null>(null);
 
-  const { isCreating, activeNode, collapseVersion, isUpdatingNode } = useNodeStore();
+  const isCreating = useNodeStore(state => state.isCreating);
+  const activeNode = useNodeStore(state => state.activeNode);
+  const collapseVersion = useNodeStore(state => state.collapseVersion);
+  const isUpdatingNode = useNodeStore(state => state.isUpdatingNode);
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return localStorage.getItem(localStorageKey) === 'true';

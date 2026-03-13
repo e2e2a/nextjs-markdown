@@ -9,7 +9,8 @@ import { ProjectPresence } from './project-presence';
 export function ProjectSingleClient() {
   const params = useParams();
   const pid = params.pid as string;
-  const { projectTabs, activeTabs } = useTabStore();
+  const projectTabs = useTabStore(state => state.projectTabs);
+  const activeTabs = useTabStore(state => state.activeTabs);
   const tabs = projectTabs[pid] || [];
   const activeTabId = activeTabs[pid];
 

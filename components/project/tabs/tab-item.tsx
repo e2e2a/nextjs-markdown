@@ -16,8 +16,9 @@ interface TabItemProps {
 }
 
 export const TabItem = ({ tab, isActive, draggedTabId, isDropBefore, pid, onDragStart }: TabItemProps) => {
-  const { setActiveTab, pinTab } = useTabStore();
-  const { setActiveNode } = useNodeStore();
+  const setActiveTab = useTabStore(state => state.setActiveTab);
+  const pinTab = useTabStore(state => state.pinTab);
+  const setActiveNode = useNodeStore(state => state.setActiveNode);
 
   return (
     <div

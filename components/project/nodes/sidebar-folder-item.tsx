@@ -16,7 +16,12 @@ interface IProps {
 }
 
 const SidebarFolderItemComponent = ({ item, isOpen, depth }: IProps) => {
-  const { activeNode, isUpdatingNode, setActiveNode, setIsCreating, setIsUpdatingNode, selectedNode } = useNodeStore();
+  const activeNode = useNodeStore(state => state.activeNode);
+  const isUpdatingNode = useNodeStore(state => state.isUpdatingNode);
+  const selectedNode = useNodeStore(state => state.selectedNode);
+  const setActiveNode = useNodeStore(state => state.setActiveNode);
+  const setIsCreating = useNodeStore(state => state.setIsCreating);
+  const setIsUpdatingNode = useNodeStore(state => state.setIsUpdatingNode);
   const [title, setTitle] = useState('');
   const [disabled, setDisabled] = useState(false);
 

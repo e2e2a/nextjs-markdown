@@ -12,7 +12,11 @@ interface ContainerProps {
 }
 
 export function SidebarContextMenu({ children, node }: ContainerProps) {
-  const { isUpdatingNode, selectedNode, setIsUpdatingNode, setSelectedNode, setIsCreating } = useNodeStore();
+  const isUpdatingNode = useNodeStore(state => state.isUpdatingNode);
+  const selectedNode = useNodeStore(state => state.selectedNode);
+  const setIsUpdatingNode = useNodeStore(state => state.setIsUpdatingNode);
+  const setSelectedNode = useNodeStore(state => state.setSelectedNode);
+  const setIsCreating = useNodeStore(state => state.setIsCreating);
   const isUpdatingSelf = !!isUpdatingNode && isUpdatingNode._id === node?._id;
   if (isUpdatingSelf) {
     return (

@@ -18,8 +18,15 @@ import { useProjectUIStore } from '@/features/editor/stores/project-ui';
 import { SearchOverlay } from './left-sidebar-search-button-overlay';
 
 export function AppSidebar({ projectData }: { projectData: IProject }) {
-  const { nodes, setCollapseAll, setActiveNode, selectedNode, activeNode, setIsCreating, undo } = useNodeStore();
-  const { activeTabs, openTab } = useTabStore();
+  const nodes = useNodeStore(state => state.nodes);
+  const setCollapseAll = useNodeStore(state => state.setCollapseAll);
+  const setActiveNode = useNodeStore(state => state.setActiveNode);
+  const selectedNode = useNodeStore(state => state.selectedNode);
+  const activeNode = useNodeStore(state => state.activeNode);
+  const setIsCreating = useNodeStore(state => state.setIsCreating);
+  const undo = useNodeStore(state => state.undo);
+  const activeTabs = useTabStore(state => state.activeTabs);
+  const openTab = useTabStore(state => state.openTab);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchQuery = useProjectUIStore(state => state.searchQuery);
   const leftSidebarTab = useProjectUIStore(state => state.leftSidebarTab);

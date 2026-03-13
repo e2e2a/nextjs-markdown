@@ -10,8 +10,13 @@ interface TabsHeaderProps {
 }
 
 export const TabsHeader = ({ pid }: TabsHeaderProps) => {
-  const { projectTabs, activeTabs, openTab, setActiveTab } = useTabStore();
-  const { activeDrag, setActiveNode } = useNodeStore();
+  const projectTabs = useTabStore(state => state.projectTabs);
+  const activeTabs = useTabStore(state => state.activeTabs);
+  const openTab = useTabStore(state => state.openTab);
+  const setActiveTab = useTabStore(state => state.setActiveTab);
+
+  const activeDrag = useNodeStore(state => state.activeDrag);
+  const setActiveNode = useNodeStore(state => state.setActiveNode);
 
   const tabs = projectTabs[pid] || [];
   const activeTabId = activeTabs[pid];

@@ -18,7 +18,13 @@ export function clearAllFolderDragOver() {
 }
 
 export function NavMain() {
-  const { nodes, isCreating, activeDrag, setActiveDrag, setNodes, moveNode, undo } = useNodeStore();
+  const nodes = useNodeStore(state => state.nodes);
+  const isCreating = useNodeStore(state => state.isCreating);
+  const activeDrag = useNodeStore(state => state.activeDrag);
+  const setActiveDrag = useNodeStore(state => state.setActiveDrag);
+  const setNodes = useNodeStore(state => state.setNodes);
+  const moveNode = useNodeStore(state => state.moveNode);
+  const undo = useNodeStore(state => state.undo);
   const mutation = useNodeMutations();
 
   const nodesById = useMemo(() => {

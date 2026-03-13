@@ -13,12 +13,12 @@ async function start() {
     quiet: true,
 
     extensions: [new Logger()],
-    // async onConnect(data) {
-    //   const room = data.instance.documents.get(data.documentName);
+    async onConnect(data) {
+      const room = data.instance.documents.get(data.documentName);
 
-    //   const userCount = room ? room.connections.size : 0;
-    //   console.log(`Users in ${data.documentName}: ${userCount}`);
-    // },
+      const userCount = room ? room.connections.size : 0;
+      console.log(`Users in ${data.documentName}: ${userCount}`);
+    },
     /**
      * Cold Start: Triggered when the first user joins a room that isn't in RAM.
      * This is where we load the "original content".

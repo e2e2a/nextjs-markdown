@@ -102,37 +102,45 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
     };
   }, [node._id, synced]);
 
-  useEffect(() => {
-    if (!node?._id || !data?.user?._id) return;
+  const providerRef = useRef<HocuspocusProvider | null>(null);
 
-    let isMounted = true;
+  useEffect(() => {
+    const userId = data?.user?._id;
+    if (!node?._id || !userId) return;
+
+    if (providerRef.current && providerRef.current.configuration.name === node._id) return;
+
+    if (providerRef.current) {
+      providerRef.current.destroy();
+    }
+
+    // 3. Initialize New Provider
     const ydoc = new Y.Doc();
     const provider = new HocuspocusProvider({
       url: 'ws://localhost:1234',
       name: node._id,
       document: ydoc,
+      onSynced: () => {
+        setSynced(true);
+        provider.awareness?.setLocalState({
+          user: { id: userId, name: data.user.email, color: '#ffffff' },
+        });
+      },
     });
 
-    provider.on('synced', () => {
-      if (!isMounted || !provider.awareness) return;
-      provider.awareness.setLocalState({
-        user: {
-          id: data.user._id,
-          name: data.user.email || 'Anonymous',
-          color: '#' + Math.floor(Math.random() * 16777215).toString(16),
-        },
-      });
-      setSynced(true);
-    });
-
-    provider.connect();
+    providerRef.current = provider;
     requestAnimationFrame(() => setInstance({ ydoc, provider }));
+  }, [node?._id, data?.user?._id, data?.user?.email]);
 
+  useEffect(() => {
     return () => {
-      isMounted = false;
-      if (provider.awareness) provider.awareness.setLocalState(null);
+      if (providerRef.current) {
+        console.log('🧹 Janitor: Component unmounting, destroying socket.');
+        providerRef.current.destroy();
+        providerRef.current = null;
+      }
     };
-  }, [node?._id, data]);
+  }, []);
 
   const ytext = useMemo(() => instance?.ydoc.getText('codemirror'), [instance]);
   const undoManager = useMemo(() => {

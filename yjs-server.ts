@@ -24,25 +24,39 @@ async function start() {
      * This is where we load the "original content".
      */
     async onLoadDocument({ documentName, document }) {
-      if (documentName.startsWith('project-presence-')) return;
+      if (documentName.startsWith('project-presence-')) return document;
+
+      console.log(`Loaded document "${documentName}"`);
+
       const ytext = document.getText('codemirror');
 
-      // Check if we already have content in the Yjs Doc (in-memory)
-      console.log('asd1');
-      if (ytext.length > 0) return document;
-      console.log('asd2');
+      let initialized = false;
 
-      try {
+      const loadFromDB = async () => {
+        if (initialized) return;
+        initialized = true;
+
         const node = await Node.findById(documentName);
-        if (node?.content) {
-          // Use a transaction to mark this as the "initial" state
+
+        if (node?.content && ytext.length === 0) {
           document.transact(() => {
             ytext.insert(0, node.content);
           }, 'initial-load');
+
+          console.log('DB content inserted');
         }
-      } catch (e) {
-        console.error(e);
-      }
+      };
+
+      const timeout = setTimeout(loadFromDB, 100);
+
+      ytext.observe(() => {
+        if (!initialized) {
+          initialized = true;
+          clearTimeout(timeout);
+          console.log('Client state arrived, skipping DB load');
+        }
+      });
+
       return document;
     },
 

@@ -10,7 +10,14 @@ import { EditorJumpDetail, INode } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpNarrowWide, List, Search } from 'lucide-react';
 import { tags as t } from '@lezer/highlight';
-import { columnSelectionField, markdownLivePreviewField, setupDragTracking, sourceModeField, tableSelectionHighlighter } from '@/features/editor/plugins';
+import {
+  columnSelectionField,
+  dragStatusField,
+  markdownLivePreviewField,
+  setupDragTracking,
+  sourceModeField,
+  tableSelectionHighlighter,
+} from '@/features/editor/plugins';
 import { languages } from '@codemirror/language-data';
 import { internalLinkClickHandler, internalLinkCompletion, selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
 import { HocuspocusProvider } from '@hocuspocus/provider';
@@ -212,6 +219,7 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
       }),
       yCollab(ytext, instance.provider.awareness, { undoManager }),
       EditorView.lineWrapping,
+      dragStatusField,
       columnSelectionField,
       markdownLivePreviewField,
     ];

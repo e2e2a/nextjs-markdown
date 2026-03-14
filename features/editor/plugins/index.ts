@@ -30,22 +30,40 @@ export const sourceModeField = StateField.define<boolean>({
   },
 });
 
+export const setDraggingEffect = StateEffect.define<boolean>();
 export const rebuildDecorationsEffect = StateEffect.define<null>();
-let isDragging = false;
+
+export const dragStatusField = StateField.define<boolean>({
+  create() {
+    return false;
+  },
+  update(value, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setDraggingEffect)) return e.value;
+    }
+    return value;
+  },
+});
 export function setupDragTracking(view: EditorView) {
-  view.dom.addEventListener('mousedown', e => {
+  const onMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return;
-    isDragging = !isDragging;
-  });
+    view.dispatch({ effects: setDraggingEffect.of(true) });
+  };
 
   const onMouseUp = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    view.dispatch({ effects: rebuildDecorationsEffect.of(null) });
+    // Only dispatch if we were actually dragging
+    if (view.state.field(dragStatusField)) {
+      view.dispatch({
+        effects: [setDraggingEffect.of(false), rebuildDecorationsEffect.of(null)],
+      });
+    }
   };
+
+  view.dom.addEventListener('mousedown', onMouseDown);
   window.addEventListener('mouseup', onMouseUp);
 
   return () => {
+    view.dom.removeEventListener('mousedown', onMouseDown);
     window.removeEventListener('mouseup', onMouseUp);
   };
 }
@@ -60,11 +78,36 @@ export const markdownLivePreviewField = StateField.define<RangeSet<Decoration>>(
     }
     return buildDecorations(state);
   },
+  // update(decos, tr) {
+  //   const rebuildEffect = tr.effects.some(e => e.is(rebuildDecorationsEffect));
+  //   const docChanged = tr.docChanged || tr.reconfigured || tr.effects.some(e => e.is(toggleSourceMode));
+  //   const selectionChanged = !tr.startState.selection.eq(tr.state.selection);
+
+  //   if (docChanged || rebuildEffect || (selectionChanged && !isDragging)) {
+  //     return buildDecorations(tr.state);
+  //   }
+
+  //   return decos.map(tr.changes);
+  // },
+  // update(decos, tr) {
+  //   // Check if the transaction specifically requested a scroll
+  //   const didScroll = tr.effects.some(e => e.value && typeof e.value === 'object' && 'y' in e.value);
+  //   const docChanged = tr.docChanged || tr.reconfigured;
+  //   const selectionChanged = !tr.startState.selection.eq(tr.state.selection);
+
+  //   if (docChanged || selectionChanged || didScroll) {
+  //     return buildDecorations(tr.state);
+  //   }
+
+  //   return decos.map(tr.changes);
+  // },
   update(decos, tr) {
+    const isDragging = tr.state.field(dragStatusField); // Get local status
     const rebuildEffect = tr.effects.some(e => e.is(rebuildDecorationsEffect));
     const docChanged = tr.docChanged || tr.reconfigured || tr.effects.some(e => e.is(toggleSourceMode));
     const selectionChanged = !tr.startState.selection.eq(tr.state.selection);
 
+    // This is now "Old Style" logic but perfectly isolated to this tab
     if (docChanged || rebuildEffect || (selectionChanged && !isDragging)) {
       return buildDecorations(tr.state);
     }

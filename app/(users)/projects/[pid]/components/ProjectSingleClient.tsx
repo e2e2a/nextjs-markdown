@@ -13,7 +13,6 @@ export function ProjectSingleClient() {
   const activeTabs = useTabStore(state => state.activeTabs);
   const tabs = projectTabs[pid] || [];
   const activeTabId = activeTabs[pid];
-
   return (
     <AppSidebarLayout>
       <ProjectPresence projectId={pid}>
@@ -27,20 +26,9 @@ export function ProjectSingleClient() {
             </div>
           )}
 
-          {/* {tabs.map(tab => {
-            const isActive = String(tab.nodeId) === String(activeTabId);
+          {tabs.map(tab => {
             return (
               <div key={tab.nodeId} className={tab.nodeId === activeTabId ? 'h-full w-full block' : 'hidden'}>
-                <MarkdownSection node={tab.node as INode} isDirty={tab.isDirty} isActive={isActive} />
-              </div>
-            );
-          })} */}
-          {tabs.map(tab => {
-            const isActive = tab.nodeId === activeTabId;
-            if (!isActive) return null; // Don't even keep the hidden DOM for 7k file projects
-
-            return (
-              <div key={tab.nodeId} className="h-full w-full block">
                 <MarkdownSection node={tab.node as INode} isDirty={tab.isDirty} />
               </div>
             );

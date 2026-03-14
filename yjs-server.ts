@@ -5,6 +5,30 @@ import Node from './modules/projects/nodes/node.model';
 import * as Y from 'yjs';
 import connectDb from './lib/db/connection';
 
+const saveTimers = new Map<string, NodeJS.Timeout>();
+
+async function debouncedSave(documentName: string, content: string) {
+  // If there's an existing timer, clear it
+  if (saveTimers.has(documentName)) {
+    clearTimeout(saveTimers.get(documentName)!);
+  }
+
+  // Start a new timer (e.g., 2 seconds)
+  saveTimers.set(
+    documentName,
+    setTimeout(async () => {
+      try {
+        await Node.findByIdAndUpdate(documentName, { content }, { new: true });
+        console.log(`✅ Saved ${documentName} to DB`);
+      } catch (error) {
+        console.error(`[DB Error] Failed to save node ${documentName}:`, error);
+      } finally {
+        saveTimers.delete(documentName);
+      }
+    }, 1000) // 2 seconds debounce
+  );
+}
+
 async function start() {
   await connectDb();
   const server = new Server({
@@ -68,12 +92,7 @@ async function start() {
       if (documentName.startsWith('project-presence-')) return;
       const currentContent = document.getText('codemirror').toString();
 
-      try {
-        await Node.findByIdAndUpdate(documentName, { content: currentContent }, { new: true });
-        console.log(`✅ Saved ${documentName} to DB`);
-      } catch (error) {
-        console.error(`[DB Error] Failed to save node ${documentName}:`, error);
-      }
+      debouncedSave(documentName, currentContent);
     },
   });
 

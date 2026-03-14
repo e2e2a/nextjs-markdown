@@ -1,6 +1,6 @@
 import { INode } from '@/types';
 
-const BASE_URL = '/api/node';
+const BASE_URL = '/api/nodes';
 const BASE_URL_PROJECT = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
 
 export const nodeClient = {

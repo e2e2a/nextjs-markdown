@@ -280,7 +280,6 @@ export const internalLinkCompletion = autocompletion({
         options.push({
           label: n.title,
           title: n.title,
-          // type: 'heading',
           type: isFolder ? 'folder' : 'file',
           parentId: n.parentId,
           detail: n?.path,
@@ -359,3 +358,130 @@ export const internalLinkClickHandler = EditorView.domEventHandlers({
     return true;
   },
 });
+
+function resolveRelativePath(basePath: string, link: string) {
+  const baseParts = basePath.split('/');
+  baseParts.pop();
+
+  const linkParts = decodeURIComponent(link).replace('.md', '').split('/');
+
+  for (const part of linkParts) {
+    if (part === '..') {
+      baseParts.pop();
+    } else if (part !== '.') {
+      baseParts.push(part);
+    }
+  }
+
+  const result = baseParts.join('/');
+  return result;
+}
+
+function classifyLink(link: string) {
+  if (/^https?:\/\//i.test(link)) return 'external';
+  if (link.startsWith('../') || link.startsWith('./')) return 'relative';
+  if (link.endsWith('.md')) return 'relative';
+  return 'internal';
+}
+
+export const linkClickHandler = EditorView.domEventHandlers({
+  mousedown(event) {
+    if (event.button !== 0) return false;
+
+    const el = (event.target as HTMLElement).closest('.cm-link-text, .cm-internal-link') as HTMLElement | null;
+    if (!el) return false;
+
+    const link = el.dataset.link;
+    if (!link) return false;
+
+    const type = classifyLink(link);
+
+    if (type === 'external') {
+      window.open(link, '_blank');
+      event.preventDefault();
+      return true;
+    }
+
+    if (type === 'relative') {
+      openRelativeFile(link);
+      event.preventDefault();
+      return true;
+    }
+
+    handleInternalLink(link);
+
+    event.preventDefault();
+    return true;
+  },
+});
+
+function openRelativeFile(link: string) {
+  const nodeState = useNodeStore.getState();
+  const { openTab } = useTabStore.getState();
+  const currentNode = nodeState.activeNode;
+
+  if (!currentNode) return;
+
+  const { filePath, heading } = parseLinkTarget(link, currentNode.path!);
+  const resolved = resolveRelativePath(currentNode.path!, filePath);
+  const nodes = flattenNodeTree(nodeState.nodes);
+  const targetNode = nodes.find((n: INode) => normalizePath(n.path!) === normalizePath(resolved));
+
+  if (!targetNode) return;
+
+  if (heading) {
+    nodeState.setPendingScrollHeading(heading);
+  }
+
+  nodeState.setActiveNode(targetNode._id);
+  openTab(targetNode.projectId, targetNode, true);
+}
+
+function normalizePath(path: string) {
+  return decodeURIComponent(path).replace(/\.md$/i, '').trim();
+}
+
+function handleInternalLink(path: string) {
+  console.log('handleInternalLink:', path);
+
+  const nodeState = useNodeStore.getState();
+  const { openTab } = useTabStore.getState();
+
+  const nodes = flattenNodeTree(nodeState.nodes);
+
+  console.log('Nodes length:', nodes.length);
+
+  const targetNode = nodes.find((n: INode) => normalizePath(n.path!) === normalizePath(path));
+
+  console.log('Target node:', targetNode);
+
+  if (!targetNode) {
+    console.log('Internal link node not found');
+    return;
+  }
+
+  nodeState.setActiveNode(targetNode._id);
+  openTab(targetNode.projectId, targetNode, true);
+}
+
+function parseLinkTarget(link: string, currentNodePath: string) {
+  const decoded = decodeURIComponent(link);
+
+  let filePath = '';
+  let heading = '';
+
+  if (decoded.startsWith('#')) {
+    filePath = currentNodePath;
+    heading = decoded.slice(1);
+  } else if (decoded.includes('#')) {
+    const parts = decoded.split('#');
+    filePath = parts[0];
+    heading = parts[1];
+  } else {
+    filePath = decoded;
+  }
+
+  filePath = normalizePath(filePath);
+
+  return { filePath, heading };
+}

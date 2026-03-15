@@ -397,7 +397,7 @@ export function getCalloutDecos(state: EditorState, startLine: number, activeLin
     decos: [
       Decoration.replace({
         widget: new CalloutWidget(match[2].toLowerCase(), lines.join('\n')),
-        block: false, // Keeping it false for smooth cursor/backspace
+        block: false,
         side: -1,
       }).range(blockFrom, blockTo),
     ],
@@ -458,48 +458,58 @@ export function getTaskDecos(state: EditorState, text: string, lineFrom: number)
 }
 export function getLinkDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
-  // Fixed regex to handle nested parentheses
-  const linkRegex = /\[([^\]]+)\]\(((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*)\)/g;
   const sourceMode = state.field(sourceModeField, false);
   const viewMode = state.facet(EditorState.readOnly);
+
+  const linkStartRegex = /\[([^\]]+)\]\(/g;
   let match;
 
-  while ((match = linkRegex.exec(text)) !== null) {
+  while ((match = linkStartRegex.exec(text)) !== null) {
     const start = lineFrom + match.index;
-    const textStart = start + 1;
-    const textEnd = textStart + match[1].length;
+    const label = match[1];
 
-    // The URL with proper parenthesis handling
-    const url = match[2];
-
+    // MANUAL URL + OPTIONAL HEADING PARSER
+    let i = match.index + match[0].length; // position after '('
     let parenCount = 1;
-    let i = 0;
-    while (i < url.length) {
-      if (url[i] === '(') parenCount++;
-      if (url[i] === ')') parenCount--;
-      if (parenCount === 0) break;
+    while (i < text.length && parenCount > 0) {
+      if (text[i] === '(') parenCount++;
+      else if (text[i] === ')') parenCount--;
       i++;
     }
 
-    const urlStart = textEnd + 2;
-    const closingParen = urlStart + i + 1; // +1 for the closing paren we found
-    const end = start + match[0].length;
+    // Extract content inside the parentheses
+    const inside = text.slice(match.index + match[0].length, i - 1).trim();
+
+    // Separate optional #heading
+    let url = inside;
+    let heading = '';
+    const hashIndex = inside.indexOf('#');
+    if (hashIndex >= 0) {
+      url = inside.slice(0, hashIndex);
+      heading = inside.slice(hashIndex); // includes #
+    }
+
+    // Full link for click handler
+    const fullLink = `${url}${heading}`;
+
+    const textStart = start + 1;
+    const textEnd = textStart + label.length;
+    const end = start + (i - match.index);
 
     decos.push(
       Decoration.mark({
         class: 'cm-link-text',
-        attributes: {
-          onclick: `window.open('${url.replace(/'/g, "\\'")}')`, // Escape quotes
-        },
+        attributes: { 'data-link': fullLink },
       }).range(textStart, textEnd)
     );
 
     const isSelected = isRangeSelected(state, start, end);
     if (viewMode || (!isLineActive && !isSelected && !sourceMode)) {
       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, textStart));
-      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(textEnd, closingParen));
+      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(textEnd, end));
     }
   }
+
   return decos;
 }
 

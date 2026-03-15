@@ -19,7 +19,14 @@ import {
   tableSelectionHighlighter,
 } from '@/features/editor/plugins';
 import { languages } from '@codemirror/language-data';
-import { internalLinkClickHandler, internalLinkCompletion, selectAllToTop, tableBackspace, tableKeyboardHandler } from '@/features/editor/keymap';
+import {
+  internalLinkClickHandler,
+  internalLinkCompletion,
+  linkClickHandler,
+  selectAllToTop,
+  tableBackspace,
+  tableKeyboardHandler,
+} from '@/features/editor/keymap';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
 import { useTabStore } from '@/features/editor/stores/tabs';
@@ -202,6 +209,7 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
       }),
       internalLinkCompletion,
       internalLinkClickHandler,
+      linkClickHandler,
       editableCompartment.of(EditorState.readOnly.of(false)),
       onDocChange,
       tableBackspace,
@@ -373,7 +381,10 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
                 // value={instance?.ydoc.getText('codemirror').toString() ?? ''}
                 onCreateEditor={view => {
                   editorViewRef.current = view;
-                  setupDragTracking(view);
+                  setTimeout(() => {
+                    setupDragTracking(view);
+                  }, 0);
+                  // setupDragTracking(view);
                 }}
                 theme={myOwnDarkTheme}
                 basicSetup={false}

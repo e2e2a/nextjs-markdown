@@ -11,6 +11,7 @@ interface FlatNode {
   children: ObjectId[];
   title: string;
   type: 'file' | 'folder';
+  path: string;
   content?: string;
 }
 

@@ -292,6 +292,40 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
     window.addEventListener('editor:scroll-to-heading', onScrollRequest);
     return () => window.removeEventListener('editor:scroll-to-heading', onScrollRequest);
   }, [node._id]);
+  const pendingScrollHeading = useNodeStore(state => state.pendingScrollHeading);
+
+  useEffect(() => {
+    const view = editorViewRef?.current;
+    if (view && pendingScrollHeading && synced && ytext) {
+      const rawContent = ytext.toString();
+      const target = pendingScrollHeading.trim().toLowerCase();
+
+      if (!rawContent.toLowerCase().includes(target)) return;
+
+      const doc = view.state.doc;
+
+      for (let i = 1; i <= doc.lines; i++) {
+        const line = doc.line(i);
+        const text = line.text.trim().toLowerCase();
+
+        const isHeadingMatch = text.startsWith('#') && text.includes(target);
+
+        if (isHeadingMatch) {
+          setTimeout(() => {
+            view.focus();
+            view.dispatch({
+              selection: { anchor: line.from, head: line.to },
+              effects: [EditorView.scrollIntoView(line.from, { y: 'center' })],
+              userEvent: 'select',
+            });
+
+            useNodeStore.getState().setPendingScrollHeading('');
+          }, 100);
+          break;
+        }
+      }
+    }
+  }, [synced, pendingScrollHeading, ytext, node._id]);
 
   return (
     <>
@@ -351,7 +385,6 @@ function MarkdownSection({ node, isDirty }: { node: INode; isDirty: boolean }) {
             )}
             <div
               onMouseDown={() => {
-                // e.preventDefault();
                 setActiveNode(node._id);
                 const view = editorViewRef.current;
                 if (!view) return;

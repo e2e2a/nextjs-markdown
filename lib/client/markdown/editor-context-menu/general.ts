@@ -1,5 +1,6 @@
 import { EditorView } from '@uiw/react-codemirror';
 import { focusTableCell } from '../markdown-table-utils';
+import { startCompletion } from '@codemirror/autocomplete';
 
 interface IProps {
   editorViewRef: React.RefObject<EditorView | null>;
@@ -298,7 +299,7 @@ export const insertInternalLink = ({ editorViewRef }: IProps) => {
   if (!view) return;
   const { state } = view;
   const { from, to } = state.selection.main;
-  const selectedText = state.sliceDoc(from, to) || 'Link';
+  const selectedText = state.sliceDoc(from, to) || '';
 
   const insert = `[[${selectedText}]]`;
 
@@ -311,6 +312,7 @@ export const insertInternalLink = ({ editorViewRef }: IProps) => {
     userEvent: 'input.link.internal',
   });
   view.focus();
+  startCompletion(view);
 };
 
 /**

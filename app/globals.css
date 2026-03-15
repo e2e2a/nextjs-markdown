@@ -1074,36 +1074,73 @@ body {
     display: block; /* Ensures padding behaves correctly */
   }
 
-  .cm-internal-link {
+  /* .cm-internal-link {
     color: #7d7aff;
     text-decoration: underline;
     cursor: pointer;
+  } */
+
+  .cm-internal-link {
+    color: #8b5cf6;
+    cursor: pointer !important;
+    text-decoration: underline;
+  }
+
+  /* Editing mode links look like normal code/text */
+  .cm-link-source-editing {
+    color: inherit;
+    cursor: text; /* Normal text cursor */
+    text-decoration: none;
   }
 
   .cm-tooltip.cm-tooltip-autocomplete {
-    @apply z-100 overflow-hidden! border border-border rounded-md flex flex-col;
+    @apply z-100 overflow-hidden! border border-border rounded-md flex flex-col p-0! m-0!;
   }
 
-  .cm-tooltip-autocomplete ul li {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    height: auto !important;
+  .cm-file-option {
     padding: 8px 12px !important;
+    @apply items-start flex flex-col;
   }
 
-  .cm-completionLabel {
+  .cm-file-option .cm-completionLabel {
     font-size: 14px !important;
     font-weight: 600 !important;
     @apply text-foreground block!;
   }
 
-  .cm-completionDetail {
+  .cm-file-option .cm-completionDetail {
     font-size: 11px !important;
     color: #a1a1aa !important;
     opacity: 0.7;
     font-style: normal !important;
-    @apply m-0! mt-[2px];
+    @apply m-0!;
+  }
+
+  .cm-heading-option {
+    width: 100% !important;
+    height: auto !important;
+    padding: 8px 12px !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    @apply grid grid-cols-1;
+  }
+
+  /* Label on the left */
+  .cm-heading-option .cm-completionLabel {
+    font-weight: 600;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+    margin: 0 !important; /* remove any default spacing */
+    @apply text-start;
+  }
+
+  /* Detail on the right */
+  .cm-heading-option .cm-completionDetail {
+    font-size: 12px;
+    color: #f70a0a;
+    margin-left: auto; /* push to right */
+    @apply text-end w-full! -mt-4;
   }
   .cm-tooltip-autocomplete ul li[aria-selected] {
     @apply bg-accent/60 text-accent;

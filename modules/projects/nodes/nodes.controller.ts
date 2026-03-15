@@ -5,6 +5,12 @@ import { ensureAuthenticated } from '@/lib/server/auth-utils';
 import { INode } from '@/types';
 
 export const nodeController = {
+  getBacklink: async (id: string) => {
+    const session = await ensureAuthenticated();
+    if (!id) throw new HttpError('BAD_INPUT');
+    const backlinks = await nodeService.getBacklink(id, session.user);
+    return backlinks;
+  },
   getProjectTree: async (pid: string, exclude?: string | null) => {
     const session = await ensureAuthenticated();
     if (!pid) throw new HttpError('BAD_INPUT');

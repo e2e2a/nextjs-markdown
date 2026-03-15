@@ -39,50 +39,10 @@ useNodeStore.subscribe(() => {
 });
 
 interface LinkCompletion extends Completion {
-  type: 'file' | 'folder';
+  type: 'file' | 'folder' | 'heading';
   parentId?: string | null;
   title: string;
 }
-
-function getRelativePath(from: string, to: string) {
-  if (!from) return to;
-
-  const fromParts = from.split('/');
-  const toParts = to.split('/');
-
-  // remove filename from current file
-  fromParts.pop();
-
-  while (fromParts.length && toParts.length && fromParts[0] === toParts[0]) {
-    fromParts.shift();
-    toParts.shift();
-  }
-
-  const up = fromParts.map(() => '..');
-  const result = [...up, ...toParts].join('/');
-
-  return result || './';
-}
-
-function resolveRelativePath(currentPath: string, relativePath: string) {
-  const currentParts = currentPath.split('/');
-  currentParts.pop();
-
-  const parts = relativePath.split('/');
-
-  for (const part of parts) {
-    if (part === '..') {
-      currentParts.pop();
-    } else if (part === '.' || part === '') {
-      continue;
-    } else {
-      currentParts.push(part);
-    }
-  }
-
-  return currentParts.join('/');
-}
-/** End Internal Link helper */
 
 export const selectAllToTop: Command = view => {
   view.dispatch({
@@ -216,6 +176,22 @@ export const tableKeyboardHandler = EditorView.domEventHandlers({
   },
 });
 
+function extractHeadings(content: string): { level: number; text: string }[] {
+  const regex = /^(#{1,6})\s+(.+)$/gm;
+  const result: { level: number; text: string }[] = [];
+
+  let match;
+
+  while ((match = regex.exec(content))) {
+    result.push({
+      level: match[1].length,
+      text: match[2].trim(),
+    });
+  }
+
+  return result;
+}
+
 export const internalLinkCompletion = autocompletion({
   activateOnTyping: true,
   activateOnTypingDelay: 60,
@@ -225,12 +201,71 @@ export const internalLinkCompletion = autocompletion({
       const word = context.matchBefore(/\[\[[^\]]*/);
       if (!word) return null;
 
-      const typed = word.text.slice(2).toLowerCase();
+      const typed = word.text.slice(2); // remove [[
 
       const state = useNodeStore.getState();
       const currentNode = state.activeNode;
 
       const options: LinkCompletion[] = [];
+
+      // -------------------------------------------------
+      // CASE 1 — Heading autocomplete
+      // -------------------------------------------------
+
+      if (typed.includes('#')) {
+        const [pathPart, headingQuery] = typed.split('#');
+
+        let targetNode: INode | undefined;
+
+        // [[#Heading]] → same file
+        if (!pathPart) {
+          targetNode = currentNode!;
+        }
+
+        // [[Note#Heading]]
+        else {
+          targetNode = cachedFlatNodes.find(n => n.path === pathPart);
+        }
+
+        if (!targetNode) return null;
+
+        const headings = extractHeadings(targetNode.content || '');
+
+        for (const h of headings) {
+          if (headingQuery && !h.text.toLowerCase().includes(headingQuery.toLowerCase())) continue;
+
+          options.push({
+            label: h.text,
+            title: h.text,
+            type: 'heading',
+
+            detail: 'H' + h.level,
+
+            apply: (view, completion, from, to) => {
+              const doc = view.state.doc;
+
+              const nextChars = doc.sliceString(to, to + 2);
+              const shouldClose = nextChars !== ']]';
+
+              const insertText = (pathPart ? pathPart : '') + '#' + h.text + (shouldClose ? ']]' : '');
+
+              view.dispatch({
+                changes: { from, to, insert: insertText },
+              });
+            },
+          });
+        }
+
+        return {
+          from: word.from + 2,
+          options,
+          filter: false,
+        };
+      }
+
+      // -------------------------------------------------
+      // CASE 2 — File autocomplete (existing logic)
+      // -------------------------------------------------
 
       for (const n of cachedFlatNodes) {
         if (n._id === currentNode?._id) continue;
@@ -238,38 +273,32 @@ export const internalLinkCompletion = autocompletion({
         const searchText = cachedSearchIndex.get(n._id);
         if (!searchText) continue;
 
-        if (typed && !searchText.includes(typed)) continue;
+        if (typed && !searchText.includes(typed.toLowerCase())) continue;
 
         const isFolder = n.type === 'folder';
-
-        const relativePath = getRelativePath(currentNode?.path ?? '', n.path!);
 
         options.push({
           label: n.title,
           title: n.title,
+          // type: 'heading',
           type: isFolder ? 'folder' : 'file',
           parentId: n.parentId,
-
-          detail: relativePath,
-
+          detail: n?.path,
           apply: (view, completion, from, to) => {
             const doc = view.state.doc;
 
             const nextChars = doc.sliceString(to, to + 2);
             const shouldClose = nextChars !== ']]';
 
-            const insertText = relativePath + (isFolder ? '/' : shouldClose ? ']]' : '');
+            const insertText = n?.path + (isFolder ? '/' : shouldClose ? ']]' : '');
 
             view.dispatch({
               changes: { from, to, insert: insertText },
-              selection: {
-                anchor: from + relativePath.length + (isFolder ? 1 : shouldClose ? 2 : 0),
-              },
             });
           },
         });
 
-        if (options.length >= 50) break; // limit results
+        if (options.length >= 50) break;
       }
 
       return {
@@ -279,31 +308,52 @@ export const internalLinkCompletion = autocompletion({
       };
     },
   ],
+  optionClass: completion => {
+    if (completion.type === 'heading') return 'cm-heading-option';
+    return 'cm-file-option';
+  },
 });
 
 export const internalLinkClickHandler = EditorView.domEventHandlers({
-  click(event) {
+  mousedown(event) {
     const el = (event.target as HTMLElement).closest('.cm-internal-link') as HTMLElement | null;
-    if (!el) return false;
+    if (!el || event.button !== 0) return false;
 
-    const link = el.dataset.internalLink;
+    const link = el.dataset.link;
     if (!link) return false;
 
-    const state = useNodeStore.getState();
-    const nodes = state.nodes;
-    const currentNode = state.activeNode;
+    setTimeout(() => {
+      const nodeState = useNodeStore.getState();
+      const { openTab } = useTabStore.getState();
+      const currentNode = nodeState.activeNode;
 
-    const flatNodes = flattenNodeTree(nodes);
+      if (!currentNode) return;
 
-    const absolutePath = resolveRelativePath(currentNode?.path ?? '', link);
+      let filePath = '';
+      let heading = '';
 
-    const node = flatNodes.find(n => n.path === absolutePath);
-    if (!node) return false;
+      // 1. Parse Link Path & Heading
+      if (link.startsWith('#')) {
+        filePath = currentNode.path!;
+        heading = link.slice(1);
+      } else if (link.includes('#')) {
+        const parts = link.split('#');
+        filePath = parts[0];
+        heading = parts[1];
+      } else {
+        filePath = link;
+      }
 
-    const { openTab } = useTabStore.getState();
-
-    openTab(node.projectId, node, true);
-    state.setActiveNode(node._id);
+      // 2. Resolve target and navigate
+      const targetNode = flattenNodeTree(nodeState.nodes).find((n: INode) => n.path === filePath);
+      if (targetNode) {
+        if (heading) {
+          nodeState.setPendingScrollHeading(heading);
+        }
+        nodeState.setActiveNode(targetNode._id);
+        openTab(targetNode.projectId, targetNode, true);
+      }
+    }, 0);
 
     event.preventDefault();
     return true;

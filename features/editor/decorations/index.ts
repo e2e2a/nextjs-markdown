@@ -458,7 +458,8 @@ export function getTaskDecos(state: EditorState, text: string, lineFrom: number)
 }
 export function getLinkDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  // Fixed regex to handle nested parentheses
+  const linkRegex = /\[([^\]]+)\]\(((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*)\)/g;
   const sourceMode = state.field(sourceModeField, false);
   const viewMode = state.facet(EditorState.readOnly);
   let match;
@@ -467,14 +468,28 @@ export function getLinkDecos(state: EditorState, text: string, lineFrom: number,
     const start = lineFrom + match.index;
     const textStart = start + 1;
     const textEnd = textStart + match[1].length;
+
+    // The URL with proper parenthesis handling
+    const url = match[2];
+
+    let parenCount = 1;
+    let i = 0;
+    while (i < url.length) {
+      if (url[i] === '(') parenCount++;
+      if (url[i] === ')') parenCount--;
+      if (parenCount === 0) break;
+      i++;
+    }
+
     const urlStart = textEnd + 2;
-    const closingParen = urlStart + match[2].length + 1;
+    const closingParen = urlStart + i + 1; // +1 for the closing paren we found
     const end = start + match[0].length;
+
     decos.push(
       Decoration.mark({
         class: 'cm-link-text',
         attributes: {
-          onclick: `window.open('${match[2]}')`,
+          onclick: `window.open('${url.replace(/'/g, "\\'")}')`, // Escape quotes
         },
       }).range(textStart, textEnd)
     );
@@ -738,32 +753,132 @@ export function getMathBlockDecos(state: EditorState, activeLineNum: number): St
   return decos;
 }
 
+// export function getInternalLinkDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
+//   const decos: StateRange<Decoration>[] = [];
+//   const wikiRegex = /\[\[([^\]]+)\]\]/g;
+//   const sourceMode = state.field(sourceModeField, false);
+//   const viewMode = state.facet(EditorState.readOnly);
+//   const selection = state.selection.main;
+
+//   let match;
+//   while ((match = wikiRegex.exec(text)) !== null) {
+//     const start = lineFrom + match.index;
+//     const end = start + match[0].length;
+
+//     const fullPath = match[1];
+//     const lastSlashIndex = fullPath.lastIndexOf('/');
+//     const isCursorInside = selection.from >= start && selection.to <= end;
+//     const shouldHide = viewMode || (!isLineActive && !isCursorInside && !sourceMode);
+
+//     decos.push(
+//       Decoration.mark({
+//         class: 'cm-internal-link',
+//         ...(shouldHide ? { attributes: { 'data-internal-link': fullPath } } : {}),
+//       }).range(start, end)
+//     );
+
+//     if (shouldHide) {
+//       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 2));
+
+//       if (lastSlashIndex !== -1) {
+//         const pathPartEnd = start + 2 + lastSlashIndex + 1;
+//         decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start + 2, pathPartEnd));
+//       }
+
+//       decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));
+//     }
+//   }
+//   return decos;
+// }
+
 export function getInternalLinkDecos(state: EditorState, text: string, lineFrom: number, isLineActive: boolean): StateRange<Decoration>[] {
   const decos: StateRange<Decoration>[] = [];
-  const wikiRegex = /\[\[([^\]]+)\]\]/g;
+
+  // Regex: Group 1 = Path/Heading, Group 2 = Alias
+  const wikiRegex = /\[\[([^|\]]+)(?:\|([^\]]+))?\]\]/g;
+
   const sourceMode = state.field(sourceModeField, false);
   const viewMode = state.facet(EditorState.readOnly);
-
   const selection = state.selection.main;
 
   let match;
   while ((match = wikiRegex.exec(text)) !== null) {
     const start = lineFrom + match.index;
     const end = start + match[0].length;
-    const contentStart = start + 2;
-    const contentEnd = end - 2;
 
-    decos.push(Decoration.mark({ class: 'cm-internal-link', attributes: { 'data-internal-link': match[1] } }).range(start, end));
+    const fullLink = match[1]; // e.g., "#Introduction" or "Note#Conclusion"
+    const displayText = match[2]; // e.g., "Alias"
+
     const isCursorInside = selection.from >= start && selection.to <= end;
+    const shouldHide = viewMode || (!isLineActive && !isCursorInside && !sourceMode);
 
-    if (viewMode || (!isLineActive && !isCursorInside && !sourceMode)) {
-      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, contentStart));
-      decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(contentEnd, end));
+    const linkAttrs = { 'data-link': fullLink };
+
+    if (!shouldHide) {
+      // MODE: EDITING - Show raw syntax, disable click handler
+      decos.push(Decoration.mark({ class: 'cm-link-source-editing' }).range(start, end));
+    } else {
+      // MODE: DECORATED - Apply "Obsidian-style" hiding
+
+      if (displayText) {
+        /**
+         * CASE 1: Alias exists [[Path#Heading|Alias]]
+         * Result: "Alias" (Everything else hidden)
+         */
+        const aliasStartPos = end - 2 - displayText.length;
+        decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, aliasStartPos));
+
+        if (end - 2 > aliasStartPos) {
+          decos.push(
+            Decoration.mark({
+              class: 'cm-internal-link',
+              attributes: linkAttrs,
+            }).range(aliasStartPos, end - 2)
+          );
+        }
+        decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));
+      } else if (fullLink.startsWith('#')) {
+        /**
+         * CASE 2: Internal Heading Only [[#Introduction]]
+         * Result: "Introduction" (Hides [[, ]], and #)
+         */
+        // Hide [[ and the # symbol (start to start + 3)
+        decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 3));
+
+        // Show "Introduction"
+        if (end - 2 > start + 3) {
+          decos.push(
+            Decoration.mark({
+              class: 'cm-internal-link',
+              attributes: linkAttrs,
+            }).range(start + 3, end - 2)
+          );
+        }
+
+        // Hide ]]
+        decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));
+      } else {
+        /**
+         * CASE 3: Standard Link or Heading with File [[Note#Conclusion]]
+         * Result: "Note#Conclusion" (Hides only [[ and ]])
+         */
+        decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 2));
+
+        if (end - 2 > start + 2) {
+          decos.push(
+            Decoration.mark({
+              class: 'cm-internal-link',
+              attributes: linkAttrs,
+            }).range(start + 2, end - 2)
+          );
+        }
+
+        decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));
+      }
     }
   }
   return decos;
 }
-
 export function buildDecorations(state: EditorState): RangeSet<Decoration> {
   const decos: StateRange<Decoration>[] = [];
   const activeLineNum = state.doc.lineAt(state.selection.main.head).number;

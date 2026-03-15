@@ -8,6 +8,20 @@ import { UnitOfWork } from '@/common/UnitOfWork';
 import { User } from 'next-auth';
 import Node from '@/modules/projects/nodes/node.model';
 import { Types } from 'mongoose';
+import path from 'path';
+export interface Mention {
+  excerpt: string;
+  line: number;
+  index: number;
+}
+
+export interface BacklinkResponse {
+  _id: string | Types.ObjectId;
+  title: string;
+  path: string;
+  type: 'file' | 'folder';
+  mentions: Mention[];
+}
 
 const ALLOWED = ['createdAt', 'updatedAt'] as const;
 export type ExcludeField = (typeof ALLOWED)[number];
@@ -17,6 +31,7 @@ interface FlatNode {
   children: ObjectId[];
   title: string;
   type: 'file' | 'folder';
+  path: string;
   content?: string;
 }
 
@@ -105,6 +120,64 @@ async function checkNodeExistence(params: { projectId: string; path: string; typ
 }
 
 export const nodeService = {
+  getBacklink: async (targetId: string, user: User) => {
+    const targetNode = await nodeRepository.findOne({ _id: targetId });
+    if (!targetNode) return [];
+    if (user.role !== 'admin')
+      await Promise.all([
+        ensureWorkspaceMember(targetNode.workspaceId, user.email), // wCtx
+        ensureProjectMember(targetNode.projectId, user.email), // pCtx
+      ]);
+    const targetFullPath = targetNode.path.replace(/\\/g, '/').trim();
+    const targetFileName = path.basename(targetFullPath);
+    const allNodes = await nodeRepository.findMany({ projectId: targetNode.projectId });
+
+    const backlinks: BacklinkResponse[] = [];
+    // Combined regex for [[Wiki]] and [Markdown](Link)
+    const linkRegex = /\[\[([^\]]+)\]\]|\[[^\]]*\]\(([^)]+)\)/g;
+
+    for (const otherNode of allNodes) {
+      if (otherNode._id.toString() === targetId || !otherNode.content) continue;
+
+      const lines = otherNode.content.split('\n');
+      const mentions: Mention[] = [];
+
+      lines.forEach((lineText, index) => {
+        linkRegex.lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(lineText)) !== null) {
+          const rawLink = (match[1] || match[2]).trim();
+          const decoded = decodeURIComponent(rawLink).replace(/\\/g, '/');
+          const otherFolder = path.dirname(otherNode.path).replace(/\\/g, '/');
+
+          // Path Resolution
+          const resolved = decoded.startsWith('.') ? path.normalize(path.join(otherFolder, decoded)).replace(/\\/g, '/') : decoded;
+
+          const isMatch = resolved === targetFullPath || `${resolved}.md` === targetFullPath || decoded === targetFileName;
+
+          if (isMatch) {
+            mentions.push({
+              excerpt: lineText.trim(),
+              line: index + 1,
+              index: match.index,
+            });
+          }
+        }
+      });
+
+      if (mentions.length > 0) {
+        backlinks.push({
+          _id: otherNode._id.toString(),
+          title: otherNode.title,
+          path: otherNode.path,
+          type: otherNode.type,
+          mentions: mentions,
+        });
+      }
+    }
+    return backlinks;
+  },
   getProjectNodeTree: async (user: User, projectId: string, exclude?: string): Promise<{ nodes: TreeNode[] }> => {
     const project = await projectService.findById(projectId);
     if (!project) throw new HttpError('NOT_FOUND', `Project not found`);

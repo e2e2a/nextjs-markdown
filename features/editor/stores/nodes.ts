@@ -82,6 +82,9 @@ function getSiblings(nodes: INode[], parentId: string | null): INode[] {
 }
 
 interface NodesState {
+  pendingScrollHeading: string;
+  setPendingScrollHeading(heading: string): void;
+
   activeDrag: INode | null;
   activeNode: INode | null;
   selectedNode: INode | null;
@@ -121,6 +124,10 @@ interface NodesState {
 }
 
 export const useNodeStore = create<NodesState>(set => ({
+  // Add to your store definition
+  pendingScrollHeading: '',
+  setPendingScrollHeading: (heading: string) => set({ pendingScrollHeading: heading }),
+
   nodes: null,
   previousOperations: [],
   activeNode: null,

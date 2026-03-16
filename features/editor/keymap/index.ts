@@ -8,35 +8,9 @@ import { useNodeStore } from '../stores/nodes';
 import { flattenNodeTree } from '@/utils/client/node-utils';
 import { useTabStore } from '../stores/tabs';
 import { INode } from '@/types';
-
-/** Start Internal Link helper */
-let cachedFlatNodes: INode[] = [];
-const cachedSearchIndex: Map<string, string> = new Map();
-export function rebuildNodeCache(nodes: INode[]) {
-  const flat = flattenNodeTree(nodes);
-
-  cachedFlatNodes = flat;
-
-  cachedSearchIndex.clear();
-
-  for (const n of flat) {
-    cachedSearchIndex.set(n._id, `${n.title} ${n.path ?? ''}`.toLowerCase());
-  }
-}
-
-/**
- * Subscribe to Zustand changes
- */
-// rebuild initially
-rebuildNodeCache(useNodeStore.getState().nodes ?? []);
-
-// subscribe to changes
-useNodeStore.subscribe(() => {
-  const nodes = useNodeStore.getState().nodes;
-  if (!nodes) return;
-
-  rebuildNodeCache(nodes);
-});
+import { classifyLink } from '@/features/helpers/editor/parse-link';
+import { handleInternalLink, openRelativeFile } from '@/features/helpers/editor/link-actions';
+import { extractHeadings, getCachedNodes, getSearchIndex } from '@/features/helpers/editor/node-cache';
 
 interface LinkCompletion extends Completion {
   type: 'file' | 'folder' | 'heading';
@@ -176,22 +150,6 @@ export const tableKeyboardHandler = EditorView.domEventHandlers({
   },
 });
 
-function extractHeadings(content: string): { level: number; text: string }[] {
-  const regex = /^(#{1,6})\s+(.+)$/gm;
-  const result: { level: number; text: string }[] = [];
-
-  let match;
-
-  while ((match = regex.exec(content))) {
-    result.push({
-      level: match[1].length,
-      text: match[2].trim(),
-    });
-  }
-
-  return result;
-}
-
 export const internalLinkCompletion = autocompletion({
   activateOnTyping: true,
   activateOnTypingDelay: 60,
@@ -200,7 +158,8 @@ export const internalLinkCompletion = autocompletion({
     (context: CompletionContext): CompletionResult | null => {
       const word = context.matchBefore(/\[\[[^\]]*/);
       if (!word) return null;
-
+      const cachedFlatNodes = getCachedNodes();
+      const cachedSearchIndex = getSearchIndex();
       const typed = word.text.slice(2); // remove [[
 
       const state = useNodeStore.getState();
@@ -238,9 +197,7 @@ export const internalLinkCompletion = autocompletion({
             label: h.text,
             title: h.text,
             type: 'heading',
-
             detail: 'H' + h.level,
-
             apply: (view, completion, from, to) => {
               const doc = view.state.doc;
 
@@ -359,31 +316,6 @@ export const internalLinkClickHandler = EditorView.domEventHandlers({
   },
 });
 
-function resolveRelativePath(basePath: string, link: string) {
-  const baseParts = basePath.split('/');
-  baseParts.pop();
-
-  const linkParts = decodeURIComponent(link).replace('.md', '').split('/');
-
-  for (const part of linkParts) {
-    if (part === '..') {
-      baseParts.pop();
-    } else if (part !== '.') {
-      baseParts.push(part);
-    }
-  }
-
-  const result = baseParts.join('/');
-  return result;
-}
-
-function classifyLink(link: string) {
-  if (/^https?:\/\//i.test(link)) return 'external';
-  if (link.startsWith('../') || link.startsWith('./')) return 'relative';
-  if (link.endsWith('.md')) return 'relative';
-  return 'internal';
-}
-
 export const linkClickHandler = EditorView.domEventHandlers({
   mousedown(event) {
     if (event.button !== 0) return false;
@@ -414,74 +346,3 @@ export const linkClickHandler = EditorView.domEventHandlers({
     return true;
   },
 });
-
-function openRelativeFile(link: string) {
-  const nodeState = useNodeStore.getState();
-  const { openTab } = useTabStore.getState();
-  const currentNode = nodeState.activeNode;
-
-  if (!currentNode) return;
-
-  const { filePath, heading } = parseLinkTarget(link, currentNode.path!);
-  const resolved = resolveRelativePath(currentNode.path!, filePath);
-  const nodes = flattenNodeTree(nodeState.nodes);
-  const targetNode = nodes.find((n: INode) => normalizePath(n.path!) === normalizePath(resolved));
-
-  if (!targetNode) return;
-
-  if (heading) {
-    nodeState.setPendingScrollHeading(heading);
-  }
-
-  nodeState.setActiveNode(targetNode._id);
-  openTab(targetNode.projectId, targetNode, true);
-}
-
-function normalizePath(path: string) {
-  return decodeURIComponent(path).replace(/\.md$/i, '').trim();
-}
-
-function handleInternalLink(path: string) {
-  console.log('handleInternalLink:', path);
-
-  const nodeState = useNodeStore.getState();
-  const { openTab } = useTabStore.getState();
-
-  const nodes = flattenNodeTree(nodeState.nodes);
-
-  console.log('Nodes length:', nodes.length);
-
-  const targetNode = nodes.find((n: INode) => normalizePath(n.path!) === normalizePath(path));
-
-  console.log('Target node:', targetNode);
-
-  if (!targetNode) {
-    console.log('Internal link node not found');
-    return;
-  }
-
-  nodeState.setActiveNode(targetNode._id);
-  openTab(targetNode.projectId, targetNode, true);
-}
-
-function parseLinkTarget(link: string, currentNodePath: string) {
-  const decoded = decodeURIComponent(link);
-
-  let filePath = '';
-  let heading = '';
-
-  if (decoded.startsWith('#')) {
-    filePath = currentNodePath;
-    heading = decoded.slice(1);
-  } else if (decoded.includes('#')) {
-    const parts = decoded.split('#');
-    filePath = parts[0];
-    heading = parts[1];
-  } else {
-    filePath = decoded;
-  }
-
-  filePath = normalizePath(filePath);
-
-  return { filePath, heading };
-}

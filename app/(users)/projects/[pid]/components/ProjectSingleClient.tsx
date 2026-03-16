@@ -1,5 +1,5 @@
 'use client';
-import AppSidebarLayout from '@/components/markdown/app-sidebar-layout';
+import AppSidebarLayout from '@/components/project/app-sidebar-layout';
 import { useParams } from 'next/navigation';
 import MarkdownSection from './MarkdownSection';
 import { INode } from '@/types';

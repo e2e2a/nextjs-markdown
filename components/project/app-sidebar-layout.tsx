@@ -4,12 +4,12 @@ import { ImperativePanelHandle } from 'react-resizable-panels';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { AppContent } from './app-content';
 import { AppShell } from './app-shell';
-import { AppSidebar } from './app-sidebar';
-import RightSidebarTemplate from '../project/right-sidebar';
+import { LeftSidebarTemplate } from './left-sidebar/left-sidebar-template';
+import RightSidebarTemplate from './right-sidebar/right-sidebar-template';
 import MiniSidebarTemplate from './mini-left-sidebar';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { notFound, useParams } from 'next/navigation';
-import { TabsHeader } from '../project/tabs/tab-header';
+import { TabsHeader } from './tabs/tab-header';
 import { useProjectByIdQuery } from '@/hooks/project/useProjectQuery';
 import { useNodesProjectIdQuery } from '@/hooks/node/useNodeQuery';
 import { Button } from '../ui/button';
@@ -179,7 +179,7 @@ export default function AppSidebarLayout({ children }: { children: React.ReactNo
             }}
             className="text-muted-foreground flex h-full flex-row p-0"
           >
-            <AppSidebar projectData={pData?.project} />
+            <LeftSidebarTemplate projectData={pData?.project} />
           </ResizablePanel>
 
           <ResizableHandle

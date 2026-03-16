@@ -4,14 +4,14 @@ import React, { useMemo, useState } from 'react';
 import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar';
 import { useProjectPresence } from '@/features/editor/stores/project-pressence';
 import { useSession } from 'next-auth/react';
-import { NavUser } from '../nav-user';
+import { NavUser } from '../../nav-user';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { List, Users, ChevronRight, Search, ChevronsDownUp, ChevronsUpDown, X, ArrowUpRight, Link, ArrowDownLeft } from 'lucide-react';
 import { useProjectUIStore } from '@/features/editor/stores/project-ui';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
 import { IconTrident } from '@tabler/icons-react';
 
 interface OutlineNode {
@@ -20,19 +20,20 @@ interface OutlineNode {
   children: OutlineNode[];
 }
 
-export const InboundLinkIcon = ({ className }: { className?: string }) => (
+const InboundLinkIcon = ({ className }: { className?: string }) => (
   <div className="relative inline-flex items-center justify-center">
     <Link className={className} />
     <ArrowDownLeft className="absolute -bottom-1 -right-1 h-3 w-3 bg-background rounded-full stroke-[3px]" />
   </div>
 );
 
-export const OutboundLinkIcon = ({ className }: { className?: string }) => (
+const OutboundLinkIcon = ({ className }: { className?: string }) => (
   <div className="relative inline-flex items-center justify-center">
     <Link className={className} />
     <ArrowUpRight className="absolute -bottom-1 -right-1 h-3 w-3 bg-background rounded-full stroke-[3px]" />
   </div>
 );
+
 const buildOutlineTree = (headings: { level: number; text: string }[]): OutlineNode[] => {
   const root: OutlineNode[] = [];
   const stack: OutlineNode[] = [];

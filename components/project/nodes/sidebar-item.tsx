@@ -2,7 +2,7 @@
 import React, { useEffect, useState, DragEvent, useRef } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
 import { SidebarGroupContent, SidebarMenu } from '../../ui/sidebar';
-import { SidebarContextMenu } from '../../markdown/sidebar-context-menu';
+import { SidebarContextMenu } from '../left-sidebar/sidebar-context-menu';
 import { cn } from '@/lib/utils';
 import { INode } from '@/types';
 import { useNodeStore } from '@/features/editor/stores/nodes';
@@ -11,7 +11,7 @@ import SidebarCreateFileItem from './sidebar-create-file-item';
 import { groupNodes } from '@/utils/client/node-utils';
 import SidebarCreateFolderItem from './sidebar-create-folder-item';
 import SidebarFolderItem from './sidebar-folder-item';
-import { clearAllFolderDragOver } from '@/components/markdown/nav-main';
+import { clearAllFolderDragOver } from '@/components/project/left-sidebar/nav-main';
 
 function isDescendant(draggedId: string, targetId: string, nodesById: Record<string, INode>) {
   let current = nodesById[targetId];

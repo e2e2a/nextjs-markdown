@@ -3,13 +3,13 @@ import { NavMain } from './nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
 import { FolderPlus, Bookmark, FolderOpen, Search, ChevronsDownUp, SquarePen, ArrowUpNarrowWide, GalleryVertical, X } from 'lucide-react';
 import { SidebarContextMenu } from './sidebar-context-menu';
-import { Button } from '../ui/button';
+import { Button } from '../../ui/button';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { makeToastError } from '@/lib/toast';
 import { useNodeMutations } from '@/hooks/node/useNodeMutations';
 import { IProject } from '@/types';
-import { SidebarFooterVault } from './sidebar-footer-vault';
+import { LeftSidebarFooter } from './left-sidebar-footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTabStore } from '@/features/editor/stores/tabs';
 import { performSearch } from '@/utils/client/search-nodes-utils';
@@ -17,7 +17,7 @@ import { flattenNodeTree } from '@/utils/client/node-utils';
 import { useProjectUIStore } from '@/features/editor/stores/project-ui';
 import { SearchOverlay } from './left-sidebar-search-button-overlay';
 
-export function AppSidebar({ projectData }: { projectData: IProject }) {
+export function LeftSidebarTemplate({ projectData }: { projectData: IProject }) {
   const nodes = useNodeStore(state => state.nodes);
   const setCollapseAll = useNodeStore(state => state.setCollapseAll);
   const setActiveNode = useNodeStore(state => state.setActiveNode);
@@ -344,7 +344,7 @@ export function AppSidebar({ projectData }: { projectData: IProject }) {
           </div>
         </SidebarContextMenu>
         <SidebarFooter className="h-auto mt-1 bg-background/70 py-2">
-          <SidebarFooterVault projectData={projectData} />
+          <LeftSidebarFooter projectData={projectData} />
         </SidebarFooter>
       </div>
     </Sidebar>

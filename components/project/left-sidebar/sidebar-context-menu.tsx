@@ -2,7 +2,7 @@
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { INode } from '@/types';
 import { ReactNode } from 'react';
-import { DangerConfirmDialog } from '../danger-confirm-dialog';
+import { DangerConfirmDialog } from '../../danger-confirm-dialog';
 import { useNodeStore } from '@/features/editor/stores/nodes';
 import { cn } from '@/lib/utils';
 

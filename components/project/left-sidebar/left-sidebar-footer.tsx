@@ -6,7 +6,7 @@ import { ChevronsUpDown, CircleQuestionMark, DoorOpenIcon, Settings } from 'luci
 import { IProject } from '@/types';
 import { useRouter } from 'next/navigation';
 
-export function SidebarFooterVault({ projectData }: { projectData: IProject }) {
+export function LeftSidebarFooter({ projectData }: { projectData: IProject }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
 

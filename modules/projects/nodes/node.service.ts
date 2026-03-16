@@ -8,11 +8,15 @@ import { UnitOfWork } from '@/common/UnitOfWork';
 import { User } from 'next-auth';
 import Node from '@/modules/projects/nodes/node.model';
 import { Types } from 'mongoose';
+import { normalizeFilePath, ParsedLink, parseLink, resolveRelativePath } from '@/helpers/server/linkHelpers';
 import path from 'path';
+
 export interface Mention {
   excerpt: string;
   line: number;
   index: number;
+  heading?: string; // optional
+  alias?: string; // optional
 }
 
 export interface BacklinkResponse {
@@ -120,21 +124,20 @@ async function checkNodeExistence(params: { projectId: string; path: string; typ
 }
 
 export const nodeService = {
-  getBacklink: async (targetId: string, user: User) => {
+  getBacklink: async (targetId: string, user: User): Promise<BacklinkResponse[]> => {
     const targetNode = await nodeRepository.findOne({ _id: targetId });
     if (!targetNode) return [];
-    if (user.role !== 'admin')
-      await Promise.all([
-        ensureWorkspaceMember(targetNode.workspaceId, user.email), // wCtx
-        ensureProjectMember(targetNode.projectId, user.email), // pCtx
-      ]);
-    const targetFullPath = targetNode.path.replace(/\\/g, '/').trim();
-    const targetFileName = path.basename(targetFullPath);
-    const allNodes = await nodeRepository.findMany({ projectId: targetNode.projectId });
 
+    // Permissions
+    if (user.role !== 'admin') {
+      await Promise.all([ensureWorkspaceMember(targetNode.workspaceId, user.email), ensureProjectMember(targetNode.projectId, user.email)]);
+    }
+
+    const targetFullPath = normalizeFilePath(targetNode.path);
+    const targetName = path.basename(targetFullPath);
+
+    const allNodes = await nodeRepository.findMany({ projectId: targetNode.projectId });
     const backlinks: BacklinkResponse[] = [];
-    // Combined regex for [[Wiki]] and [Markdown](Link)
-    const linkRegex = /\[\[([^\]]+)\]\]|\[[^\]]*\]\(([^)]+)\)/g;
 
     for (const otherNode of allNodes) {
       if (otherNode._id.toString() === targetId || !otherNode.content) continue;
@@ -142,25 +145,41 @@ export const nodeService = {
       const lines = otherNode.content.split('\n');
       const mentions: Mention[] = [];
 
-      lines.forEach((lineText, index) => {
-        linkRegex.lastIndex = 0;
-        let match;
+      lines.forEach((lineText, lineIndex) => {
+        // Combined regex for standard Markdown [text](link) and internal [[link|alias]]
+        const linkRegex = /\[\[([^\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)/g;
+        let match: RegExpExecArray | null;
 
         while ((match = linkRegex.exec(lineText)) !== null) {
-          const rawLink = (match[1] || match[2]).trim();
-          const decoded = decodeURIComponent(rawLink).replace(/\\/g, '/');
-          const otherFolder = path.dirname(otherNode.path).replace(/\\/g, '/');
+          let rawLink: string;
+          let alias: string | undefined;
 
-          // Path Resolution
-          const resolved = decoded.startsWith('.') ? path.normalize(path.join(otherFolder, decoded)).replace(/\\/g, '/') : decoded;
+          if (match[1]) {
+            // Internal [[link|alias]]
+            rawLink = match[1];
+          } else {
+            // Standard Markdown [text](link)
+            alias = match[2];
+            rawLink = match[3];
+          }
 
-          const isMatch = resolved === targetFullPath || `${resolved}.md` === targetFullPath || decoded === targetFileName;
+          const parsed: ParsedLink = parseLink(rawLink);
+
+          // Resolve relative path if needed
+          const resolvedPath = parsed.path.startsWith('.') ? resolveRelativePath(otherNode.path, parsed.path) : parsed.path;
+
+          // Match either by full normalized path or file name
+          const targetFileName = targetName.toLowerCase();
+          const resolvedFileName = path.basename(resolvedPath).toLowerCase();
+          const isMatch = resolvedPath === targetFullPath || resolvedFileName === targetFileName;
 
           if (isMatch) {
             mentions.push({
               excerpt: lineText.trim(),
-              line: index + 1,
+              line: lineIndex + 1,
               index: match.index,
+              heading: parsed.heading,
+              alias: alias || parsed.alias,
             });
           }
         }
@@ -172,10 +191,12 @@ export const nodeService = {
           title: otherNode.title,
           path: otherNode.path,
           type: otherNode.type,
-          mentions: mentions,
+          mentions,
         });
       }
     }
+
+    console.log(`Backlinks found for ${targetNode.path}:`, backlinks.length);
     return backlinks;
   },
   getProjectNodeTree: async (user: User, projectId: string, exclude?: string): Promise<{ nodes: TreeNode[] }> => {

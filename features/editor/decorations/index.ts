@@ -872,15 +872,19 @@ export function getInternalLinkDecos(state: EditorState, text: string, lineFrom:
          * CASE 3: Standard Link or Heading with File [[Note#Conclusion]]
          * Result: "Note#Conclusion" (Hides only [[ and ]])
          */
+        const lastSlashIndex = fullLink.lastIndexOf('/');
         decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 2));
+        if (lastSlashIndex !== -1) {
+          // Hide [[ AND the directory path including the slash
+          const pathEnd = start + 2 + lastSlashIndex + 1;
+          decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, pathEnd));
 
-        if (end - 2 > start + 2) {
-          decos.push(
-            Decoration.mark({
-              class: 'cm-internal-link',
-              attributes: linkAttrs,
-            }).range(start + 2, end - 2)
-          );
+          // Show only the filename
+          decos.push(Decoration.mark({ class: 'cm-internal-link', attributes: linkAttrs }).range(pathEnd, end - 2));
+        } else {
+          // No slash found, just hide [[ and ]]
+          decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(start, start + 2));
+          decos.push(Decoration.mark({ class: 'cm-internal-link', attributes: linkAttrs }).range(start + 2, end - 2));
         }
 
         decos.push(Decoration.mark({ class: 'cm-syntax-hide' }).range(end - 2, end));

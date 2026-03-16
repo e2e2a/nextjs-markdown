@@ -83,7 +83,8 @@ export class MermaidWidget extends WidgetType {
         if (svgElement) {
           svgElement.style.maxWidth = 'none';
           svgElement.style.width = 'auto';
-          svgElement.setAttribute('height', 'auto');
+          svgElement.style.height = 'auto';
+          // svgElement.setAttribute('height', 'auto');
         }
       } catch {
         renderArea.innerHTML = `<div style="line-height: normal; color: #ef4444; font-size: 12px; padding: 10px;">Syntax Error</div>`;

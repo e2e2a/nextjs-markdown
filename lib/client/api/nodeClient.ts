@@ -3,6 +3,17 @@ import { INode } from '@/types';
 const BASE_URL = '/api/nodes';
 const BASE_URL_PROJECT = `${process.env.NEXT_PUBLIC_BASE_URL}/api/projects`;
 
+interface IBacklink {
+  _id: string;
+  title: string;
+  path: string;
+  type: 'file' | 'folder';
+  mentions: { excerpt: string; line: number; index: number; alias?: string };
+}
+interface IBacklinkResponse {
+  backlinks: IBacklink[];
+}
+
 export const nodeClient = {
   async getNodes(projectId: string) {
     const res = await fetch(`${BASE_URL_PROJECT}/${projectId}/nodes`);
@@ -12,6 +23,12 @@ export const nodeClient = {
 
   async getNode(id: string) {
     const res = await fetch(`${BASE_URL}/${id}`);
+    if (!res.ok) throw new Error(`Failed to fetch node with id ${id}`);
+    return res.json();
+  },
+
+  async getBacklinks(id: string): Promise<IBacklinkResponse> {
+    const res = await fetch(`${BASE_URL}/${id}/backlinks`);
     if (!res.ok) throw new Error(`Failed to fetch node with id ${id}`);
     return res.json();
   },

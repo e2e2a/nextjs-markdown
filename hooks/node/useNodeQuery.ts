@@ -8,3 +8,12 @@ export function useNodesProjectIdQuery(projectId: string) {
     enabled: !!projectId,
   });
 }
+
+export function useNodeBacklinksQuery(id: string) {
+  console.log('this is running');
+  return useQuery({
+    queryKey: ['nodeBacklinks', id],
+    queryFn: () => nodeClient.getBacklinks(id),
+    enabled: !!id,
+  });
+}

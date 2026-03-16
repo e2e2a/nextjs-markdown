@@ -17,7 +17,7 @@ export function ProjectSingleClient() {
     <AppSidebarLayout>
       <ProjectPresence projectId={pid}>
         <div className="h-full">
-          {tabs.length === 0 && (
+          {(tabs.length === 0 || !activeTabId) && (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 select-none">
               <div className="border-2 border-dashed border-muted rounded-xl p-8 flex flex-col items-center">
                 <p className="text-sm font-medium">No file selected</p>

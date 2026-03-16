@@ -158,6 +158,12 @@ export const useTabStore = create<TabsState>()(
           activeTabs: { ...state.activeTabs, [projectId]: null },
         })),
     }),
-    { name: 'vscode-style-tabs' }
+    {
+      name: 'vscode-style-tabs',
+      partialize: state => ({
+        // only persist tab history
+        projectTabs: state.projectTabs,
+      }),
+    }
   )
 );

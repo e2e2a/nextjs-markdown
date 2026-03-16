@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar';
 import { useProjectPresence } from '@/features/editor/stores/project-pressence';
 import { useSession } from 'next-auth/react';
@@ -9,11 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { List, Users, Search, ChevronsDownUp, ChevronsUpDown, X, ArrowUpRight, Link, ArrowDownLeft } from 'lucide-react';
 import { useProjectUIStore } from '@/features/editor/stores/project-ui';
 import { useNodeStore } from '@/features/editor/stores/nodes';
-
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { IconTrident } from '@tabler/icons-react';
 import { OutlineTabItem } from './outline-tab-item';
+import BacklinkTabItems from './backlink-tab-items';
+import { useNodeBacklinksQuery } from '@/hooks/node/useNodeQuery';
 
 interface OutlineNode {
   text: string;
@@ -56,6 +57,11 @@ const buildOutlineTree = (headings: { level: number; text: string }[]): OutlineN
 
 const RightSidebarTemplate = () => {
   const { data } = useSession();
+
+  const id = useNodeStore(state => state.activeNode?._id);
+  const { data: bData, isLoading: nLoading } = useNodeBacklinksQuery(id ?? '');
+  console.log('activeId', bData);
+
   const rightSidebarTab = useProjectUIStore(state => state.rightSidebarTab);
   const setRightSidebarTab = useProjectUIStore(state => state.setRightSidebarTab);
 
@@ -214,6 +220,7 @@ const RightSidebarTemplate = () => {
 
           <TabsContent value="backlink" className="m-0 flex-1 overflow-y-auto bg-sidebar/80">
             backlinks
+            <BacklinkTabItems />
           </TabsContent>
           <TabsContent value="outgoing" className="m-0 flex-1 overflow-y-auto bg-sidebar/80">
             outgoing links
